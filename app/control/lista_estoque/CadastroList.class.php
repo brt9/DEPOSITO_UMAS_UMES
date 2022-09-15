@@ -5,7 +5,7 @@
  *
  * @version    1.0
  * @package    model
- * @subpackage Jogos Olimpicos Tokoyo 2020
+ * @subpackage DEPOSITO DE MATERIAS UMAS UMES
  * @author     PEDRO FELIPE FREIRE DE MEDEIROS
  * @copyright  Copyright (c) 2021 Barata
  * @license    http://www.adianti.com.br/framework-license
@@ -28,58 +28,64 @@ class CadastroList extends TStandardList
 
     parent::setDatabase('bancodados');            // defines the database
     parent::setActiveRecord('lista');   // defines the active record
-    parent::setDefaultOrder('CODIGO', 'asc');         // defines the default order
+    parent::setDefaultOrder('DESCRICAO', 'asc');         // defines the default order
     parent::addFilterField('CODIGO', '=', 'CODIGO'); // filterField, operator, formField
     parent::addFilterField('DESCRICAO', 'like', 'DESCRICAO'); // filterField, operator, formField
-    // creates the form
-    $this->form = new BootstrapFormBuilder('form_search');
-    $this->form->setFormTitle('CADASTRO DE LEADS');
 
-   
+    // creates the form
+
+    $this->form = new BootstrapFormBuilder('form_search');
+    $this->form->setFormTitle('ESTOQUE UMAS UMES');
+
     // create the form fields
-    $id = new TEntry('CODIGO');
+
+    $id = new TQRCodeInputReader('CODIGO');
     $QUANTIDADE_ESTOQUE = new TEntry('QUANTIDADE_ESTOQUE');
     $DATA = new TEntry('DATA');
     $DESCRICAO       = new TCombo('DESCRICAO');
+    $ITEM       = new TEntry('ITEM');
 
     // add the fields/ aqiu
-  
-    $this->form->addFields([new TLabel('CLIENTE')], [$id]);
-    //$this->form->addFields([new TLabel('DESCRICAO')], [$DESCRICAO]);
-    $this->form->addFields([new TLabel('QUANTIDADE_ESTOQUE')], [$QUANTIDADE_ESTOQUE]);
-    $this->form->addFields([new TLabel('DATA')], [$DATA]);
-    $DESCRICAO->addItems( ['JOELHO PVC 90°' => 'JOELHO PVC 90°', 'JOELHO PVC 45°' => 'JOELHO PVC 45°', 'c' => 'Type c'] );
-    $this->form->addFields([new TLabel('Type')],[$DESCRICAO]);
+
+    //s    $this->form->addFields([new TLabel('ID')], [$id]);
+    $this->form->addFields([new TLabel('CODIGO DO ITEM')], [$id,  new TLabel('Only supported in HTTPS mode', 'gray')]);
+    $this->form->addFields([new TLabel('DESCRICAO')], [$ITEM]);
+    // $this->form->addFields([new TLabel('QUANTIDADE ESTOQUE')], [$QUANTIDADE_ESTOQUE]);
+    // $this->form->addFields([new TLabel('DATA')], [$DATA]);
+    $DESCRICAO->addItems(['JOELHO PVC 90°' => 'JOELHO PVC 90°', 'JOELHO PVC 45°' => 'JOELHO PVC 45°', 'LUVA PVC SOLD' => 'LUVA PVC SOLD', 'LUVA FERRO FUND BIPARTIDA' => 'LUVA FERRO FUND BIPARTIDA', 'LUVA DE CORRER PVC' => 'LUVA DE CORRER PVC', 'LUVA CORRER PVC DEFOFO' => 'LUVA CORRER PVC DEFOFO']);
+    $this->form->addFields([new TLabel('DESCRICAO')], [$DESCRICAO]);
     // $sexo->addItems(['MASCULINO' => 'MASCULINO', 'FEMININO' => 'FEMININO']);
+    $DESCRICAO = $ITEM;
     $id->setSize('10%');
     $DESCRICAO->setSize('50%');
-
 
     // keep the form filled during navigation with session data
     $this->form->setData(TSession::getValue('cadastro_filter_data'));
 
     // add the search form actions
     $btn = $this->form->addAction(_t('Find'), new TAction(array($this, 'onSearch')), 'fa:search');
-    //$this->form->addAction( "Novo Cliente"  , new TAction( ["CadastroForm", "onEdit"] ), "fa:plus-circle green" );
+    $this->form->addAction("Novo Item", new TAction(["CadastroForm", "onEdit"]), "fa:plus-circle green");
     $btn->class = 'btn btn-sm btn-primary';
-    // $this->form->addAction(_t('New'),  new TAction(array('cadastroForm', 'onEdit')), 'fa:plus green');
+    //$this->form->addAction(_t('New'),  new TAction(array('cadastroForm', 'onEdit')), 'fa:plus green');
+
     // creates a DataGrid
     $this->datagrid = new BootstrapDatagridWrapper(new TDataGrid);
     $this->datagrid->datatable = 'true';
     $this->datagrid->style = 'width: 100%';
     $this->datagrid->setHeight(320);
 
+
     // creates the datagrid columns
-    $column_id = new TDataGridColumn('CODIGO', 'CLIENTE', 'center', 50);
+    $column_id = new TDataGridColumn('CODIGO', 'CODIGO DO ITEM', 'center', 50);
     $column_DESCRICAO = new TDataGridColumn('DESCRICAO', 'DESCRICAO', 'left');
     $column_QUANTIDADE_ESTOQUE = new TDataGridColumn('QUANTIDADE_ESTOQUE', 'QUANTIDADE ESTOQUE', 'left');
-    $column_DATA = new TDataGridColumn('DATA', 'DATA', 'left');
+    $column_DATA = new TDataGridColumn('DATA', 'DATA DA ATUALIZACAO', 'left');
+
     // add the columns to the DataGrid
     $this->datagrid->addColumn($column_id);
     $this->datagrid->addColumn($column_DESCRICAO);
     $this->datagrid->addColumn($column_QUANTIDADE_ESTOQUE);
     $this->datagrid->addColumn($column_DATA);
-
 
     //creates the datagrid column actions
     $order_id = new TAction(array($this, 'onReload'));
@@ -98,15 +104,13 @@ class CadastroList extends TStandardList
     $order_DATA->setParameter('order', 'DATA');
     $column_DATA->setAction($order_DATA);
 
-
-
     // create EDIT action
-    /*$action_edit = new TDataGridAction(array('CadastroForm', 'onEdit'));
+    $action_edit = new TDataGridAction(array('CadastroForm', 'onEdit'));
     $action_edit->setButtonClass('btn btn-default');
     $action_edit->setLabel(_t('Edit'));
     $action_edit->setImage('far:edit blue');
     $action_edit->setField('CODIGO');
-    $this->datagrid->addAction($action_edit);*/
+    $this->datagrid->addAction($action_edit);
 
     /*// create DELETE action
     $action_del = new TDataGridAction(array($this, 'onDelete'));
@@ -115,6 +119,7 @@ class CadastroList extends TStandardList
     $action_del->setImage('far:trash-alt red');
     $action_del->setField('CODIGO');
     $this->datagrid->addAction($action_del);*/
+
     // create the datagrid model
     $this->datagrid->createModel();
 
