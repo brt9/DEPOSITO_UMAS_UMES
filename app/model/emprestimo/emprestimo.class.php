@@ -12,10 +12,10 @@ use Adianti\Database\TRecord;
  * @copyright  Copyright (c) 2021 Barata
  * @license    http://www.adianti.com.br/framework-license
  */
-class lista extends TRecord
+class emprestimo extends TRecord
 {
-    const TABLENAME = 'ESTOQUE_UMAS_UMES';
-    const PRIMARYKEY = 'CODIGO';
+    const TABLENAME = 'EMPRESTIMO_FERRAMENTAS';
+    const PRIMARYKEY = 'ID_EMPRESTIMO';
     const IDPOLICY = 'max'; // {max, serial}
 
 
@@ -25,10 +25,11 @@ class lista extends TRecord
     public function __construct($id = NULL, $callObjectLoad = TRUE)
     {
         parent::__construct($id, $callObjectLoad);
-        parent::addAttribute('CODIGO');
-        parent::addAttribute('DESCRICAO');
-        parent::addAttribute('QUANTIDADE_ESTOQUE');
-        parent::addAttribute('DATA_CADASTRO_ITEM');
-        parent::addAttribute('COLABORADOR_RESPONSAVEL_CADASTRO');
+        parent::addAttribute('ID_EMPRESTIMO');
+        parent::addAttribute('FERRAMENTA');
+        parent::addAttribute('DATA_EMPRESTIMO');
+        parent::addAttribute('DATA_DEVOLUCAO');
+        parent::addAttribute('COLABORADOR_RESPONSAVEL_EMPRESTIMO');
+        parent::addAttribute('MATRICULA');
     }
 }

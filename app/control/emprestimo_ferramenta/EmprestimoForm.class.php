@@ -4,46 +4,51 @@ use Adianti\Widget\Form\TDateTime;
 use Adianti\Widget\Form\THidden;
 
 /**
- * CadastroForm
+ * FORMULÁRIO DE CADASTRO
  *
  * @version    1.0
  * @package    model
- * @subpackage Jogos Olimpicos Tokoyo 2020
+ * @subpackage DEPOSITO DE MATERIAS UMAS E UMES
  * @author     PEDRO FELIPE FREIRE DE MEDEIROS
  * @copyright  Copyright (c) 2021 Barata
  * @license    http://www.adianti.com.br/framework-license
  */
-class CadastroForm extends TStandardForm
+class EmprestimoForm extends TStandardForm
 {
-    protected $form; // form
+    protected $form; // FORMULÁRIO
 
-    /**
-     * Class constructor
-     * Creates the page and the registration form
-     */
+    // CONSTRUTOR DE CLASSE
+    // CRIA A PÁGINA E O FORMULÁRIO DE INSCRIÇÃO
+
     function __construct()
     {
         parent::__construct();
 
         $ini  = AdiantiApplicationConfig::get();
 
-        $this->setDatabase('bancodados');              // defines the database
-        $this->setActiveRecord('lista');     // defines the active record
+        // DEFINE O BANCO DE DADOS
+        $this->setDatabase('bancodados');
 
-        // creates the form
-        $this->form = new BootstrapFormBuilder('form_cadastro');
-        $this->form->setFormTitle('Cadastro Items DEPOSITO');
+        // DEFINE O REGISTRO ATIVO           
+        $this->setActiveRecord('emprestimo');
 
-        // create the form fields
-        $CODIGO = new TEntry('CODIGO');
-        $DESCRICAO = new TEntry('DESCRICAO');
-        $QUANTIDADE_ESTOQUE = new TEntry('QUANTIDADE_ESTOQUE');
-        $DATA = new TEntry('DATA_CADASTRO_ITEM');
-        $DATA->setValue(date("Y-m-d H:i:s"));
+        // CRIA O FORMULÁRIO
+        $this->form = new BootstrapFormBuilder('form_Emprestimo_Ferramentas');
+        $this->form->setFormTitle('Emprestimo de Ferramentas');
+
+        // CRIE OS CAMPOS DO FORMULÁRIO
+        $ID_EMPRESTIMO = new TEntry('ID_EMPRESTIMO');
+        $FERRAMENTA = new TEntry('FERRAMENTA');
+        $DATA_EMPRESTIMO = new TEntry('DATA_EMPRESTIMO');
+        $DATA_DEVOLUCAO = new TEntry('DATA_DEVOLUCAO');
+        $MATRICULA = new TEntry('MATRICULA');
+        $COLABORADOR_RESPONSAVEL_EMPRESTIMO = new TEntry('COLABORADOR_RESPONSAVEL_EMPRESTIMO');
 
 
-        $ITEM       = new TEntry('ITEM');
-        $colaborador_responsavel = new TEntry('COLABORADOR_RESPONSAVEL_CADASTRO');
+        //DEFINE A HORA ATUAL PARA VARIAVEL DATA EMPRESTIMO.
+        $DATA_EMPRESTIMO->setValue(date("Y-m-d H:i:s"));
+
+
         /*$data_cadastro = new TEntry('data_cadastro');
         $nome = new TEntry('nome_cliente');
         $sexo = new TDBCombo('sexo', 'bancodados', 'sexo', 'nome_sexo', 'nome_sexo');
@@ -55,12 +60,13 @@ class CadastroForm extends TStandardForm
         $fase_atual = new THidden('fase_atual');
         $fase_atual->setValue('QUALIFICACAO');*/
 
-        // add the fields
-        $this->form->addFields([new TLabel('CODIGO')], [$CODIGO]);
-        $this->form->addFields([new TLabel('DESCRICAO')], [$DESCRICAO]);
-        $this->form->addFields([new TLabel('QUANTIDADE_ESTOQUE')], [$QUANTIDADE_ESTOQUE]);
-        $this->form->addFields([new TLabel('DATA_CADASTRO_ITEM')], [$DATA]);
-        $this->form->addFields([new TLabel('COLABORADOR RESPONSAVEL')], [$colaborador_responsavel]);
+        // ADICIONE OS CAMPOS
+        $this->form->addFields([new TLabel('ID_EMPRESTIMO')], [$ID_EMPRESTIMO]);
+        $this->form->addFields([new TLabel('FERRAMENTA')], [$FERRAMENTA]);
+        $this->form->addFields([new TLabel('DATA_EMPRESTIMO')], [$DATA_EMPRESTIMO]);
+        $this->form->addFields([new TLabel('DATA_DEVOLUCAO')], [$DATA_DEVOLUCAO]);
+        $this->form->addFields([new TLabel('COLABORADOR RESPONSAVEL')], [$COLABORADOR_RESPONSAVEL_EMPRESTIMO]);
+        $this->form->addFields([new TLabel('MATRICULA')], [$MATRICULA]);
         /*$this->form->addFields([new TLabel('DATA CADASTRO')], [$data_cadastro]);
         $this->form->addFields([new TLabel('NOME')], [$nome]);
         $this->form->addFields([new TLabel('SEXO')], [$sexo]);
@@ -72,17 +78,21 @@ class CadastroForm extends TStandardForm
 
         //$DATA->setDatabaseMask("Y-m-d H:i:s");
 
-        /*  $CODIGO->setSize('15%');
-        $CODIGO->setEditable(FALSE);
+        /*  $ID_EMPRESTIMO->setSize('15%');
+        $ID_EMPRESTIMO->setEditable(FALSE);
         $nome->setSize('70%');
         $data_cadastro->setSize('15%');
         $email->setSize('30%');
         $canal->setSize('30%');
         $data_recebimento->setSize('15%');
         $sexo->setSize('15%');*/
-        $colaborador_responsavel->setSize('70%');
-        $colaborador_responsavel->setValue(TSession::getValue('username'));
-        $colaborador_responsavel->setEditable(FALSE);
+        $COLABORADOR_RESPONSAVEL_EMPRESTIMO->setSize('70%');
+        $COLABORADOR_RESPONSAVEL_EMPRESTIMO->setValue(TSession::getValue('username'));
+        $COLABORADOR_RESPONSAVEL_EMPRESTIMO->setEditable(FALSE);
+        $ID_EMPRESTIMO->setEditable(FALSE);
+        $DATA_EMPRESTIMO->setEditable(FALSE);
+        $DATA_DEVOLUCAO->setEditable(FALSE);
+        $MATRICULA->setEditable(FALSE);
         /* $data_cadastro->setEditable(FALSE);
         $nome->setSize('70%');
         $nome->addValidation(('NOME'), new TRequiredValidator);
@@ -95,13 +105,13 @@ class CadastroForm extends TStandardForm
         $complemento->setSize('50%');
         $cep->setMask('99.999-999');
   */
-        // create the form actions
+        // CRIE AS AÇÕES DO FORMULÁRIO
         $btn = $this->form->addAction(_t('Save'), new TAction(array($this, 'onSave')), 'far:save');
         $btn->class = 'btn btn-sm btn-primary';
         $this->form->addActionLink(_t('Clear'),  new TAction(array($this, 'onEdit')), 'fa:eraser red');
         $this->form->addActionLink(_t('Back'), new TAction(array('CadastroList', 'onReload')), 'far:arrow-alt-circle-left blue');
 
-        // vertical box container
+        // RECIPIENTE DE CAIXA VERTICAL
         $container = new TVBox;
         $container->style = 'width: 100%';
         $container->add(new TXMLBreadCrumb('menu.xml', 'CadastroList'));

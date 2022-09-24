@@ -1,8 +1,31 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <menu>
   <menuitem label="Estoque">
-    <action>CadastroList</action>
     <icon>fas:water fa-fw #0138ff</icon>
+    <menu>
+      <menuitem label="PEDIDO ESTOQUE">
+        <action>CadastroList</action>
+        <icon>fas:water fa-fw #0138ff</icon>
+      </menuitem>
+      <menuitem label="CADASTRO DE PRODUTO">
+        <action>CadastroForm</action>
+        <icon>fas:water fa-fw #0138ff</icon>
+      </menuitem>
+    </menu>
+  </menuitem>
+  <menuitem label="Ferramentas">
+    <action>EmprestimoForm</action>
+    <icon>fas:tools fa-fw #ff0000</icon>
+    <menu>
+      <menuitem label="Emprestimo Ferramentas">
+        <action>EmprestimoForm</action>
+        <icon>fas:tools fa-fw #ff0000</icon>
+      </menuitem>
+      <menuitem label="Historico Emprestimo Ferramentas">
+        <action>EmprestimoList</action>
+        <icon>fas:align-justify fa-fw #ff0000</icon>
+      </menuitem>
+    </menu>
   </menuitem>
   <menuitem label="_t{Administration}">
     <icon>fas:home fa-fw</icon>

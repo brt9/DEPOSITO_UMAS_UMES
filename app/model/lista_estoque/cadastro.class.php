@@ -27,6 +27,6 @@ class cadastro extends TRecord
         parent::addAttribute('CODIGO');
         parent::addAttribute('DESCRICAO');
         parent::addAttribute('QUANTIDADE_ESTOQUE');
-        parent::addAttribute('DATA');
+        parent::addAttribute('DATA_CADASTRO_ITEM');
     }
 }

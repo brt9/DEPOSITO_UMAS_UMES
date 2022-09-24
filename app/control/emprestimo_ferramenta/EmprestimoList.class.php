@@ -10,7 +10,7 @@
  * @copyright  Copyright (c) 2021 Barata
  * @license    http://www.adianti.com.br/framework-license
  */
-class CadastroList extends TStandardList
+class EmprestimoList extends TStandardList
 {
   protected $form;     // registration form
   protected $datagrid; // listing
@@ -27,20 +27,20 @@ class CadastroList extends TStandardList
     parent::__construct();
 
     parent::setDatabase('bancodados');            // defines the database
-    parent::setActiveRecord('lista');   // defines the active record
-    parent::setDefaultOrder('DESCRICAO', 'asc');         // defines the default order
-    parent::addFilterField('CODIGO', '=', 'CODIGO'); // filterField, operator, formField
-    parent::addFilterField('DESCRICAO', 'like', 'DESCRICAO'); // filterField, operator, formField
+    parent::setActiveRecord('emprestimo');   // defines the active record
+    parent::setDefaultOrder('ID_EMPRESTIMO', 'asc');         // defines the default order
+    parent::addFilterField('ID_EMPRESTIMO', '=', 'ID_EMPRESTIMO'); // filterField, operator, formField
+    parent::addFilterField('FERRAMENTA', 'like', 'FERRAMENTA'); // filterField, operator, formField
 
     // creates the form
 
     $this->form = new BootstrapFormBuilder('form_search');
-    $this->form->setFormTitle('ESTOQUE UMAS UMES');
+    $this->form->setFormTitle('HISTORICO EMPRESTIMO DE FERRAMENTAS');
 
     // create the form fields
 
-    $id = new TQRCodeInputReader('CODIGO');
-    $QUANTIDADE_ESTOQUE = new TEntry('QUANTIDADE_ESTOQUE');
+    $id = new TQRCodeInputReader('ID_EMPRESTIMO');
+    $FERRAMENTA = new TEntry('FERRAMENTA');
     $DATA = new TEntry('DATA_CADASTRO_ITEM');
     $DESCRICAO       = new TCombo('DESCRICAO');
     $ITEM       = new TEntry('ITEM');
@@ -50,7 +50,7 @@ class CadastroList extends TStandardList
     //s    $this->form->addFields([new TLabel('ID')], [$id]);
     $this->form->addFields([new TLabel('CODIGO DO ITEM')], [$id,  new TLabel('Only supported in HTTPS mode', 'gray')]);
     $this->form->addFields([new TLabel('DESCRICAO')], [$ITEM]);
-    // $this->form->addFields([new TLabel('QUANTIDADE ESTOQUE')], [$QUANTIDADE_ESTOQUE]);
+    // $this->form->addFields([new TLabel('QUANTIDADE ESTOQUE')], [$FERRAMENTA]);
     // $this->form->addFields([new TLabel('DATA')], [$DATA]);
     $DESCRICAO->addItems(['JOELHO PVC 90°' => 'JOELHO PVC 90°', 'JOELHO PVC 45°' => 'JOELHO PVC 45°', 'LUVA PVC SOLD' => 'LUVA PVC SOLD', 'LUVA FERRO FUND BIPARTIDA' => 'LUVA FERRO FUND BIPARTIDA', 'LUVA DE CORRER PVC' => 'LUVA DE CORRER PVC', 'LUVA CORRER PVC DEFOFO' => 'LUVA CORRER PVC DEFOFO']);
     $this->form->addFields([new TLabel('DESCRICAO')], [$DESCRICAO]);
@@ -78,13 +78,13 @@ class CadastroList extends TStandardList
     // creates the datagrid columns
     $column_id = new TDataGridColumn('CODIGO', 'CODIGO DO ITEM', 'center', 50);
     $column_DESCRICAO = new TDataGridColumn('DESCRICAO', 'DESCRICAO', 'left');
-    $column_QUANTIDADE_ESTOQUE = new TDataGridColumn('QUANTIDADE_ESTOQUE', 'QUANTIDADE ESTOQUE', 'left');
+    $column_FERRAMENTA = new TDataGridColumn('FERRAMENTA', 'FERRAMENTA', 'left');
     $column_DATA = new TDataGridColumn('DATA_CADASTRO_ITEM', 'DATA DA ATUALIZACAO', 'left');
 
     // add the columns to the DataGrid
     $this->datagrid->addColumn($column_id);
     $this->datagrid->addColumn($column_DESCRICAO);
-    $this->datagrid->addColumn($column_QUANTIDADE_ESTOQUE);
+    $this->datagrid->addColumn($column_FERRAMENTA);
     $this->datagrid->addColumn($column_DATA);
 
     //creates the datagrid column actions
@@ -96,9 +96,9 @@ class CadastroList extends TStandardList
     $order_DESCRICAO->setParameter('order', 'DESCRICAO');
     $column_DESCRICAO->setAction($order_DESCRICAO);
 
-    $order_QUANTIDADE_ESTOQUE  = new TAction(array($this, 'onReload'));
-    $order_QUANTIDADE_ESTOQUE->setParameter('order', 'QUANTIDADE_ESTOQUE');
-    $column_QUANTIDADE_ESTOQUE->setAction($order_QUANTIDADE_ESTOQUE);
+    $order_FERRAMENTA  = new TAction(array($this, 'onReload'));
+    $order_FERRAMENTA->setParameter('order', 'FERRAMENTA');
+    $column_FERRAMENTA->setAction($order_FERRAMENTA);
 
     $order_DATA  = new TAction(array($this, 'onReload'));
     $order_DATA->setParameter('order', 'DATA');
