@@ -30,6 +30,7 @@ class SystemRegistrationForm extends TPage
         $login      = new TEntry('login');
         $name       = new TEntry('name');
         $email      = new TEntry('email');
+        $matricula      = new TEntry('matricula');
         $password   = new TPassword('password');
         $repassword = new TPassword('repassword');
         
@@ -40,6 +41,7 @@ class SystemRegistrationForm extends TPage
         $login->addValidation( _t('Login'), new TRequiredValidator);
         $name->addValidation( _t('Name'), new TRequiredValidator);
         $email->addValidation( _t('Email'), new TRequiredValidator);
+        $matricula->addValidation('matricula', new TRequiredValidator);
         $password->addValidation( _t('Password'), new TRequiredValidator);
         $repassword->addValidation( _t('Password confirmation'), new TRequiredValidator);
         
@@ -48,11 +50,14 @@ class SystemRegistrationForm extends TPage
         $login->setSize('100%');
         $password->setSize('100%');
         $repassword->setSize('100%');
+        $matricula->setSize('100%');
         $email->setSize('100%');
+        $matricula->setMask('99999999');
         
         $this->form->addFields( [new TLabel(_t('Login'), 'red')],    [$login] );
         $this->form->addFields( [new TLabel(_t('Name'), 'red')],     [$name] );
         $this->form->addFields( [new TLabel(_t('Email'), 'red')],    [$email] );
+        $this->form->addFields( [new TLabel(('Matricula'), 'red')],    [$matricula] );
         $this->form->addFields( [new TLabel(_t('Password'), 'red')], [$password] );
         $this->form->addFields( [new TLabel(_t('Password confirmation'), 'red')], [$repassword] );
         
@@ -104,6 +109,10 @@ class SystemRegistrationForm extends TPage
             if( empty($param['email']) )
             {
                 throw new Exception(TAdiantiCoreTranslator::translate('The field ^1 is required', _t('Email')));
+            }
+            if( empty($param['matricula']) )
+            {
+                throw new Exception(TAdiantiCoreTranslator::translate('The field ^1 is required', _t('Matricula')));
             }
             
             if( empty($param['password']) )

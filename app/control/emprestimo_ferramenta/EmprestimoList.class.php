@@ -1,19 +1,19 @@
 <?php
 
 /**
- *cadastroList
+ * LISTA DE EMPRESTIMO DE FERRAMENTA
  *
  * @version    1.0
  * @package    model
- * @subpackage DEPOSITO DE MATERIAS UMAS UMES
+ * @subpackage DEPOSITO DE MATERIAS UMAS E UMES
  * @author     PEDRO FELIPE FREIRE DE MEDEIROS
  * @copyright  Copyright (c) 2021 Barata
  * @license    http://www.adianti.com.br/framework-license
  */
 class EmprestimoList extends TStandardList
 {
-  protected $form;     // registration form
-  protected $datagrid; // listing
+  protected $form;     // FORMULÁRIO DE REGISTRO
+  protected $datagrid; // LISTAGEM
   protected $pageNavigation;
   protected $formgrid;
   protected $deleteButton;
@@ -26,7 +26,7 @@ class EmprestimoList extends TStandardList
   {
     parent::__construct();
 
-    parent::setDatabase('bancodados');            // defines the database
+    parent::setDatabase('bancodados');            // DEFINE O BANCO DE DADOS
     parent::setActiveRecord('emprestimo');   // defines the active record
     parent::setDefaultOrder('ID_EMPRESTIMO', 'asc');         // defines the default order
     parent::addFilterField('ID_EMPRESTIMO', '=', 'ID_EMPRESTIMO'); // filterField, operator, formField
