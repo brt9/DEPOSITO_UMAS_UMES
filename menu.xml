@@ -3,12 +3,16 @@
   <menuitem label="Estoque">
     <icon>fas:water fa-fw #0138ff</icon>
     <menu>
-      <menuitem label="PEDIDO ESTOQUE">
+      <menuitem label="ESTOQUE">
         <action>CadastroList</action>
         <icon>fas:water fa-fw #0138ff</icon>
       </menuitem>
       <menuitem label="CADASTRO DE PRODUTO">
         <action>CadastroForm</action>
+        <icon>fas:water fa-fw #0138ff</icon>
+      </menuitem>
+      <menuitem label="PEDIDO DE MATERIAL">
+        <action>PedidoMaterial</action>
         <icon>fas:water fa-fw #0138ff</icon>
       </menuitem>
     </menu>
