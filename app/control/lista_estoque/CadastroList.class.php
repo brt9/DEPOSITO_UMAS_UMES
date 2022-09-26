@@ -45,12 +45,12 @@ class CadastroList extends TStandardList
 
     // ADICIONE OS CAMPOS
 
-    $this->form->addFields([new TLabel('CODIGO DO ITEM')], [$id,  new TLabel('Only supported in HTTPS mode', 'gray')]);
+    $this->form->addFields([new TLabel('CODIGO DO ITEM')], [$id]);
     //$this->form->addFields([new TLabel('DESCRICAO')], [$ITEM]);
 
     $DESCRICAO->addItems(['JOELHO PVC 90°' => 'JOELHO PVC 90°', 'JOELHO PVC 45°' => 'JOELHO PVC 45°', 'LUVA PVC SOLD' => 'LUVA PVC SOLD', 'LUVA FERRO FUND BIPARTIDA' => 'LUVA FERRO FUND BIPARTIDA', 'LUVA DE CORRER PVC' => 'LUVA DE CORRER PVC', 'LUVA CORRER PVC DEFOFO' => 'LUVA CORRER PVC DEFOFO']);
     $this->form->addFields([new TLabel('DESCRICAO')], [$DESCRICAO]);
-    $id->setSize('10%');
+    $id->setSize('50%');
     $DESCRICAO->setSize('50%');
 
     // MANTENHA O FORMULÁRIO PREENCHIDO DURANTE A NAVEGAÇÃO COM OS DADOS DA SESSÃO
@@ -128,6 +128,7 @@ class CadastroList extends TStandardList
     $container->add($panel);
     
     parent::add($container);
+     
   }
 }
 //    $this->form->addFields([new TLabel('ID')], [$id]);

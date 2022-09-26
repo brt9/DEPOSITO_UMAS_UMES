@@ -2,6 +2,7 @@
 
 use Adianti\Widget\Form\TDateTime;
 use Adianti\Widget\Form\THidden;
+use SystemChangeLog;
 
 /**
  * FORMULÁRIO DE CADASTRO DE MATERIAL
@@ -39,20 +40,29 @@ class CadastroForm extends TStandardForm
         $QUANTIDADE_ESTOQUE = new TEntry('QUANTIDADE_ESTOQUE');
         $DATA = new TEntry('DATA_CADASTRO_ITEM');
         $DATA->setValue(date("Y-m-d H:i:s"));
-        $ITEM       = new TEntry('ITEM');
-        $colaborador_responsavel = new TEntry('COLABORADOR_RESPONSAVEL_CADASTRO');
-      
-
+        $COLABORADOR_RESPONSAVEL = new TEntry('COLABORADOR_RESPONSAVEL_CADASTRO');
+    
         // ADICIONE OS CAMPOS
         $this->form->addFields([new TLabel('CODIGO')], [$CODIGO]);
         $this->form->addFields([new TLabel('DESCRICAO')], [$DESCRICAO]);
         $this->form->addFields([new TLabel('QUANTIDADE_ESTOQUE')], [$QUANTIDADE_ESTOQUE]);
         $this->form->addFields([new TLabel('DATA_CADASTRO_ITEM')], [$DATA]);
-        $this->form->addFields([new TLabel('COLABORADOR RESPONSAVEL')], [$colaborador_responsavel]);
-     
-        $colaborador_responsavel->setSize('70%');
-        $colaborador_responsavel->setValue(TSession::getValue('username'));
-        $colaborador_responsavel->setEditable(FALSE);
+        $this->form->addFields([new TLabel('COLABORADOR RESPONSAVEL')], [$COLABORADOR_RESPONSAVEL]);
+
+        // DIFENE O TAMANHO DO CAMPO
+        $CODIGO->setSize('90%');
+        $DESCRICAO->setSize('90%');
+        $QUANTIDADE_ESTOQUE->setSize('90%');
+        $DATA->setSize('30%');;
+        $COLABORADOR_RESPONSAVEL->setSize('30%');
+
+        // COLETA O USUARIO LOGADO NA SESSAO
+        $COLABORADOR_RESPONSAVEL->setValue(TSession::getValue('username'));
+
+        // TORNA O CAMPO NAO EDITAVEL
+        $COLABORADOR_RESPONSAVEL->setEditable(FALSE);
+        $DATA->setEditable(FALSE);
+
         // CRIE AS AÇÕES DO FORMULÁRIO
         $btn = $this->form->addAction(_t('Save'), new TAction(array($this, 'onSave')), 'far:save');
         $btn->class = 'btn btn-sm btn-primary';

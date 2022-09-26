@@ -17,7 +17,7 @@ class lista extends TRecord
     const TABLENAME = 'ESTOQUE_UMAS_UMES';
     const PRIMARYKEY = 'CODIGO';
     const IDPOLICY = 'max'; // {max, serial}
-
+    
 
     /**
      * Constructor method
@@ -31,4 +31,5 @@ class lista extends TRecord
         parent::addAttribute('DATA_CADASTRO_ITEM');
         parent::addAttribute('COLABORADOR_RESPONSAVEL_CADASTRO');
     }
+    
 }

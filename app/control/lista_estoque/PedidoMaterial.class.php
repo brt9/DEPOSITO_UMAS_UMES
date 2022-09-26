@@ -32,7 +32,7 @@ class PedidoMaterial extends TPage
         $combo = new TDBCombo('DESCRICAO', 'bancodados', 'lista', 'DESCRICAO', 'DESCRICAO');
         $combo->enableSearch();
         $combo->setSize('100%');
-        
+
         $text = new TEntry('text[]');
         $text->setSize('100%');
         
