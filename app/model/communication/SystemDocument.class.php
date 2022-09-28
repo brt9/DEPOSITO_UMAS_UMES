@@ -15,7 +15,10 @@ class SystemDocument extends TRecord
     const PRIMARYKEY= 'id';
     const IDPOLICY =  'max'; // {max, serial}
     
-    
+    CONST CREATEDAT = 'created_at';
+    CONST UPDATEDAT = 'updated_at';
+    CONST DELETEDAT = 'deleted_at';
+
     /**
      * Constructor method
      */

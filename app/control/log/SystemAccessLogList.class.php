@@ -58,6 +58,7 @@ class SystemAccessLogList extends TStandardList
         $id = $this->datagrid->addQuickColumn('id', 'id', 'center');
         $sessionid = $this->datagrid->addQuickColumn('sessionid', 'sessionid', 'left');
         $login = $this->datagrid->addQuickColumn(_t('Login'), 'login', 'center');
+        $impersonated_by = $this->datagrid->addQuickColumn(_t('Impersonated by'), 'impersonated_by', 'center');
         $login_time = $this->datagrid->addQuickColumn('login_time', 'login_time', 'center');
         $logout_time = $this->datagrid->addQuickColumn('logout_time', 'logout_time', 'center');
         $access_ip = $this->datagrid->addQuickColumn('IP', 'access_ip', 'center');

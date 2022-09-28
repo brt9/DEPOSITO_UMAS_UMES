@@ -144,3 +144,17 @@ ALTER TABLE system_unit add column connection_name TEXT;
 INSERT INTO system_program VALUES((select coalesce(max(id),0)+1 from system_program b),'System Session dump','SystemSessionDumpView');
 INSERT INTO system_group_program VALUES((select coalesce(max(id),0)+1 from system_group_program b), 1,
                                         (select id from system_program where controller='SystemSessionDumpView'));
+
+--- new programs of 7.4
+INSERT INTO system_program VALUES((select coalesce(max(id),0)+1 from system_program b),'System files diff','SystemFilesDiff');
+INSERT INTO system_group_program VALUES((select coalesce(max(id),0)+1 from system_group_program b), 1,
+                                        (select id from system_program where controller='SystemFilesDiff'));
+
+INSERT INTO system_program VALUES((select coalesce(max(id),0)+1 from system_program b),'System Information','SystemInformationView');
+INSERT INTO system_group_program VALUES((select coalesce(max(id),0)+1 from system_group_program b), 1,
+                                        (select id from system_program where controller='SystemInformationView'));
+
+--- new columns of 7.4
+ALTER TABLE system_user add column accepted_term_policy char(1);
+ALTER TABLE system_user add column accepted_term_policy_at TEXT;
+UPDATE system_user set accepted_term_policy='N';

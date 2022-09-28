@@ -25,7 +25,7 @@ class SystemPHPErrorLogView extends TPage
         
         $ini = ini_get_all();
         $log_errors      = $ini['log_errors']['local_value'];
-        $error_log       = $ini['error_log']['local_value'];
+        $error_log       = $ini['error_log']['local_value'] ?? '';
         $display_errors  = $ini['display_errors']['local_value'];
         
         if (empty($log_errors))

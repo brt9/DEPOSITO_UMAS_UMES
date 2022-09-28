@@ -34,9 +34,11 @@ class SystemDatabaseInformationService
         $query['sqlite'] = "SELECT name FROM sqlite_master WHERE (type = 'table' or type='view')";
         $query['mysql']  = 'SHOW TABLE STATUS';
         $query['oracle'] = "SELECT table_name FROM cat where table_type in ('TABLE', 'VIEW') AND table_name not like '%$%'";
-        $query['mssql']  = "select name from sysobjects where (type = 'U' or type='V') order by name";
+        $query['mssql']  = "SELECT user_name(uid) + '.' + name as name from dbo.sysobjects where (type = 'U' or type='V') order by name";
+        $query['fbird']  = 'SELECT rdb$'.'relation_name FROM rdb$'.'relations WHERE (rdb$'.'system_flag is null or rdb$'.'system_flag = 0)';
         
-        if (in_array($info['type'], [ 'pgsql', 'mysql', 'sqlite', 'oracle', 'mssql'] ))
+
+        if (in_array($info['type'], [ 'pgsql', 'mysql', 'sqlite', 'oracle', 'mssql', 'fbird'] ))
         {
             $table_list = [];
             $sql = $query[ $info['type'] ];

@@ -25,6 +25,8 @@ class SystemUserList extends TStandardList
     {
         parent::__construct();
         
+        $ini  = AdiantiApplicationConfig::get();
+        
         parent::setDatabase('permission');            // defines the database
         parent::setActiveRecord('SystemUser');   // defines the active record
         parent::setDefaultOrder('id', 'asc');         // defines the default order
@@ -78,17 +80,24 @@ class SystemUserList extends TStandardList
         $column_login = new TDataGridColumn('login', _t('Login'), 'left');
         $column_email = new TDataGridColumn('email', _t('Email'), 'left');
         $column_active = new TDataGridColumn('active', _t('Active'), 'center');
+        $column_term_policy = new TDataGridColumn('accepted_term_policy', _t('Terms of use and privacy policy'), 'center');
         
         $column_login->enableAutoHide(500);
         $column_email->enableAutoHide(500);
         $column_active->enableAutoHide(500);
+        $column_term_policy->enableAutoHide(500);
         // add the columns to the DataGrid
         $this->datagrid->addColumn($column_id);
         $this->datagrid->addColumn($column_name);
         $this->datagrid->addColumn($column_login);
         $this->datagrid->addColumn($column_email);
         $this->datagrid->addColumn($column_active);
-
+        
+        if (!empty($ini['general']['require_terms']) && $ini['general']['require_terms'] == '1')
+        {
+            $this->datagrid->addColumn($column_term_policy);
+        }
+        
         $column_active->setTransformer( function($value, $object, $row) {
             $class = ($value=='N') ? 'danger' : 'success';
             $label = ($value=='N') ? _t('No') : _t('Yes');
@@ -99,6 +108,22 @@ class SystemUserList extends TStandardList
             return $div;
         });
         
+        $column_term_policy->setTransformer( function($value, $object, $row) {
+            $class = (empty($value) || $value=='N') ? 'danger' : 'success';
+            $label = (empty($value) || $value=='N') ? _t('No') : _t('Yes');
+            $div = new TElement('span');
+            $div->class="label label-{$class}";
+            $div->style="text-shadow:none; font-size:12px; font-weight:lighter";
+
+            if ($value == 'Y')
+            {
+                $div->title = TDateTime::convertToMask($object->accepted_term_policy_at, 'yyyy-mm-dd hh:ii:ss', 'dd/mm/yyyy hh:ii');
+            }
+            
+            $div->add($label);
+            return $div;
+        });
+
         // creates the datagrid column actions
         $order_id = new TAction(array($this, 'onReload'));
         $order_id->setParameter('order', 'id');
@@ -115,8 +140,6 @@ class SystemUserList extends TStandardList
         $order_email = new TAction(array($this, 'onReload'));
         $order_email->setParameter('order', 'email');
         $column_email->setAction($order_email);
-        
-
         
         // create EDIT action
         $action_edit = new TDataGridAction(array('SystemUserForm', 'onEdit'));
@@ -244,11 +267,13 @@ class SystemUserList extends TStandardList
     {
         try
         {
+            $login_impersonated = TSession::getValue('login');
+
             TTransaction::open('permission');
             TSession::regenerate();
             $user = SystemUser::validate( $param['login'] );
             ApplicationAuthenticationService::loadSessionVars($user);
-            SystemAccessLogService::registerLogin(true);
+            SystemAccessLogService::registerLogin(true, $login_impersonated);
             AdiantiCoreApplication::gotoPage('EmptyPage');
             TTransaction::close();
         }

@@ -145,6 +145,8 @@ class SystemUserForm extends TPage
             $object = new SystemUser;
             $object->fromArray( (array) $data );
             
+            unset($object->accepted_term_policy);
+
             $senha = $object->password;
             
             if( empty($object->login) )

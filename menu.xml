@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <menu>
-  <menuitem label="Estoque">
+  <menuitem label="ESTOQUE">
     <icon>fas:water fa-fw #0138ff</icon>
     <menu>
       <menuitem label="ESTOQUE">
@@ -11,23 +11,9 @@
         <action>CadastroForm</action>
         <icon>fas:water fa-fw #0138ff</icon>
       </menuitem>
-      <menuitem label="PEDIDO DE MATERIAL">
+      <menuitem label="PEDIDO MATERIAL">
         <action>PedidoMaterial</action>
         <icon>fas:water fa-fw #0138ff</icon>
-      </menuitem>
-    </menu>
-  </menuitem>
-  <menuitem label="Ferramentas">
-    <action>EmprestimoForm</action>
-    <icon>fas:tools fa-fw #ff0000</icon>
-    <menu>
-      <menuitem label="Emprestimo Ferramentas">
-        <action>EmprestimoForm</action>
-        <icon>fas:tools fa-fw #ff0000</icon>
-      </menuitem>
-      <menuitem label="Historico Emprestimo Ferramentas">
-        <action>EmprestimoList</action>
-        <icon>fas:align-justify fa-fw #ff0000</icon>
       </menuitem>
     </menu>
   </menuitem>
@@ -66,9 +52,17 @@
         <action>SystemMenuEditor</action>
         <icon>far:edit fa-fw</icon>
       </menuitem>
+      <menuitem label="_t{Files diff}">
+        <action>SystemFilesDiff</action>
+        <icon>fas:file-medical-alt fa-fw</icon>
+      </menuitem>
       <menuitem label="PHP Info">
         <action>SystemPHPInfoView</action>
         <icon>fas:info-circle fa-fw</icon>
+      </menuitem>
+      <menuitem label="System Information">
+        <action>SystemInformationView</action>
+        <icon>fas:desktop fa-fw</icon>
       </menuitem>
       <menuitem label="_t{Preferences}">
         <action>SystemPreferenceForm#method=onEdit</action>

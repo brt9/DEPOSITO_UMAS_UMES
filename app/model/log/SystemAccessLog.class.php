@@ -30,5 +30,6 @@ class SystemAccessLog extends TRecord
         parent::addAttribute('logout_time');
         parent::addAttribute('impersonated');
         parent::addAttribute('access_ip');
+        parent::addAttribute('impersonated_by');
     }
 }

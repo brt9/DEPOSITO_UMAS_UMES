@@ -47,8 +47,10 @@ CREATE TABLE system_access_log (
     login_day varchar(2),
     logout_time timestamp,
     impersonated char(1),
-    access_ip varchar(45)
+    access_ip varchar(45),
+    impersonated_by varchar(200)
 );
+
 CREATE TABLE system_request_log (
     id INTEGER PRIMARY KEY NOT NULL,
     endpoint TEXT,

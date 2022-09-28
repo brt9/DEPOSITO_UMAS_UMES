@@ -44,8 +44,17 @@ class ApplicationAuthenticationService
     {
         $ini  = AdiantiApplicationConfig::get();
         
-        if (!empty($ini['general']['multiunit']) and $ini['general']['multiunit'] == '1' and !empty($unit_id))
+        if (!empty($ini['general']['multiunit']) && $ini['general']['multiunit'] == '1' && !empty($unit_id))
         {
+            TTransaction::openFake('permission');
+            $is_valid = in_array($unit_id, SystemUser::newFromLogin( TSession::getValue('login') )->getSystemUserUnitIds());
+            TTransaction::close();
+            
+            if (!$is_valid)
+            {
+                throw new Exception(_t('Unauthorized access to that unit'));
+            }
+            
             TSession::setValue('userunitid',   $unit_id );
             TSession::setValue('userunitname', SystemUnit::findInTransaction('permission', $unit_id)->name);
             

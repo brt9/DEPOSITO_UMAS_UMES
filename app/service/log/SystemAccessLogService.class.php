@@ -14,7 +14,7 @@ class SystemAccessLogService
     /**
      * Register login
      */
-    public static function registerLogin( $impersonated = false )
+    public static function registerLogin( $impersonated = false, $impersonated_by = null )
     {
         $cur_conn = serialize(TTransaction::getDatabaseInfo());
         $new_conn = serialize(TConnection::getDatabaseInfo('log'));
@@ -34,6 +34,7 @@ class SystemAccessLogService
         $object->login_month = date("m");
         $object->login_day = date("d");
         $object->impersonated = ($impersonated ? 'Y' : 'N');
+        $object->impersonated_by = $impersonated_by;
         $object->access_ip = isset($_SERVER['REMOTE_ADDR']) ? $_SERVER['REMOTE_ADDR'] : null;
         $object->store();
         

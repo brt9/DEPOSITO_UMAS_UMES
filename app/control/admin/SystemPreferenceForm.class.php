@@ -37,6 +37,7 @@ class SystemPreferenceForm extends TStandardForm
         $smtp_pass   = new TPassword('smtp_pass');
         $mail_from   = new TEntry('mail_from');
         $mail_support= new TEntry('mail_support');
+        $term_policy = new THtmlEditor('term_policy');
         
         $smtp_host->placeholder = 'ssl://smtp.gmail.com, tls://server.company.com';
         
@@ -52,6 +53,7 @@ class SystemPreferenceForm extends TStandardForm
         $this->form->addFields( [new TLabel(_t('SMTP User'))], [$smtp_user] );
         $this->form->addFields( [new TLabel(_t('SMTP Pass'))], [$smtp_pass] );
         $this->form->addFields( [new TLabel(_t('Support mail'))], [$mail_support] );
+        $this->form->addFields( [new TLabel(_t('Terms of use and privacy policy'))], [$term_policy] );
         
         $mail_from->setSize('70%');
         $smtp_auth->setSize('70%');
@@ -60,6 +62,7 @@ class SystemPreferenceForm extends TStandardForm
         $smtp_user->setSize('70%');
         $smtp_pass->setSize('70%');
         $mail_support->setSize('70%');
+        $term_policy->setSize('70%', 250);
         
         $btn = $this->form->addAction(_t('Save'), new TAction(array($this, 'onSave')), 'far:save');
         $btn->class = 'btn btn-sm btn-primary';
@@ -113,6 +116,16 @@ class SystemPreferenceForm extends TStandardForm
             // get the form data
             $data = $this->form->getData();
             $data_array = (array) $data;
+            
+            $old_term_policy = SystemPreference::find('term_policy');
+            
+            if (is_null($old_term_policy) || $data_array['term_policy'] !== $old_term_policy->value)
+            {
+                SystemUser::where('accepted_term_policy', '=', 'Y')
+                            ->set('accepted_term_policy', 'N')
+                            ->set('accepted_term_policy_at', '')
+                            ->update();
+            }
             
             foreach ($data_array as $property => $value)
             {

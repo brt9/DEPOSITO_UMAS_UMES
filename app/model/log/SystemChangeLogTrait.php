@@ -1,4 +1,7 @@
 <?php
+
+use Adianti\Database\TTransaction;
+
 /**
  * SystemChangeLogTrait
  *
@@ -13,7 +16,21 @@ trait SystemChangeLogTrait
 {
     public function onAfterDelete( $object )
     {
-        SystemChangeLogService::register($this, $object, array());
+        $deletedat = self::getDeletedAtColumn();
+        if ($deletedat)
+        {
+            $lastState = (array) $object;
+
+            $info = TTransaction::getDatabaseInfo();
+            $date_mask = (in_array($info['type'], ['sqlsrv', 'dblib', 'mssql'])) ? 'Ymd H:i:s' : 'Y-m-d H:i:s';
+            $object->{$deletedat} = date($date_mask);
+
+            SystemChangeLogService::register($this, $lastState, (array) $object);
+        }
+        else
+        {
+            SystemChangeLogService::register($this, $object, array());
+        }
     }
     
     public function onBeforeStore($object)
@@ -22,7 +39,7 @@ trait SystemChangeLogTrait
         $this->lastState = array();
         if (isset($object->$pk) and self::exists($object->$pk))
         {
-            $this->lastState = parent::load($object->$pk)->toArray();
+            $this->lastState = parent::load($object->$pk, TRUE)->toArray();
         }
     }
     

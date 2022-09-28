@@ -99,12 +99,21 @@ class SystemNotificationFormView extends TPage
                     $notification->store();
             
                     $query_string = $notification->action_url;
-                    parse_str($query_string, $query_params);
-                    $class  = $query_params['class'];
-                    $method = isset($query_params['method']) ? $query_params['method'] : null;
-                    unset($query_params['class']);
-                    unset($query_params['method']);
-                    AdiantiCoreApplication::loadPage( $class, $method, $query_params);
+
+                    if (AdiantiCoreApplication::getRouter())
+                    {
+                        AdiantiCoreApplication::loadPageURL($query_string);
+                    }
+                    else
+                    {
+                        parse_str($query_string, $query_params);
+                        $class  = $query_params['class'];
+                        $method = isset($query_params['method']) ? $query_params['method'] : null;
+                        unset($query_params['class']);
+                        unset($query_params['method']);
+                        AdiantiCoreApplication::loadPage( $class, $method, $query_params);
+                    }
+
                     TScript::create('update_notifications_menu()');
                 }
                 else
