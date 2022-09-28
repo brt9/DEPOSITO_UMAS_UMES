@@ -12,17 +12,32 @@ class MessageList extends TElement
 {
     public function __construct($param)
     {
-        parent::__construct('ul');
-        
         try
         {
             TTransaction::open('communication');
+
+            // load configs
+            $ini = parse_ini_file('app/config/application.ini', true);
             
+            $parametersRead = [];
+            $parametersSend = [];
+
+            if (! empty($ini['general']['use_tabs']) || ! empty($ini['general']['use_mdi_windows']))
+            {
+                $parametersRead['adianti_open_tab'] = '1';
+                $parametersRead['adianti_tab_name'] = _t('Messages');
+
+                //$parametersSend['adianti_open_tab'] = '1';
+                //$parametersSend['adianti_tab_name'] = _t('Send message');
+            }
+
             // load the messages to the logged user
             $system_messages = SystemMessage::where('checked', '=', 'N')->where('system_user_to_id', '=', TSession::getValue('userid'))->orderBy('id', 'desc')->load();
             
             if ($param['theme'] == 'theme3')
             {
+                parent::__construct('ul');
+
                 $this->class = 'dropdown-menu';
                 
                 $a = new TElement('a');
@@ -53,8 +68,17 @@ class MessageList extends TElement
                     $a   = new TElement('a');
                     $div = new TElement('div');
                     
-                    $a->href = (new TAction(['SystemMessageFormView', 'onView'], ['id' => $system_message->id]))->serialize();
+                    $parameters = ['id' => $system_message->id];
+
+                    if (! empty($ini['general']['use_tabs']) || ! empty($ini['general']['use_mdi_windows']))
+                    {
+                        $parameters['adianti_open_tab'] = '1';
+                        $parameters['adianti_tab_name'] = _t('Message') . ' #' . $system_message->id;
+                    }
+
+                    $a->href = (new TAction(['SystemMessageFormView', 'onView'], $parameters))->serialize();
                     $a->generator = 'adianti';
+
                     $li->add($a);
                     
                     $div->{'class'} = 'pull-left';
@@ -73,16 +97,114 @@ class MessageList extends TElement
                 
                 TTransaction::close();
                 
-                parent::add(TElement::tag('li', TElement::tag('a', _t('Read messages'),
-                    ['href'=> (new TAction(['SystemMessageList', 'filterInbox']))->serialize(),
+                parent::add(TElement::tag('li', TElement::tag('a', _t('Messages'),
+                    ['href'=> (new TAction(['SystemMessageList', 'filterInbox'], $parametersRead))->serialize(),
                      'generator'=>'adianti'] ), ['class'=>'footer'] ));
                 
                 parent::add(TElement::tag('li', TElement::tag('a', _t('Send message'),
-                    ['href'=> (new TAction(['SystemMessageForm', 'onClear']))->serialize(),
+                    ['href'=> (new TAction(['SystemMessageForm', 'onClear'], $parametersSend))->serialize(),
                      'generator'=>'adianti'] ), ['class'=>'footer']));
+            }
+            else if ($param['theme'] == 'theme3-adminlte3')
+            {
+                parent::__construct('div');
+
+                $a = new TElement('a');
+                $a->{'class'} = "nav-link";
+                $a->{'data-toggle'}="dropdown";
+                $a->{'href'} = "#";
+
+                $a->add( TElement::tag('i',    '', array('class'=>"far fa-comments")) );
+                $a->add( TElement::tag('span', count($system_messages), array('class'=>"badge badge-danger navbar-badge")) );
+
+                parent::add($a);
+
+                $content = new TElement('div');
+                $content->{'class'} = 'dropdown-menu dropdown-menu-lg dropdown-menu-right';
+
+                $content->add( TElement::tag('span', _t('Messages'), ['class'=>'dropdown-item dropdown-header']));
+                $content->add( TElement::tag('div', '', ['class'=>'dropdown-divider']));
+                parent::add($content);
+
+                TTransaction::open('permission');
+                foreach ($system_messages as $system_message)
+                {
+                    $name    = SystemUser::find($system_message->system_user_id)->name;
+                    $date    = $this->getShortPastTime($system_message->dt_message);
+                    $subject = htmlspecialchars($system_message->subject, ENT_QUOTES | ENT_HTML5, 'UTF-8');
+
+                    $a   = new TElement('a');
+                    $div = new TElement('div');
+
+                    $div->{'class'} = 'media';
+
+                    $parameters = ['id' => $system_message->id];
+
+                    if (! empty($ini['general']['use_tabs']) || ! empty($ini['general']['use_mdi_windows']))
+                    {
+                        $parameters['adianti_open_tab'] = '1';
+                        $parameters['adianti_tab_name'] = _t('Message') . ' #' . $system_message->id;
+                    }
+
+                    $a->href = (new TAction(['SystemMessageFormView', 'onView'], $parameters))->serialize();
+
+                    $a->{'class'}     = 'dropdown-item';
+                    $a->{'generator'} = 'adianti';
+
+                    $a->add($div);
+
+                    $div->{'class'} = 'media';
+                    $div->add( TElement::tag('i', '', array('class' => 'far fa-user img-size-50 img-circle mr-3 icon-user-notification') ) );
+
+                    $body = new TElement('div');
+                    $body->{'class'} = 'media-body';
+
+                    $h3 = new TElement('h3');
+                    $h3->{'class'} = 'dropdown-item-title';
+                    $h3->add( $name );
+
+                    $body->add($h3);
+                    $body->add(TElement::tag('p', $subject,  array('class' => 'text-sm') ));
+
+                    $time = new TElement('p');
+                    $time->{'class'} = 'text-sm text-muted';
+                    $time->add(TElement::tag('i', '', array('class' => 'far fa-clock mr-1')));
+                    $time->add($date);
+
+                    $body->add($time);
+
+                    $div->add($body);
+                    $content->add($a);
+
+                    $content->add( TElement::tag('div', '', ['class'=>'dropdown-divider']));
+                }
+
+                TTransaction::close();
+
+                $content->add(TElement::tag(
+                    'a',
+                     _t('Messages'),
+                    [
+                        'href'=> (new TAction(['SystemMessageList', 'filterInbox'], $parametersRead))->serialize(),
+                        'generator'=>'adianti',
+                        'class'=>'dropdown-item dropdown-footer'
+                    ]
+                ));
+
+                $content->add(TElement::tag(
+                    'a',
+                    _t('Send message'),
+                    [
+                        'href'=> (new TAction(['SystemMessageForm', 'onClear'], $parametersSend))->serialize(),
+                        'generator'=>'adianti',
+                        'class'=>'dropdown-item dropdown-footer'
+                    ]
+                ));
             }
             else if ($param['theme'] == 'theme4')
             {
+                parent::__construct('ul');
+
                 $this->class = 'dropdown-menu';
                 
                 $a = new TElement('a');
@@ -116,7 +238,15 @@ class MessageList extends TElement
                     $div = new TElement('div');
                     $div2= new TElement('div');
                     
-                    $a->href = (new TAction(['SystemMessageFormView', 'onView'], ['id' => $system_message->id]))->serialize();
+                    $parameters = ['id' => $system_message->id];
+
+                    if (! empty($ini['general']['use_tabs']) || ! empty($ini['general']['use_mdi_windows']))
+                    {
+                        $parameters['adianti_open_tab'] = '1';
+                        $parameters['adianti_tab_name'] = _t('Message') . ' #' . $system_message->id;
+                    }
+
+                    $a->href = (new TAction(['SystemMessageFormView', 'onView'], $parameters))->serialize();
                     $a->class = 'waves-effect waves-block';
                     $a->generator = 'adianti';
                     $li->add($a);
@@ -145,12 +275,12 @@ class MessageList extends TElement
                 
                 TTransaction::close();
                 
-                parent::add(TElement::tag('li', TElement::tag('a', _t('Read messages'),
-                    ['href'=> (new TAction(['SystemMessageList', 'filterInbox']))->serialize(),
+                parent::add(TElement::tag('li', TElement::tag('a', _t('Messages'),
+                    ['href'=> (new TAction(['SystemMessageList', 'filterInbox'], $parametersRead))->serialize(),
                      'generator'=>'adianti'] ), ['class'=>'footer'] ));
                 
                 parent::add(TElement::tag('li', TElement::tag('a', _t('Send message'),
-                    ['href'=> (new TAction(['SystemMessageForm', 'onClear']))->serialize(),
+                    ['href'=> (new TAction(['SystemMessageForm', 'onClear'], $parametersSend))->serialize(),
                      'generator'=>'adianti'] ), ['class'=>'footer']));
             }
             

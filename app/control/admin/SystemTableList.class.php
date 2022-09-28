@@ -16,61 +16,55 @@ class SystemTableList extends TPage
     /**
      * Constructor method
      */
-    public function __construct()
+    public function __construct($param)
     {
         parent::__construct();
         
         // define the ID of target container
         $this->adianti_target_container = 'table_list_container';
+        $this->style = 'height: 100%';
         
         // create datagrid
-        $this->datagrid = new BootstrapDatagridWrapper(new TQuickGrid);
-        $this->datagrid->addQuickColumn('Table', 'table', 'left');
-        $this->datagrid->id = 'datagrid_' . mt_rand(1000000000, 1999999999);
-        
-        $action1 = new TDataGridAction(array('SystemDataBrowser', 'onLoad'));
+        $this->cards = new TCardView;
+        $this->cards->setContentHeight(50);
+        $this->cards->setItemHeight(50);
+        $this->cards->setItemTemplate('<b>{table}</b>');
+
+        $action1 = new TAction(array('SystemDataBrowser', 'onLoad'));
         $action1->setParameter('register_state', 'false');
-        $action1->setImage('fa:table');
-        $action1->setFields(['database', 'table']);
-        $action1->setLabel('View');
-        
-        $action2 = new TDataGridAction(array($this, 'onExportCSV'));
+        $action1->setParameter('table', '{table}');
+        $action1->setParameter('database', '{database}');
+
+        $action2 = new TAction(array($this, 'onExportCSV'));
         $action2->setParameter('register_state', 'false');
-        $action2->setImage('fa:download');
-        $action2->setFields(['database', 'table']);
-        $action2->setLabel('CSV');
-        
-        $action3 = new TDataGridAction(array($this, 'onExportSQL'));
+        $action2->setParameter('table', '{table}');
+        $action2->setParameter('database', '{database}');
+
+        $action3 = new TAction(array($this, 'onExportSQL'));
         $action3->setParameter('register_state', 'false');
-        $action3->setImage('fa:code');
-        $action3->setFields(['database', 'table']);
-        $action3->setLabel('SQL');
+        $action3->setParameter('table', '{table}');
+        $action3->setParameter('database', '{database}');
         
-        $agroup = new TDataGridActionGroup( null, 'fa:list');
-        $agroup->addAction($action1);
-        $agroup->addAction($action2);
-        $agroup->addAction($action3);
-        
-        $this->datagrid->addActionGroup($agroup);
-        
-        $this->datagrid->createModel( false );
+        $this->cards->addAction($action1, 'View', 'fa:table');
+        $this->cards->addAction($action2, 'CSV', 'fa:download');
+        $this->cards->addAction($action3, 'SQL', 'fa:code');
         
         $input_search = new TEntry('input_search');
         $input_search->placeholder = _t('Search');
         $input_search->setSize('100%');
         
         $hbox = new THBox;
-        $hbox->style = 'display:block';
-        $hbox->add( _t('Tables') )->style = 'float:left;width:50%';
-        $hbox->add( $input_search )->style = 'float:right;width:50%;display:block;background:white';
+        $hbox->style = 'display:flex; flex-direction: row;';
+        $hbox->add( _t('Tables') )->style = 'flex: 1;';
+        $hbox->add( $input_search )->style = 'flex: 1;';
         
-        $this->datagrid->enableSearch($input_search, 'table');
+        $this->cards->enableSearch($input_search, 'table');
         
         // panel group around datagrid
         $panel = new TPanelGroup( $hbox );
-        $panel->style = 'padding-bottom:8px';
+        $panel->style = 'padding-bottom:8px; height: 100%';
         $panel->getBody()->style = 'overflow-y:auto';
-        $panel->add($this->datagrid);
+        $panel->add($this->cards);
         
         parent::add($panel);
     }
@@ -87,14 +81,9 @@ class SystemTableList extends TPage
             {
                 foreach ($tables as $table)
                 {
-                    $row = $this->datagrid->addItem( (object) ['table' => $table, 'database' => $param['database'] ]);
-                    $row->id = 'table_' . mt_rand(1000000000, 1999999999);
-                    $row->name = $table;
+                    $this->cards->addItem( (object) ['table' => $table, 'database' => $param['database'] ]);
                 }
             }
-            
-            // fix height
-            TScript::create("$('#table_list_container .panel-body').height( ($(window).height()-260)/2 );");
         }
         catch (Exception $e)
         {

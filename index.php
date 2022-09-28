@@ -11,9 +11,16 @@ ApplicationTranslator::setLanguage( TSession::getValue('user_language'), true );
 
 if ( TSession::getValue('logged') )
 {
-    $content = file_get_contents("app/templates/{$theme}/layout.html");
-    $menu    = AdiantiMenuBuilder::parse('menu.xml', $theme);
-    $content = str_replace('{MENU}', $menu, $content);
+    if (isset($_REQUEST['template']) AND $_REQUEST['template'] == 'iframe')
+    {
+        $content = file_get_contents("app/templates/{$theme}/iframe.html");
+    }
+    else
+    {
+        $content = file_get_contents("app/templates/{$theme}/layout.html");
+        $menu    = AdiantiMenuBuilder::parse('menu.xml', $theme);
+        $content = str_replace('{MENU}', $menu, $content);
+    }
 }
 else
 {

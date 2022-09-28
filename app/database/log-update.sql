@@ -54,3 +54,14 @@ ALTER TABLE system_sql_log ADD COLUMN log_day varchar(2);
 ALTER TABLE system_change_log ADD COLUMN log_year varchar(4);
 ALTER TABLE system_change_log ADD COLUMN log_month varchar(2);
 ALTER TABLE system_change_log ADD COLUMN log_day varchar(2);
+
+--- changes from 7.4.0
+ALTER TABLE system_access_log ADD COLUMN impersonated_by text;
+
+CREATE TABLE system_access_notification_log (
+    id INTEGER PRIMARY KEY NOT NULL,
+    login TEXT,
+    email TEXT,
+    ip_address TEXT,
+    login_time TEXT
+);

@@ -12,8 +12,6 @@ class NotificationList extends TElement
 {
     public function __construct($param)
     {
-        parent::__construct('ul');
-        
         try
         {
             TTransaction::open('communication');
@@ -23,9 +21,22 @@ class NotificationList extends TElement
                                                       ->where('system_user_to_id', '=', TSession::getValue('userid'))
                                                       ->orderBy('id', 'desc')
                                                       ->load();
+
+            // load configs
+            $ini = parse_ini_file('app/config/application.ini', true);
+
+            $parametersViewAll = [];
+
+            if (! empty($ini['general']['use_tabs']) || ! empty($ini['general']['use_mdi_windows']))
+            {
+                $parametersViewAll['adianti_open_tab'] = '1';
+                $parametersViewAll['adianti_tab_name'] = _t('Notifications');
+            }
             
             if ($param['theme'] == 'theme3')
             {
+                parent::__construct('ul');
+
                 $this->class = 'dropdown-menu';
                 
                 $a = new TElement('a');
@@ -58,7 +69,15 @@ class NotificationList extends TElement
                     $a   = new TElement('a');
                     $div = new TElement('div');
                     
-                    $a->href = (new TAction(['SystemNotificationFormView', 'onView'], ['id' => $system_notification->id]))->serialize();
+                    $parameters = ['id' => $system_notification->id];
+
+                    if (! empty($ini['general']['use_tabs']) || ! empty($ini['general']['use_mdi_windows']))
+                    {
+                        $parameters['adianti_open_tab'] = '1';
+                        $parameters['adianti_tab_name'] = _t('Notification') . ' #' . $system_notification->id;
+                    }
+
+                    $a->href = (new TAction(['SystemNotificationFormView', 'onView'], $parameters))->serialize();
                     $a->generator = 'adianti';
                     $li->add($a);
                     
@@ -72,11 +91,79 @@ class NotificationList extends TElement
                 }
                 
                 parent::add(TElement::tag('li', TElement::tag('a', _t('View all'),
-                    ['href'=> (new TAction(['SystemNotificationList', 'onReload']))->serialize(),
+                    ['href'=> (new TAction(['SystemNotificationList', 'onReload'], $parametersViewAll))->serialize(),
                      'generator'=>'adianti'] ), ['class'=>'footer'] ));
+            }
+            else if ($param['theme'] == 'theme3-adminlte3')
+            {
+                parent::__construct('div');
+
+                $a = new TElement('a');
+                $a->{'class'} = "nav-link";
+                $a->{'data-toggle'}="dropdown";
+                $a->{'href'} = "#";
+
+                $a->add( TElement::tag('i',    '', array('class'=>"far fa-bell")) );
+                $a->add( TElement::tag('span', count($system_notifications), array('class'=>"badge badge-warning navbar-badge")) );
+
+                parent::add($a);
+
+                $content = new TElement('div');
+                $content->{'class'} = 'dropdown-menu dropdown-menu-lg dropdown-menu-right';
+
+                $content->add( TElement::tag('span', _t('Notifications'), ['class'=>'dropdown-item dropdown-header']));
+                $content->add( TElement::tag('div', '', ['class'=>'dropdown-divider']));
+                parent::add($content);
+
+                foreach ($system_notifications as $system_notification)
+                {
+                    $date    = $this->getShortPastTime($system_notification->dt_message);
+                    $subject = $system_notification->subject;
+                    $icon    = $system_notification->icon ? $system_notification->icon : 'far fa-bell text-aqua';
+                    $icon    = str_replace( 'fa:', 'fa fa-', $icon);
+                    $icon    = str_replace( 'far:', 'far fa-', $icon);
+                    $icon    = str_replace( 'fas:', 'fas fa-', $icon);
+
+                    $a   = new TElement('a');
+                    $div = new TElement('div');
+
+                    $parameters = ['id' => $system_notification->id];
+
+                    if (! empty($ini['general']['use_tabs']) || ! empty($ini['general']['use_mdi_windows']))
+                    {
+                        $parameters['adianti_open_tab'] = '1';
+                        $parameters['adianti_tab_name'] = _t('Notification') . ' #' . $system_notification->id;
+                    }
+
+                    $a->href = (new TAction(['SystemNotificationFormView', 'onView'], $parameters))->serialize();
+                    $a->generator = 'adianti';
+                    $a->{'class'} = 'dropdown-item';
+
+                    $i = new TElement('i');
+                    $i->{'class'} = $icon . ' mr-2';
+
+                    $a->add($i);
+                    $a->add($subject);
+                    $a->add(TElement::tag('span', $date, array('class' => 'float-right text-muted text-sm')));
+
+                    $content->add($a);
+                    $content->add( TElement::tag('div', '', ['class'=>'dropdown-divider']));
+                }
+
+                $content->add(TElement::tag(
+                    'a',
+                    _t('View all'),
+                    [
+                        'href'=> (new TAction(['SystemNotificationList', 'onReload'], $parametersViewAll))->serialize(),
+                        'generator'=>'adianti',
+                        'class'=>'dropdown-item dropdown-footer'
+                    ]
+                ));
             }
             else if ($param['theme'] == 'theme4')
             {
+                parent::__construct('ul');
+
                 $this->class = 'dropdown-menu';
                 
                 $a = new TElement('a');
@@ -112,7 +199,15 @@ class NotificationList extends TElement
                     $div = new TElement('div');
                     $div2= new TElement('div');
                     
-                    $a->href = (new TAction(['SystemNotificationFormView', 'onView'], ['id' => $system_notification->id]))->serialize();
+                    $parameters = ['id' => $system_notification->id];
+
+                    if (! empty($ini['general']['use_tabs']) || ! empty($ini['general']['use_mdi_windows']))
+                    {
+                        $parameters['adianti_open_tab'] = '1';
+                        $parameters['adianti_tab_name'] = _t('Notification') . ' #' . $system_notification->id;
+                    }
+
+                    $a->href = (new TAction(['SystemNotificationFormView', 'onView'], $parameters))->serialize();
                     $a->class = 'waves-effect waves-block';
                     $a->generator = 'adianti';
                     $li->add($a);
@@ -137,12 +232,12 @@ class NotificationList extends TElement
                     $div2->add( $p );
                     $ul_wrapper->add($li);
                 }
-                
+
                 parent::add(TElement::tag('li', TElement::tag('a', _t('View all'),
-                    ['href'=> (new TAction(['SystemNotificationList', 'onReload']))->serialize(),
+                    ['href'=> (new TAction(['SystemNotificationList', 'onReload'], $parametersViewAll))->serialize(),
                      'generator'=>'adianti'] ), ['class'=>'footer'] ));
             }
-            
+
             TTransaction::close();
         }
         catch (Exception $e)

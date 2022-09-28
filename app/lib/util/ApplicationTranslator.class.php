@@ -322,6 +322,18 @@ class ApplicationTranslator
         $this->messages['en'][] = 'Recieved';
         $this->messages['en'][] = 'Print';
         $this->messages['en'][] = 'Delete session var';
+        $this->messages['en'][] = 'Impersonated by';
+        $this->messages['en'][] = 'Unauthorized access to that unit';
+        $this->messages['en'][] = 'Files diff';
+        $this->messages['en'][] = 'Removed';
+        $this->messages['en'][] = 'Equal';
+        $this->messages['en'][] = 'Modified';
+        $this->messages['en'][] = 'Terms of use and privacy policy';
+        $this->messages['en'][] = 'Accept';
+        $this->messages['en'][] = 'I have read and agree to the terms of use and privacy policy';
+        $this->messages['en'][] = 'You need read and agree to the terms of use and privacy policy';
+        $this->messages['en'][] = 'Login to your account';
+        $this->messages['en'][] = 'You have just successfully logged in to ^1. If you do not recognize this login, contact technical support';
         //fim
         
         $this->messages['pt'] = [];
@@ -623,6 +635,18 @@ class ApplicationTranslator
         $this->messages['pt'][] = 'Recebidos';
         $this->messages['pt'][] = 'Imprimir';
         $this->messages['pt'][] = 'Exclui variável de sessão';
+        $this->messages['pt'][] = 'Personificado por';
+        $this->messages['pt'][] = 'Acesso não autorizado à esta unidade';
+        $this->messages['pt'][] = 'Diferença de arquivos';
+        $this->messages['pt'][] = 'Removido';
+        $this->messages['pt'][] = 'Igual';
+        $this->messages['pt'][] = 'Modificado';
+        $this->messages['pt'][] = 'Termo de uso e política de privacidade';
+        $this->messages['pt'][] = 'Aceitar';
+        $this->messages['pt'][] = 'Eu li e concordo com os termos de uso e política de privacidade';
+        $this->messages['pt'][] = 'Você precisa ler e concordar com os termos de uso e política de privacidade';
+        $this->messages['pt'][] = 'Login realizado em sua conta';
+        $this->messages['pt'][] = 'Você acaba de efetuar login com sucesso no ^1. Se não reconhece esse login, entre em contato com o suporte técnico.';
         //fim
         
         $this->messages['es'] = [];
@@ -924,7 +948,19 @@ class ApplicationTranslator
         $this->messages['es'][] = 'Recebidos';
         $this->messages['es'][] = 'Imprimir';
         $this->messages['es'][] = 'Eliminar variable de sesión';
+        $this->messages['es'][] = 'Personificado por';
+        $this->messages['es'][] = 'Acceso prohibido a esta unidad';
         
+        $this->messages['es'][] = 'Diferencia de archivo';
+        $this->messages['es'][] = 'Remoto';
+        $this->messages['es'][] = 'Igual';
+        $this->messages['es'][] = 'Cambiado';
+        $this->messages['es'][] = 'Términos de uso y política de privacidad';
+        $this->messages['es'][] = 'Aceptar';
+        $this->messages['es'][] = 'He leído y acepto los términos de uso y la política de privacidad';
+        $this->messages['es'][] = 'Necesita leer y aceptar los términos de uso y la política de privacidad';
+        $this->messages['es'][] = 'Ingrese a su cuenta';
+        $this->messages['es'][] = 'Acaba de iniciar sesión correctamente en ^1. Si no reconoce este inicio de sesión, comuníquese con el soporte técnico';
         //fim
         foreach ($this->messages as $lang => $messages)
         {

@@ -9,7 +9,7 @@
  * @copyright  Copyright (c) 2006 Adianti Solutions Ltd. (http://www.adianti.com.br)
  * @license    http://www.adianti.com.br/framework-license
  */
-class SystemDataBrowser extends TPage
+class SystemDataBrowser extends TWindow
 {
     private $datagrid;
     private $pageNavigation;
@@ -22,9 +22,16 @@ class SystemDataBrowser extends TPage
     {
         parent::__construct();
         
-        // Define the id of target container
-        $this->adianti_target_container = 'data_browser_container';
-        
+        parent::setTitle(_t('Table'));
+        parent::setModal(true);
+        parent::removePadding();
+
+        if(TPage::isMobile()) {
+            parent::setSize(.95,.95);
+        } else {
+            parent::setSize(.75,.9);
+        }
+
         // creates the datagrid
         $this->datagrid = new BootstrapDatagridWrapper(new TDataGrid);
         $this->datagrid->width = '100%';
@@ -90,7 +97,7 @@ class SystemDataBrowser extends TPage
             $info = TTransaction::getDatabaseInfo();
             // count records
             $where_string = $criteria->dump() ? 'WHERE '.$criteria->dump() : '';
-            $count_row = $conn->query( "SELECT count(*) as COUNT FROM {$table} ". $where_string)->fetchObject();
+            $count_row = $conn->query( "SELECT count(*) as \"COUNT\" FROM {$table} ". $where_string)->fetchObject();
             $count = isset($count_row->COUNT) ? $count_row->COUNT : $count_row->count;
             
             // run the main query
@@ -186,7 +193,7 @@ class SystemDataBrowser extends TPage
             // create panel group around datagrid
             $panel = new TPanelGroup($database . ' > ' . $table);
             $button = $panel->addHeaderActionLink("SQL", new TAction(["SystemSQLPanel", "onLoad"], ["database" => $database, "table" => $table]), "fa:code");
-            $button->class = "btn btn-primary";
+            $button->class = "btn btn-primary bg-blue";
             
             $panel->add($this->datagrid);
             $panel->addFooter($this->pageNavigation);

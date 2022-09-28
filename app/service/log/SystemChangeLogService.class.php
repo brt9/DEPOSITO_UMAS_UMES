@@ -33,7 +33,7 @@ class SystemChangeLogService
         
         foreach ($lastState as $key => $value)
         {
-            if (!isset($currentState[$key]))
+            if (!in_array($key, array_keys($currentState)))
             {
                 // deleted
                 $log = new SystemChangeLog;
@@ -76,7 +76,7 @@ class SystemChangeLogService
                 $log->operation  = 'changed';
                 $log->columnname = $key;
                 $log->oldvalue   = (string) $lastState[$key];
-                $log->newvalue   = (string) is_scalar($value) ? $value : serialize($value);
+                $log->newvalue   = (string) is_scalar($value) ? $value : ( (is_null($value) ? NULL : serialize($value)) );
                 $log->access_ip  = isset($_SERVER['REMOTE_ADDR']) ? $_SERVER['REMOTE_ADDR'] : null;
                 $log->transaction_id  = $uniqid;
                 $log->log_trace  = $e->getTraceAsString();

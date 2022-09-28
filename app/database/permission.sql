@@ -23,6 +23,8 @@ CREATE TABLE system_user (
     login varchar(100),
     password varchar(100),
     email varchar(100),
+    accepted_term_policy char(1),
+    accepted_term_policy_at TEXT,
     frontpage_id int, system_unit_id int references system_unit(id), active char(1),
     FOREIGN KEY(frontpage_id) REFERENCES system_program(id));
     
@@ -97,9 +99,11 @@ INSERT INTO system_program VALUES(37,'System Request Log View','SystemRequestLog
 INSERT INTO system_program VALUES(38,'System Administration Dashboard','SystemAdministrationDashboard');
 INSERT INTO system_program VALUES(39,'System Log Dashboard','SystemLogDashboard');
 INSERT INTO system_program VALUES(40,'System Session dump','SystemSessionDumpView');
+INSERT INTO system_program VALUES(41,'System Information','SystemInformationView');
+INSERT INTO system_program VALUES(42,'System files diff','SystemFilesDiff');
 
-INSERT INTO system_user VALUES(1,'Administrator','admin','21232f297a57a5a743894a0e4a801fc3','admin@admin.net',10,NULL,'Y');
-INSERT INTO system_user VALUES(2,'User','user','ee11cbb19052e40b07aac0ca060c23ee','user@user.net',7,NULL,'Y');
+INSERT INTO system_user VALUES(1,'Administrator','admin','21232f297a57a5a743894a0e4a801fc3','admin@admin.net','Y',NULL,10);
+INSERT INTO system_user VALUES(2,'User','user','ee11cbb19052e40b07aac0ca060c23ee','user@user.net','Y',NULL,7);
 
 INSERT INTO system_unit VALUES(1,'Unit A','unit_a');
 INSERT INTO system_unit VALUES(2,'Unit B','unit_b');
@@ -152,6 +156,8 @@ INSERT INTO system_group_program VALUES(37,1,37);
 INSERT INTO system_group_program VALUES(38,1,38);
 INSERT INTO system_group_program VALUES(39,1,39);
 INSERT INTO system_group_program VALUES(40,1,40);
+INSERT INTO system_group_program VALUES(41,1,41);
+INSERT INTO system_group_program VALUES(42,1,42);
 
 INSERT INTO system_user_program VALUES(1,2,7);
 

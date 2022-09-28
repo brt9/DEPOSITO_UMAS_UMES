@@ -21,12 +21,13 @@ class SystemDatabaseExplorer extends TPage
         parent::__construct();
         
         $panel = new TPanelGroup(_t('Database'));
-        $panel->style = 'padding-bottom:8px';
+        $panel->style = 'padding-bottom:8px; height: 100%;';
         $panel->getBody()->style = 'overflow-y:auto;';
         
         // create datagrid
         $this->datagrid = new BootstrapDatagridWrapper(new TQuickGrid);
-        $db_col = $this->datagrid->addQuickColumn('Database', 'database', 'left');
+        $this->datagrid->style = 'width: 100%';
+        $db_col = $this->datagrid->addQuickColumn('Database', 'database', 'left', '90%');
         
         // create action
         $action1 = new TDataGridAction(array('SystemTableList', 'onLoad'));
@@ -72,8 +73,8 @@ class SystemDatabaseExplorer extends TPage
             {
                 $connector = str_replace(['.ini', '.php'], ['', ''], $entry);
                 $ini = TConnection::getDatabaseInfo($connector);
-                
-                if (!empty($ini['type']) && in_array($ini['type'], ['pgsql', 'mysql', 'sqlite', 'oracle', 'mssql']))
+
+                if (!empty($ini['type']) && in_array($ini['type'], ['pgsql', 'mysql', 'sqlite', 'oracle', 'mssql', 'fbird']))
                 {
                     $options[ $connector ] = $connector;
                     $this->datagrid->addItem( (object) ['database' => $connector, 'type' => $ini['type']] );

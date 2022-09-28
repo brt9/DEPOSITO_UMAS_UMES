@@ -18,6 +18,9 @@ class lista extends TRecord
     const PRIMARYKEY = 'CODIGO';
     const IDPOLICY = 'max'; // {max, serial}
     
+    CONST CREATEDAT = 'created_at';
+    CONST UPDATEDAT = 'updated_at';
+    CONST DELETEDAT = 'deleted_at';
 
     /**
      * Constructor method
@@ -28,7 +31,6 @@ class lista extends TRecord
         parent::addAttribute('CODIGO');
         parent::addAttribute('DESCRICAO');
         parent::addAttribute('QUANTIDADE_ESTOQUE');
-        parent::addAttribute('DATA_CADASTRO_ITEM');
         parent::addAttribute('COLABORADOR_RESPONSAVEL_CADASTRO');
     }
     

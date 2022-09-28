@@ -3,19 +3,23 @@ loading = true;
 Application = {};
 Application.translation = {
     'en' : {
-        'loading' : 'Loading'
+        'loading' : 'Loading',
+        'close'   : 'Close'
     },
     'pt' : {
-        'loading' : 'Carregando'
+        'loading' : 'Carregando',
+        'close'   : 'Fechar'
     },
     'es' : {
-        'loading' : 'Cargando'
+        'loading' : 'Cargando',
+        'close'   : 'Cerrar'
     }
 };
 
 Adianti.onClearDOM = function(){
 	/* $(".select2-hidden-accessible").remove(); */
-	$(".colorpicker-hidden").remove();
+	/* $(".colorpicker-hidden").remove(); */
+	$(".pcr-app").remove();
 	$(".select2-display-none").remove();
 	$(".tooltip.fade").remove();
 	$(".select2-drop-mask").remove();
