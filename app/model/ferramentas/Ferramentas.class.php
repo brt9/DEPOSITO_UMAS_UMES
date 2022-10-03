@@ -12,9 +12,9 @@ use Adianti\Database\TRecord;
  * @copyright  Copyright (c) 2021 Barata
  * @license    http://www.adianti.com.br/framework-license
  */
-class CadastroFerramenta extends TRecord
+class Ferramentas extends TRecord
 {
-    const TABLENAME = 'cadastro_ferramentas';
+    const TABLENAME = 'ferramentas';
     const PRIMARYKEY = 'id';
     const IDPOLICY = 'serial'; // {max, serial}
 

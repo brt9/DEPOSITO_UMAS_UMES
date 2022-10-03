@@ -19,8 +19,8 @@
   </menuitem>
   <menuitem label="Ferramentas">
     <menu>
-      <menuitem label="Cadastro de ferramentas">
-        <action>CadastroFerramentasForm</action>
+      <menuitem label="Ferramentas">
+        <action>FerramentasList</action>
       </menuitem>
     </menu>
   </menuitem>
