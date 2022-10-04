@@ -2,9 +2,9 @@
 
 use Adianti\Database\TRecord;
 
-class Ferramentas extends TRecord
+class Emprestimo extends TRecord
 {
-    const TABLENAME = 'ferramentas';
+    const TABLENAME = 'emprestimo';
     const PRIMARYKEY = 'id';
     const IDPOLICY = 'serial'; // {max, serial}
 
@@ -19,8 +19,9 @@ class Ferramentas extends TRecord
     {
         parent::__construct($id, $callObjectLoad);
         parent::addAttribute('id');
-        parent::addAttribute('nome');
-        parent::addAttribute('quantidade');
+        parent::addAttribute('id_usuario');
+        parent::addAttribute('id_admin');
+        parent::addAttribute('id_status');
 
     }
 }

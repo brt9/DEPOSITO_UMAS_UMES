@@ -22,6 +22,9 @@
       <menuitem label="Ferramentas">
         <action>FerramentasList</action>
       </menuitem>
+      <menuitem label="Emprestimo de ferramentas">
+        <action>EmprestimoList</action>
+      </menuitem>
     </menu>
   </menuitem>
   <menuitem label="_t{Administration}">

@@ -3,7 +3,7 @@
 use Adianti\Widget\Form\TEntry;
 
 /**
- * LISTA DE FERRAMENTAS
+ * LISTA DE EMPRESTIMO
  *
  * @version    1.0
  * @package    model
@@ -12,7 +12,7 @@ use Adianti\Widget\Form\TEntry;
  * @copyright  Copyright (c) 2021 Barata
  * @license    http://www.adianti.com.br/framework-license
  */
-class FerramentasList extends TStandardList
+class EmprestimoList extends TStandardList
 {
   protected $form;     // FORMULÁRIO DE REGISTRO
   protected $datagrid; //  LISTAGEM
@@ -27,35 +27,45 @@ class FerramentasList extends TStandardList
     parent::__construct();
 
     parent::setDatabase('bancodados');            // DEFINE O BANCO DE DADOS
-    parent::setActiveRecord('Ferramentas');   // DEFINE O REGISTRO ATIVO
-    parent::setDefaultOrder('nome', 'asc');         //  DEFINE A ORDEM PADRÃO
+    parent::setActiveRecord('Emprestimo');   // DEFINE O REGISTRO ATIVO
+    parent::setDefaultOrder('id', 'asc');         //  DEFINE A ORDEM PADRÃO
     parent::addFilterField('id', '=', 'id'); // CAMPO DE FILTRO, OPERADOR, CAMPO DE FORMULÁRIO
-    parent::addFilterField('nome', 'like', 'nome'); //  CAMPO DE FILTRO, OPERADOR, CAMPO DE FORMULÁRIO
+    parent::addFilterField('id_emprestimo', '=', 'id_emprestimo'); // CAMPO DE FILTRO, OPERADOR, CAMPO DE FORMULÁRIO
+    parent::addFilterField('id_usuario', '=', 'id_usuario'); //  CAMPO DE FILTRO, OPERADOR, CAMPO DE FORMULÁRIO
+    parent::addFilterField('id_status', '=', 'id_status'); //  CAMPO DE FILTRO, OPERADOR, CAMPO DE FORMULÁRIO
 
     // CRIA O FORMULÁRIO
 
     $this->form = new BootstrapFormBuilder('form_search');
-    $this->form->setFormTitle('Lista de ferramentas');
+    $this->form->setFormTitle('Emprestimo de ferramentas');
 
     // CRIE OS CAMPOS DO FORMULÁRIO
 
     $id = new TEntry('id');
-    $nome = new TEntry('nome');
+    $id_emprestimo = new TEntry('id_emprestimo');
+    $id_usuario = new TEntry('id_usuario');
+    $id_status = new TEntry('id_status');
 
     // ADICIONE OS CAMPOS
 
     $this->form->addFields(
-      [new TLabel('Id')],
+      [new TLabel('id')],
       [$id],
-      [new TLabel('Nome')],
-      [$nome]
+      [new TLabel('id_emprestimo')],
+      [$id_emprestimo]
+    );
+    $this->form->addFields(
+      [new TLabel('id_usuario')],
+      [$id_usuario],
+      [new TLabel('id_status')],
+      [$id_status]
     );
 
     //style do campo de busca
-    $id->setSize('20%');
-    $id->setTip("id da ferramenta");
-    $nome->setSize('100%');
-    $nome->placeholder = "Nome da ferramenta";
+    // $id->setSize('20%');
+    // $id->setTip("id da ferramenta");
+    // $id_emprestimo->setSize('100%');
+    // $id_emprestimo->placeholder = "Nome da ferramenta";
 
 
     // MANTENHA O FORMULÁRIO PREENCHIDO DURANTE A NAVEGAÇÃO COM OS DADOS DA SESSÃO
@@ -64,7 +74,7 @@ class FerramentasList extends TStandardList
     // ADICIONE AS AÇÕES DO FORMULÁRIO DE PESQUISA
     $btn = $this->form->addAction(_t('Find'), new TAction(array($this, 'onSearch')), 'fa:search');
     $btn->class = 'btn btn-sm btn-primary';
-    $this->form->addAction("Cadastrar ferramenta", new TAction(array('CadastroFerramentasForm', "onEdit")), "fa:plus-circle green");
+    $this->form->addAction("Solicitar emprestimo", new TAction(array('EmprestimoFerramentasForm', "onEdit")), "fa:plus-circle green");
 
     // CRIA UMA GRADE DE DADOS
     $this->datagrid = new BootstrapDatagridWrapper(new TDataGrid);
@@ -75,14 +85,16 @@ class FerramentasList extends TStandardList
 
     // CRIA AS COLUNAS DA GRADE DE DADOS
     $column_id = new TDataGridColumn('id', 'Id', 'center', 50);
-    $column_nome = new TDataGridColumn('nome', 'Nome da ferramenta', 'center');
-    $column_quantidade = new TDataGridColumn('quantidade', 'Quantidade', 'center');
+    $column_nome = new TDataGridColumn('id_ferramenta', 'Nome da ferramenta', 'center');
+    $column_usuario = new TDataGridColumn('id_usuario', 'Usuário', 'center');
+    $column_status = new TDataGridColumn('id_status', 'Status', 'center');
 
 
     // ADICIONE AS COLUNAS À GRADE DE DADOS
     $this->datagrid->addColumn($column_id);
     $this->datagrid->addColumn($column_nome);
-    $this->datagrid->addColumn($column_quantidade);
+    $this->datagrid->addColumn($column_usuario);
+    $this->datagrid->addColumn($column_status);
 
 
     // CRIA AS AÇÕES DA COLUNA DA GRADE DE DADOS
@@ -90,13 +102,9 @@ class FerramentasList extends TStandardList
     $order_id->setParameter('order', 'id');
     $column_id->setAction($order_id);
 
-    $order_nome = new TAction(array($this, 'onReload'));
-    $order_nome->setParameter('order', 'nome');
-    $column_nome->setAction($order_nome);
-
-    $order_quantidade  = new TAction(array($this, 'onReload'));
-    $order_quantidade->setParameter('order', 'quantidade');
-    $column_quantidade->setAction($order_quantidade);
+    $order_usuario  = new TAction(array($this, 'onReload'));
+    $order_usuario->setParameter('order', 'id_usuario');
+    $column_usuario->setAction($order_usuario);
 
 
 
