@@ -4,6 +4,7 @@ use Adianti\Base\TStandardForm;
 use Adianti\Widget\Form\TDateTime;
 use Adianti\Widget\Form\THidden;
 use Adianti\Widget\Form\TSpinner;
+use Adianti\Widget\Wrapper\TDBUniqueSearch;
 
 /**
  * FormNestedBuilderView
@@ -34,41 +35,22 @@ class EmprestimoFerramentasForm extends TStandardForm
         $this->form = new BootstrapFormBuilder('my_form');
         $this->form->setFormTitle("Solicitação de emprestimo");
 
-        $uniq = new THidden('uniq[]');
+        $ferramenta = new TDBUniqueSearch('EmprestimoFerramentasForm','bancodados','ferramentas','id','{id} - {nome}');
+        $ferramenta->placeholder ='Pesquise pela ferramenta desejada';
+        $ferramenta->setSize('100%');
 
-        $id = new TCombo('combo[]');
-        $id->enableSearch();
-        $id->addItems(['1' => 1, '2' => 2, '3' => 3, '4' => '<b>Four</b>', '5' => '<b>Five</b>']);
-        $id->setSize('100%');
-
-        $text = new TEntry('text[]');
-        $text->setSize('100%');
-
-        $number = new TEntry('number[]');
-        $number->setNumericMask(2, ',', '.', true);
-        $number->setSize('100%');
-        $number->style = 'text-align: right';
-
-        $date = new TDate('date[]');
-        $date->setSize('100%');
+        $quantidade = new TSpinner('quantidade[]');
+        $quantidade->setSize('100%');
 
         $this->fieldlist = new TFieldList;
         $this->fieldlist->generateAria();
         $this->fieldlist->width = '100%';
         $this->fieldlist->name  = 'my_field_list';
-        $this->fieldlist->addField('<b>Combo</b>',  $id,  ['width' => '25%']);
-        $this->fieldlist->addField('<b>Text</b>',   $text,   ['width' => '25%']);
-        $this->fieldlist->addField('<b>Number</b>', $number, ['width' => '25%']);
-        $this->fieldlist->addField('<b>Date</b>',   $date,   ['width' => '25%']);
+        $this->fieldlist->addField('<b>Ferramenta</b>',  $ferramenta,  ['width' => '70%']);
+        $this->fieldlist->addField('<b>Quantidade</b>',   $quantidade,   ['width' => '10%']);
 
-        // $this->fieldlist->setTotalUpdateAction(new TAction([$this, 'x']));
-
-        $this->fieldlist->enableSorting();
-
-        $this->form->addField($id);
-        $this->form->addField($text);
-        $this->form->addField($number);
-        $this->form->addField($date);
+        $this->form->addField($ferramenta);
+        $this->form->addField($quantidade);
 
 
         $this->fieldlist->addHeader();
@@ -79,12 +61,16 @@ class EmprestimoFerramentasForm extends TStandardForm
         $this->form->addContent([$this->fieldlist]);
 
         // form actions
-        $this->form->addAction('Save', new TAction([$this, 'onSave']), 'fa:save blue');
-        $this->form->addAction('Clear', new TAction([$this, 'onClear']), 'fa:eraser red');
-
+        $btnSave = $this->form->addAction(_t('Save'), new TAction([$this, 'onSave']), 'fa:save black');
+        $btnSave->class = 'btn btn-sm btn-success';
+        $btnClear = $this->form->addAction(_t('Clear'), new TAction([$this, 'onClear']), 'fa:eraser black');
+        $btnClear->class = 'btn btn-sm btn-danger';
+        $btnBack = $this->form->addActionLink(_t('Back'), new TAction(array('EmprestimoList', 'onReload')), 'far:arrow-alt-circle-left black');
+        $btnBack->class = 'btn btn-sm btn-secondary';
+        
         // wrap the page content using vertical box
         $vbox = new TVBox;
-        $vbox->style = 'width: 100%';
+        $vbox->style = 'width: 100%;';
         $vbox->add($this->form);
         parent::add($vbox);
     }

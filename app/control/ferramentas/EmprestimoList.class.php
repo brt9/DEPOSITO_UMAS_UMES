@@ -1,6 +1,8 @@
 <?php
 
+use Adianti\Widget\Form\TDate;
 use Adianti\Widget\Form\TEntry;
+use Adianti\Widget\Form\TSpinner;
 
 /**
  * LISTA DE EMPRESTIMO
@@ -37,51 +39,46 @@ class EmprestimoList extends TStandardList
     // CRIA O FORMULÁRIO
 
     $this->form = new BootstrapFormBuilder('form_search');
-    $this->form->setFormTitle('Emprestimo de ferramentas');
-
+    $form = $this->form->setFormTitle('Emprestimo de ferramentas');
     // CRIE OS CAMPOS DO FORMULÁRIO
 
-    $id = new TEntry('id');
-    $id_emprestimo = new TEntry('id_emprestimo');
+    $unique = new TDBUniqueSearch('FerramentaList', 'bancodados', 'emprestimo', 'id', 'id');
+    $unique->setMinLength(1);
+    $unique->setMask('{id}');
+    $unique->setTip('Pesquise o emprestido pelo id');
     $id_usuario = new TEntry('id_usuario');
     $id_status = new TEntry('id_status');
+    $data = new TDate('created_at');
 
     // ADICIONE OS CAMPOS
-
-    $this->form->addFields(
-      [new TLabel('id')],
-      [$id],
-      [new TLabel('id_emprestimo')],
-      [$id_emprestimo]
+    $row = $this->form->addFields(
+      [new TLabel('Campo de busca')],
+      [$unique]
     );
-    $this->form->addFields(
-      [new TLabel('id_usuario')],
+  
+    $row = $this->form->addFields(
+      [new TLabel('Usuário')],
       [$id_usuario],
-      [new TLabel('id_status')],
-      [$id_status]
+      [new TLabel('Status')],
+      [$id_status],
+      [new Tlabel('Data')],
+      [$data]
     );
-
-    //style do campo de busca
-    // $id->setSize('20%');
-    // $id->setTip("id da ferramenta");
-    // $id_emprestimo->setSize('100%');
-    // $id_emprestimo->placeholder = "Nome da ferramenta";
-
 
     // MANTENHA O FORMULÁRIO PREENCHIDO DURANTE A NAVEGAÇÃO COM OS DADOS DA SESSÃO
     $this->form->setData(TSession::getValue('cadastro_filter_data'));
 
     // ADICIONE AS AÇÕES DO FORMULÁRIO DE PESQUISA
-    $btn = $this->form->addAction(_t('Find'), new TAction(array($this, 'onSearch')), 'fa:search');
+    $btn = $this->form->addAction('Buscar', new TAction(array($this, 'onSearch')), 'fa:search black');
     $btn->class = 'btn btn-sm btn-primary';
-    $this->form->addAction("Solicitar emprestimo", new TAction(array('EmprestimoFerramentasForm', "onEdit")), "fa:plus-circle green");
+    $btn = $this->form->addAction("Solicitar emprestimo", new TAction(array('EmprestimoFerramentasForm', "onEdit")), "fa:plus-circle black");
+    $btn->class = 'btn btn-sm btn-success'; 
 
     // CRIA UMA GRADE DE DADOS
     $this->datagrid = new BootstrapDatagridWrapper(new TDataGrid);
     $this->datagrid->datatable = 'true';
-    $this->datagrid->style = 'width: 100%';
+    $this->datagrid->style = 'width: 100%; border-radius: 20rem;';
     $this->datagrid->setHeight(320);
-
 
     // CRIA AS COLUNAS DA GRADE DE DADOS
     $column_id = new TDataGridColumn('id', 'Id', 'center', 50);

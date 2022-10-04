@@ -58,10 +58,12 @@ class CadastroFerramentasForm extends TStandardForm
         $quantidade->setTip = ('Informe a quantidade de materiais');
 
         // define the form action 
-        $btn = $this->form->addAction(_t('Save'), new TAction(array($this, 'onSave')), 'far:save');
-        $btn->class = 'btn btn-sm btn-success';
-        $this->form->addActionLink(_t('Clear'), new TAction(array($this, 'onEdit')), 'fa:eraser red');
-        $this->form->addActionLink(_t('Back'), new TAction(array('FerramentasList', 'onReload')), 'far:arrow-alt-circle-left blue');
+        $btnSave = $this->form->addAction(_t('Save'), new TAction([$this, 'onSave']), 'fa:save black');
+        $btnSave->class = 'btn btn-sm btn-success';
+        $btnClear = $this->form->addAction(_t('Clear'), new TAction([$this, 'onClear']), 'fa:eraser black');
+        $btnClear->class = 'btn btn-sm btn-danger';
+        $btnBack = $this->form->addActionLink(_t('Back'), new TAction(array('FerramentasList', 'onReload')), 'far:arrow-alt-circle-left black');
+        $btnBack->class = 'btn btn-sm btn-secondary';
 
         // wrap the page content using vertical box
         $vbox = new TVBox;

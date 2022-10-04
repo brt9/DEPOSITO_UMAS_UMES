@@ -28,9 +28,7 @@ class FerramentasList extends TStandardList
 
     parent::setDatabase('bancodados');            // DEFINE O BANCO DE DADOS
     parent::setActiveRecord('Ferramentas');   // DEFINE O REGISTRO ATIVO
-    parent::setDefaultOrder('nome', 'asc');         //  DEFINE A ORDEM PADRÃO
-    parent::addFilterField('id', '=', 'id'); // CAMPO DE FILTRO, OPERADOR, CAMPO DE FORMULÁRIO
-    parent::addFilterField('nome', 'like', 'nome'); //  CAMPO DE FILTRO, OPERADOR, CAMPO DE FORMULÁRIO
+    parent::setDefaultOrder('id', 'asc');         //  DEFINE A ORDEM PADRÃO
 
     // CRIA O FORMULÁRIO
 
@@ -38,33 +36,24 @@ class FerramentasList extends TStandardList
     $this->form->setFormTitle('Lista de ferramentas');
 
     // CRIE OS CAMPOS DO FORMULÁRIO
-
-    $id = new TEntry('id');
-    $nome = new TEntry('nome');
+    $unique = new TDBUniqueSearch('FerramentaList', 'bancodados', 'ferramentas', 'id', 'nome');
+    $unique->setMinLength(1);
+    $unique->setMask('{id} - {nome}');
 
     // ADICIONE OS CAMPOS
-
     $this->form->addFields(
-      [new TLabel('Id')],
-      [$id],
-      [new TLabel('Nome')],
-      [$nome]
+      [new TLabel('Campo de busca')],
+      [$unique],
     );
-
-    //style do campo de busca
-    $id->setSize('20%');
-    $id->setTip("id da ferramenta");
-    $nome->setSize('100%');
-    $nome->placeholder = "Nome da ferramenta";
-
 
     // MANTENHA O FORMULÁRIO PREENCHIDO DURANTE A NAVEGAÇÃO COM OS DADOS DA SESSÃO
     $this->form->setData(TSession::getValue('cadastro_filter_data'));
 
     // ADICIONE AS AÇÕES DO FORMULÁRIO DE PESQUISA
-    $btn = $this->form->addAction(_t('Find'), new TAction(array($this, 'onSearch')), 'fa:search');
+    $btn = $this->form->addAction('Buscar', new TAction(array($this, 'onSearch')), 'fa:search black');
     $btn->class = 'btn btn-sm btn-primary';
-    $this->form->addAction("Cadastrar ferramenta", new TAction(array('CadastroFerramentasForm', "onEdit")), "fa:plus-circle green");
+    $btn = $this->form->addAction("Cadastrar Ferramenta", new TAction(array('CadastroFerramentasForm', "onEdit")), "fa:plus-circle black");
+    $btn->class = 'btn btn-sm btn-success';
 
     // CRIA UMA GRADE DE DADOS
     $this->datagrid = new BootstrapDatagridWrapper(new TDataGrid);
@@ -105,7 +94,7 @@ class FerramentasList extends TStandardList
     $action_edit->setButtonClass('btn btn-default');
     $action_edit->setLabel(_t('Edit'));
     $action_edit->setImage('far:edit blue');
-    $action_edit->setField('CODIGO');
+    $action_edit->setField('id');
     $this->datagrid->addAction($action_edit);
 
 
