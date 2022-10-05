@@ -46,7 +46,7 @@ class EmprestimoFerramentasForm extends TStandardForm
         $this->fieldlist->generateAria();
         $this->fieldlist->width = '100%';
         $this->fieldlist->name  = 'my_field_list';
-        $this->fieldlist->addField('<b>Ferramenta</b>',  $ferramenta,  ['width' => '70%']);
+        $this->fieldlist->addField('<b>Ferramenta</b><font color:"red">*</font>',  $ferramenta,  ['width' => '70%']);
         $this->fieldlist->addField('<b>Quantidade</b>',   $quantidade,   ['width' => '10%']);
 
         $this->form->addField($ferramenta);
@@ -61,12 +61,12 @@ class EmprestimoFerramentasForm extends TStandardForm
         $this->form->addContent([$this->fieldlist]);
 
         // form actions
-        $btnSave = $this->form->addAction(_t('Save'), new TAction([$this, 'onSave']), 'fa:save black');
-        $btnSave->class = 'btn btn-sm btn-success';
-        $btnClear = $this->form->addAction(_t('Clear'), new TAction([$this, 'onClear']), 'fa:eraser black');
-        $btnClear->class = 'btn btn-sm btn-danger';
-        $btnBack = $this->form->addActionLink(_t('Back'), new TAction(array('EmprestimoList', 'onReload')), 'far:arrow-alt-circle-left black');
-        $btnBack->class = 'btn btn-sm btn-secondary';
+        $btnSave = $this->form->addAction(_t('Save'), new TAction([$this, 'onSave']), 'fa:save white');
+        $btnSave->style = 'background-color:#218231; color:white';
+        $btnClear = $this->form->addAction(_t('Clear'), new TAction([$this, 'onClear']), 'fa:eraser white');
+        $btnClear->style = 'background-color:#c73927; color:white';
+        $btnBack = $this->form->addActionLink(_t('Back'), new TAction(array('EmprestimoList', 'onReload')), 'far:arrow-alt-circle-left white');
+        $btnBack->style = 'background-color:gray; color:white';
         
         // wrap the page content using vertical box
         $vbox = new TVBox;

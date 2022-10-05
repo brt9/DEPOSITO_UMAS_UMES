@@ -37,7 +37,6 @@ class EmprestimoList extends TStandardList
     parent::addFilterField('id_status', '=', 'id_status'); //  CAMPO DE FILTRO, OPERADOR, CAMPO DE FORMULÁRIO
 
     // CRIA O FORMULÁRIO
-
     $this->form = new BootstrapFormBuilder('form_search');
     $form = $this->form->setFormTitle('Emprestimo de ferramentas');
     // CRIE OS CAMPOS DO FORMULÁRIO
@@ -55,7 +54,7 @@ class EmprestimoList extends TStandardList
       [new TLabel('Campo de busca')],
       [$unique]
     );
-  
+
     $row = $this->form->addFields(
       [new TLabel('Usuário')],
       [$id_usuario],
@@ -72,7 +71,7 @@ class EmprestimoList extends TStandardList
     $btn = $this->form->addAction('Buscar', new TAction(array($this, 'onSearch')), 'fa:search black');
     $btn->class = 'btn btn-sm btn-primary';
     $btn = $this->form->addAction("Solicitar emprestimo", new TAction(array('EmprestimoFerramentasForm', "onEdit")), "fa:plus-circle black");
-    $btn->class = 'btn btn-sm btn-success'; 
+    $btn->class = 'btn btn-sm btn-success';
 
     // CRIA UMA GRADE DE DADOS
     $this->datagrid = new BootstrapDatagridWrapper(new TDataGrid);
@@ -136,5 +135,15 @@ class EmprestimoList extends TStandardList
     $container->add($panel);
 
     parent::add($container);
+/*     $username = TSession::getValue('userid');
+
+    TTransaction::open('bancodados'); // abre uma transação
+    $conn = TTransaction::get(); // obtém a conexão
+
+    $sth = $conn->query('SELECT name FROM system_user WHERE id = ' . $username);
+    foreach ($sth as $key) {
+      print $key['name'];
+    } */
+    TTransaction::close(); // fecha a transação.
   }
 }
