@@ -25,6 +25,8 @@ class SystemProfileForm extends TPage
         $name  = new TEntry('name');
         $login = new TEntry('login');
         $email = new TEntry('email');
+        $matricula = new TEntry('matricula');
+
         $photo = new TFile('photo');
         $password1 = new TPassword('password1');
         $password2 = new TPassword('password2');
@@ -46,6 +48,7 @@ class SystemProfileForm extends TPage
         $this->form->addFields( [new TLabel(_t('Name'))],  [$name]);
         $this->form->addFields( [new TLabel(_t('Login'))], [$login]);
         $this->form->addFields( [new TLabel(_t('Email'))], [$email]);
+        $this->form->addFields( [new TLabel(('Matricula'))], [$matricula]);
         $this->form->addFields( [new TLabel(_t('Photo'))], [$photo]);
         $this->form->addFields( [new TLabel(_t('Password'))], [$password1]);
         $this->form->addFields( [new TLabel(_t('Password confirmation'))], [$password2]);

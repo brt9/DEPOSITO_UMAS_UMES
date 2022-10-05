@@ -17,19 +17,6 @@
       </menuitem>
     </menu>
   </menuitem>
-  <menuitem label="Ferramentas">
-    <icon>fas:screwdriver fa-fw</icon>
-    <menu>
-      <menuitem label="Estoque de Ferramentas">
-        <action>FerramentasList</action>
-        <icon>fas:warehouse fa-fw</icon>
-      </menuitem>
-      <menuitem label="Emprestimo de ferramentas">
-        <action>EmprestimoList</action>
-        <icon>fas:cogs fa-fw</icon>
-      </menuitem>
-    </menu>
-  </menuitem>
   <menuitem label="_t{Administration}">
     <icon>fas:home fa-fw</icon>
     <menu>

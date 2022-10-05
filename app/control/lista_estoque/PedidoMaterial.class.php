@@ -27,20 +27,22 @@ class PedidoMaterial extends TStandardForm
         $ini  = AdiantiApplicationConfig::get();
 
         $this->setDatabase('bancodados');              // DEFINE O BANCO DE DADOS
-        $this->setActiveRecord('lista');               // DEFINE O REGISTRO ATIVO
+        $this->setActiveRecord('pedido');               // DEFINE O REGISTRO ATIVO
 
         // CRIA O FORMULÁRIO
         $this->form = new BootstrapFormBuilder('my_form');
         $this->form->setFormTitle('FORMULARIO DE PEDIDO DE MATERIAL');
-        $codigo = new TQRCodeInputReader('CODIGO');
+
+
+        $codigo = new TQRCodeInputReader('id_item');
         $codigo->setSize('100%');
         
-        $combo = new TDBCombo('DESCRICAO', 'bancodados', 'lista', 'DESCRICAO', 'DESCRICAO');
+        $combo = new TDBCombo('descricao', 'bancodados', 'lista', 'descricao', 'descricao');
         $combo->enableSearch();
         $combo->setSize('100%');
 
         
-        $text = new TEntry('text[]');
+        $text = new TEntry('quantidade');
         $text->setSize('100%');
    
      
@@ -53,7 +55,7 @@ class PedidoMaterial extends TStandardForm
         $this->fieldlist->addField( '<b>DESCRIÇÂO</b>',  $combo,  ['width' => '40%'] );
         $this->fieldlist->addField( '<b>QUANTIDADE</b>',   $text,   ['width' => '40%'] );
   
-        
+        $this->form->addField($codigo);
         $this->form->addField($combo);
         $this->form->addField($text);
        

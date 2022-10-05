@@ -32,6 +32,7 @@ class SystemRegistrationForm extends TPage
         $email      = new TEntry('email');
         $password   = new TPassword('password');
         $repassword = new TPassword('repassword');
+        $matricula = new TEntry('matricula');
         
         $this->form->addAction( _t('Save'),  new TAction([$this, 'onSave']), 'far:save')->{'class'} = 'btn btn-sm btn-primary';
         $this->form->addAction( _t('Clear'), new TAction([$this, 'onClear']), 'fa:eraser red' );
@@ -42,6 +43,7 @@ class SystemRegistrationForm extends TPage
         $email->addValidation( _t('Email'), new TRequiredValidator);
         $password->addValidation( _t('Password'), new TRequiredValidator);
         $repassword->addValidation( _t('Password confirmation'), new TRequiredValidator);
+        $matricula->addValidation(('matricula'), new TRequiredValidator);
         
         // define the sizes
         $name->setSize('100%');
@@ -49,10 +51,12 @@ class SystemRegistrationForm extends TPage
         $password->setSize('100%');
         $repassword->setSize('100%');
         $email->setSize('100%');
+        $matricula->setSize('100%');
         
         $this->form->addFields( [new TLabel(_t('Login'), 'red')],    [$login] );
         $this->form->addFields( [new TLabel(_t('Name'), 'red')],     [$name] );
         $this->form->addFields( [new TLabel(_t('Email'), 'red')],    [$email] );
+        $this->form->addFields( [new TLabel(('Matricula'), 'red')],    [$matricula] );
         $this->form->addFields( [new TLabel(_t('Password'), 'red')], [$password] );
         $this->form->addFields( [new TLabel(_t('Password confirmation'), 'red')], [$repassword] );
         

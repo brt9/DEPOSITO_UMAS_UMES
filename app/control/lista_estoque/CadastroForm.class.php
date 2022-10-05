@@ -34,21 +34,20 @@ class CadastroForm extends TStandardForm
         $this->form->setFormTitle('Cadastro Items DEPOSITO');
 
         // CRIE OS CAMPOS DO FORMULÁRIO
-        $CODIGO = new TEntry('CODIGO');
-        $DESCRICAO = new TEntry('DESCRICAO');
-        $QUANTIDADE_ESTOQUE = new TEntry('QUANTIDADE_ESTOQUE');
-        $ITEM       = new TEntry('ITEM');
-        $colaborador_responsavel = new TEntry('COLABORADOR_RESPONSAVEL_CADASTRO');
+        $CODIGO = new TEntry('id_item');
+        $DESCRICAO = new TEntry('descricao');
+        $QUANTIDADE_ESTOQUE = new TEntry('quantidade_estoque');
+        $colaborador_responsavel = new TEntry('id_usuario');
       
 
         // ADICIONE OS CAMPOS
-        $this->form->addFields([new TLabel('CODIGO')], [$CODIGO]);
-        $this->form->addFields([new TLabel('DESCRICAO')], [$DESCRICAO]);
-        $this->form->addFields([new TLabel('QUANTIDADE_ESTOQUE')], [$QUANTIDADE_ESTOQUE]);
+        $this->form->addFields([new TLabel('CODIGO ITEM')], [$CODIGO]);
+        $this->form->addFields([new TLabel('DESCRIÇÃO')], [$DESCRICAO]);
+        $this->form->addFields([new TLabel('QUANTIDADE EM ESTOQUE')], [$QUANTIDADE_ESTOQUE]);
         $this->form->addFields([new TLabel('COLABORADOR RESPONSAVEL')], [$colaborador_responsavel]);
      
         $colaborador_responsavel->setSize('70%');
-        $colaborador_responsavel->setValue(TSession::getValue('username'));
+        $colaborador_responsavel->setValue(TSession::getValue('userid'));
         $colaborador_responsavel->setEditable(FALSE);
         // CRIE AS AÇÕES DO FORMULÁRIO
         $btn = $this->form->addAction(_t('Save'), new TAction(array($this, 'onSave')), 'far:save');
