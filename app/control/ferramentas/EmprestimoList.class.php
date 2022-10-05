@@ -44,34 +44,29 @@ class EmprestimoList extends TStandardList
     $unique = new TDBUniqueSearch('FerramentaList', 'bancodados', 'emprestimo', 'id', 'id');
     $unique->setMinLength(1);
     $unique->setMask('{id}');
-    $unique->setTip('Pesquise o emprestido pelo id');
-    $id_usuario = new TEntry('id_usuario');
-    $id_status = new TEntry('id_status');
+    $unique->setTip('Pesquise o emprestido pelo id, usuario ou status');
     $data = new TDate('created_at');
 
     // ADICIONE OS CAMPOS
     $row = $this->form->addFields(
       [new TLabel('Campo de busca')],
-      [$unique]
-    );
-
-    $row = $this->form->addFields(
-      [new TLabel('Usuário')],
-      [$id_usuario],
-      [new TLabel('Status')],
-      [$id_status],
+      [$unique],
       [new Tlabel('Data')],
       [$data]
     );
+
+    $row = $this->form->addFields(
+    );
+    $data->setSize('15%');
 
     // MANTENHA O FORMULÁRIO PREENCHIDO DURANTE A NAVEGAÇÃO COM OS DADOS DA SESSÃO
     $this->form->setData(TSession::getValue('cadastro_filter_data'));
 
     // ADICIONE AS AÇÕES DO FORMULÁRIO DE PESQUISA
-    $btn = $this->form->addAction('Buscar', new TAction(array($this, 'onSearch')), 'fa:search black');
-    $btn->class = 'btn btn-sm btn-primary';
-    $btn = $this->form->addAction("Solicitar emprestimo", new TAction(array('EmprestimoFerramentasForm', "onEdit")), "fa:plus-circle black");
-    $btn->class = 'btn btn-sm btn-success';
+    $btn = $this->form->addAction('Buscar', new TAction(array($this, 'onSearch')), 'fa:search white');
+    $btn->style = 'background-color:#2c7097; color:white';
+    $btn = $this->form->addAction("Solicitar emprestimo", new TAction(array('EmprestimoFerramentasForm', "onEdit")), "fa:plus-circle white");
+    $btn->style = 'background-color:#218231; color:white';
 
     // CRIA UMA GRADE DE DADOS
     $this->datagrid = new BootstrapDatagridWrapper(new TDataGrid);

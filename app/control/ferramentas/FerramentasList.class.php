@@ -50,10 +50,10 @@ class FerramentasList extends TStandardList
     $this->form->setData(TSession::getValue('cadastro_filter_data'));
 
     // ADICIONE AS AÇÕES DO FORMULÁRIO DE PESQUISA
-    $btn = $this->form->addAction('Buscar', new TAction(array($this, 'onSearch')), 'fa:search black');
-    $btn->class = 'btn btn-sm btn-primary';
-    $btn = $this->form->addAction("Cadastrar Ferramenta", new TAction(array('CadastroFerramentasForm', "onEdit")), "fa:plus-circle black");
-    $btn->class = 'btn btn-sm btn-success';
+    $btn = $this->form->addAction('Buscar', new TAction(array($this, 'onSearch')), 'fa:search white');
+    $btn->style = 'background-color:#2c7097; color:white';
+    $btn = $this->form->addAction("Cadastrar Ferramenta", new TAction(array('CadastroFerramentasForm', "onEdit")), "fa:plus-circle white");
+    $btn->style = 'background-color:#218231; color:white';
 
     // CRIA UMA GRADE DE DADOS
     $this->datagrid = new BootstrapDatagridWrapper(new TDataGrid);

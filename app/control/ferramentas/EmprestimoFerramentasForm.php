@@ -34,9 +34,10 @@ class EmprestimoFerramentasForm extends TStandardForm
         // create form and table container
         $this->form = new BootstrapFormBuilder('my_form');
         $this->form->setFormTitle("Solicitação de emprestimo");
-
+        
         $ferramenta = new TDBUniqueSearch('EmprestimoFerramentasForm','bancodados','ferramentas','id','{id} - {nome}');
         $ferramenta->placeholder ='Pesquise pela ferramenta desejada';
+        $ferramenta->setMinLength(1);
         $ferramenta->setSize('100%');
 
         $quantidade = new TSpinner('quantidade[]');
@@ -46,8 +47,11 @@ class EmprestimoFerramentasForm extends TStandardForm
         $this->fieldlist->generateAria();
         $this->fieldlist->width = '100%';
         $this->fieldlist->name  = 'my_field_list';
-        $this->fieldlist->addField('<b>Ferramenta</b><font color:"red">*</font>',  $ferramenta,  ['width' => '70%']);
-        $this->fieldlist->addField('<b>Quantidade</b>',   $quantidade,   ['width' => '10%']);
+        $this->fieldlist->addField('<b>Ferramenta</b><font color="red">*</font>',  $ferramenta,  ['width' => '70%']);
+        $this->fieldlist->addField('<b>Quantidade</b><font color="red">*</font>',   $quantidade,   ['width' => '10%']);
+
+        $ferramenta->setTip('Campo obrigatório');
+        $quantidade->setTip('Campo obrigatório');
 
         $this->form->addField($ferramenta);
         $this->form->addField($quantidade);
@@ -61,12 +65,10 @@ class EmprestimoFerramentasForm extends TStandardForm
         $this->form->addContent([$this->fieldlist]);
 
         // form actions
-        $btnSave = $this->form->addAction(_t('Save'), new TAction([$this, 'onSave']), 'fa:save white');
-        $btnSave->style = 'background-color:#218231; color:white';
-        $btnClear = $this->form->addAction(_t('Clear'), new TAction([$this, 'onClear']), 'fa:eraser white');
-        $btnClear->style = 'background-color:#c73927; color:white';
         $btnBack = $this->form->addActionLink(_t('Back'), new TAction(array('EmprestimoList', 'onReload')), 'far:arrow-alt-circle-left white');
         $btnBack->style = 'background-color:gray; color:white';
+        $btnSave = $this->form->addAction(_t('Save'), new TAction([$this, 'onSave']), 'fa:save white');
+        $btnSave->style = 'background-color:#218231; color:white';
         
         // wrap the page content using vertical box
         $vbox = new TVBox;
