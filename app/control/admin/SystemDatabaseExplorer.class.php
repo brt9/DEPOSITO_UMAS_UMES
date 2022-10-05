@@ -1,4 +1,7 @@
 <?php
+
+use Adianti\Base\TStandardForm;
+
 /**
  * SystemDatabaseExplorer
  *
@@ -9,7 +12,7 @@
  * @copyright  Copyright (c) 2006 Adianti Solutions Ltd. (http://www.adianti.com.br)
  * @license    http://www.adianti.com.br/framework-license
  */
-class SystemDatabaseExplorer extends TPage
+class SystemDatabaseExplorer extends TStandardForm
 {
     private $datagrid;
     
