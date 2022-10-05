@@ -26,8 +26,8 @@ class CadastroList extends TStandardList
 
     parent::setDatabase('bancodados');            // DEFINE O BANCO DE DADOS
     parent::setActiveRecord('lista');   // DEFINE O REGISTRO ATIVO
-    parent::setDefaultOrder('descricao', 'asc');         //  DEFINE A ORDEM PADRÃO
-    parent::addFilterField('id_item', '=', 'id_item'); //  CAMPO DE FILTRO, OPERADOR, CAMPO DE FORMULÁRIO
+    parent::setDefaultOrder('DESCRICAO', 'asc');         //  DEFINE A ORDEM PADRÃO
+    parent::addFilterField('CODIGO', '=', 'CODIGO'); //  CAMPO DE FILTRO, OPERADOR, CAMPO DE FORMULÁRIO
     parent::addFilterField('DESCRICAO', 'like', 'DESCRICAO'); // CAMPO DE FILTRO, OPERADOR, CAMPO DE FORMULÁRIO
 
     // CRIA O FORMULÁRIO
@@ -37,9 +37,9 @@ class CadastroList extends TStandardList
 
     // CRIE OS CAMPOS DO FORMULÁRIO
 
-    $id = new TQRCodeInputReader('id_item');
+    $id = new TQRCodeInputReader('CODIGO');
     $QUANTIDADE_ESTOQUE = new TEntry('QUANTIDADE_ESTOQUE');
-    $DESCRICAO       = new TCombo ('descricao');
+    $DESCRICAO       = new TCombo ('DESCRICAO');
     //$ITEM       = new TEntry('DESCRICAO');
 
     // ADICIONE OS CAMPOS
@@ -48,7 +48,7 @@ class CadastroList extends TStandardList
     //$this->form->addFields([new TLabel('DESCRICAO')], [$ITEM]);
 
     $DESCRICAO->addItems(['JOELHO PVC 90°' => 'JOELHO PVC 90°', 'JOELHO PVC 45°' => 'JOELHO PVC 45°', 'LUVA PVC SOLD' => 'LUVA PVC SOLD', 'LUVA FERRO FUND BIPARTIDA' => 'LUVA FERRO FUND BIPARTIDA', 'LUVA DE CORRER PVC' => 'LUVA DE CORRER PVC', 'LUVA CORRER PVC DEFOFO' => 'LUVA CORRER PVC DEFOFO']);
-    $this->form->addFields([new TLabel('DESCRIÇÃO')], [$DESCRICAO]);
+    $this->form->addFields([new TLabel('DESCRICAO')], [$DESCRICAO]);
     $id->setSize('50%');
     $DESCRICAO->setSize('50%');
 
@@ -68,22 +68,20 @@ class CadastroList extends TStandardList
     
     
     // CRIA AS COLUNAS DA GRADE DE DADOS
-    $column_id = new TDataGridColumn('id_item', 'CODIGO DO ITEM', 'center', 50);
-    $column_DESCRICAO = new TDataGridColumn('descricao', 'DESCRIÇÃO', 'left');
-    $column_QUANTIDADE_ESTOQUE = new TDataGridColumn('quantidade_estoque', 'QUANTIDADE ESTOQUE', 'left');
-    $column_update_at = new TDataGridColumn('updated_at', 'DATA DA ATUALIZAÇÂO', 'left');
+    $column_id = new TDataGridColumn('CODIGO', 'CODIGO DO ITEM', 'center', 50);
+    $column_DESCRICAO = new TDataGridColumn('DESCRICAO', 'DESCRICAO', 'left');
+    $column_QUANTIDADE_ESTOQUE = new TDataGridColumn('QUANTIDADE_ESTOQUE', 'QUANTIDADE ESTOQUE', 'left');
   
     
     // ADICIONE AS COLUNAS À GRADE DE DADOS
     $this->datagrid->addColumn($column_id);
     $this->datagrid->addColumn($column_DESCRICAO);
     $this->datagrid->addColumn($column_QUANTIDADE_ESTOQUE);
-    $this->datagrid->addColumn($column_update_at);
-    
+   
     
     // CRIA AS AÇÕES DA COLUNA DA GRADE DE DADOS
     $order_id = new TAction(array($this, 'onReload'));
-    $order_id->setParameter('order', 'id_item');
+    $order_id->setParameter('order', 'CODIGO');
     $column_id->setAction($order_id);
     
     $order_DESCRICAO = new TAction(array($this, 'onReload'));
@@ -94,17 +92,14 @@ class CadastroList extends TStandardList
     $order_QUANTIDADE_ESTOQUE->setParameter('order', 'QUANTIDADE_ESTOQUE');
     $column_QUANTIDADE_ESTOQUE->setAction($order_QUANTIDADE_ESTOQUE);
     
-    $order_update_at  = new TAction(array($this, 'onReload'));
-    $order_update_at->setParameter('order', 'updated_at');
-    $column_update_at->setAction($order_update_at);
-    
+   
     
     // CRIAR AÇÃO EDITAR
     $action_edit = new TDataGridAction(array('CadastroForm', 'onEdit'));
     $action_edit->setButtonClass('btn btn-default');
     $action_edit->setLabel(_t('Edit'));
     $action_edit->setImage('far:edit blue');
-    $action_edit->setField('id_item');
+    $action_edit->setField('CODIGO');
     $this->datagrid->addAction($action_edit);
     
     

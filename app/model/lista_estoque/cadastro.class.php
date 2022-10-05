@@ -14,8 +14,8 @@ use Adianti\Database\TRecord;
  */
 class cadastro extends TRecord
 {
-    const TABLENAME = 'estoque_gms';
-    const PRIMARYKEY = 'id_item';
+    const TABLENAME = 'ESTOQUE_UMAS_UMES';
+    const PRIMARYKEY = 'CODIGO';
     const IDPOLICY =  'max'; // {max, serial}
 
     /**
@@ -24,9 +24,9 @@ class cadastro extends TRecord
     public function __construct($id = NULL, $callObjectLoad = TRUE)
     {
         parent::__construct($id, $callObjectLoad);
-        parent::addAttribute('id_item');
-        parent::addAttribute('descricao');
-        parent::addAttribute('quantidade_estoque');
-        parent::addAttribute('data_cadastro_item');
+        parent::addAttribute('CODIGO');
+        parent::addAttribute('DESCRICAO');
+        parent::addAttribute('QUANTIDADE_ESTOQUE');
+        parent::addAttribute('DATA_CADASTRO_ITEM');
     }
 }
