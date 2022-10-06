@@ -6,7 +6,7 @@ class Ferramentas extends TRecord
 {
     const TABLENAME = 'ferramentas';
     const PRIMARYKEY = 'id';
-    const IDPOLICY = 'serial'; // {max, serial}
+    const IDPOLICY = 'max'; // {max, serial}
 
     const CREATEDAT = 'created_at';
     const UPDATEDAT = 'updated_at';
