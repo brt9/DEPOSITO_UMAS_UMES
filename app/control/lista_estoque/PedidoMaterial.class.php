@@ -77,7 +77,7 @@ class PedidoMaterial extends TStandardForm
 
         // add field list to the form
         $this->form->addContent([$this->fieldlist]);
-        $id_usuario->setValue(TSession::getValue('username'));
+        $id_usuario->setValue(TSession::getValue('userid'));
         // form actions
         $this->form->addAction('SALVAR', new TAction([$this, 'onSave']), 'fa:save green');
         $this->form->addAction('LIMPAR', new TAction([$this, 'onClear']), 'fa:eraser red');

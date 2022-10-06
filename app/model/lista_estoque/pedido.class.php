@@ -17,10 +17,10 @@ class pedido extends TRecord
     const TABLENAME = 'pedido_material';
     const PRIMARYKEY = 'id_pedido_material';
     const IDPOLICY = 'max'; // {max, serial}
-
-    const CREATEDAT = 'created_at';
-    const UPDATEDAT = 'updated_at';
-    const DELETEDAT = 'deleted_at';
+    
+    CONST CREATEDAT = 'created_at';
+    CONST UPDATEDAT = 'updated_at';
+    CONST DELETEDAT = 'deleted_at';
 
     /**
      * Constructor method
@@ -33,6 +33,6 @@ class pedido extends TRecord
         parent::addAttribute('quantidade');
         parent::addAttribute('id_usuario');
         parent::addAttribute('id_admin');
-        parent::addAttribute('id_status');
     }
+    
 }
