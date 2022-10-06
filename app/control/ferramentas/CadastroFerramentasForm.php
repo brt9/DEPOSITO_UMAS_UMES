@@ -6,6 +6,7 @@ use Adianti\Widget\Form\TEntry;
 use Adianti\Widget\Form\THidden;
 use Adianti\Widget\Form\TLabel;
 use Adianti\Widget\Form\TSpinner;
+use Adianti\Widget\Form\TText;
 
 /**
  * FormNestedBuilderView
@@ -17,7 +18,7 @@ use Adianti\Widget\Form\TSpinner;
  * @copyright  Copyright (c) 2006 Adianti Solutions Ltd. (http://www.adianti.com.br)
  * @license    http://www.adianti.com.br/framework-license
  */
-class CadastroFerramentasForm extends TStandardForm
+class CadastroFerramentasForm extends TPage
 {
     protected $form;
 
@@ -29,38 +30,39 @@ class CadastroFerramentasForm extends TStandardForm
     {
         parent::__construct();
 
-        $this->setDatabase('bancodados');
-        $this->setActiveRecord('Ferramentas');
+
 
         $this->form = new BootstrapFormBuilder;
         $this->form->setFormTitle('Cadastro de ferramentas');
         $this->form->generateAria(); // automatic aria-label
 
         // create the form fields
-        $id          = new TEntry('id');
+        $id = new TEntry('id');
         $nomeFerramenta = new TEntry('nome');
+
         $quantidade    = new TSpinner('quantidade');
 
         $id->setEditable(FALSE);
-
-        // disable dates (bootstrap date picker
-
         // add the fields inside the form
-        $row = $this->form->addFields(
-            [$labelInfo = new TLabel('<font color="red">ATENÇÃO</font>')],
-            [$labelID = new TLabel('Id')],[$id],
-        );
-        
+        $row = $this->form->addFields( [new TLabel('Id')],    [$id] );
+        $id->setSize('20%');
+
         $row = $this->form->addFields(
             [$labelFerramenta = new TLabel('Ferramenta <font color="red">*</font>')],[$nomeFerramenta],
             [$labelQuantidade = new TLabel('Quantidade <font color="red">*</font>')],[$quantidade],
         );
+        $row->style = 'align-items: center';
+
+        $row = $this->form->addFields(
+            [$labelInfo = new TLabel('<font color="red">ATENÇÃO</font> Ao cadastrar uma ferramenta, 
+            caso queira continuar cadastrando outras ferramentas, basta clicar no botão de "Limpar"
+            e continuar cadastrando')],
+        );
+        $row->style = 'margin-top: 3rem; text-align: center';
+
         //Style in form
-        $labelInfo->setTip('Ao cadastrar uma ferramenta, caso queira </br>continuar 
-        cadastrando outras ferramentas</br>, basta clicar no botão de "Limpar"</br> e continuar cadastrando');
         $labelFerramenta->setTip('Campo obrigatório');
         $labelQuantidade->setTip('Campo obrigatório');
-        $id->setSize('50%');
         $labelFerramenta->style = 'left: -100%;';
         $nomeFerramenta->setSize('100%');
         $quantidade->setSize('20%');
@@ -80,5 +82,43 @@ class CadastroFerramentasForm extends TStandardForm
         $vbox->style = 'width: 100%';
         $vbox->add($this->form);
         parent::add($vbox);
+    }
+    public function onSave( $param )
+    {
+        try
+        {
+            if(!isset($param['id'])){
+                TTransaction::open('bancodados'); // open a transaction
+                $this->form->validate(); // validate form data
+                
+                $object = new Ferramentas();  // create an empty object
+                $data = $this->form->getData(); // get form data as array
+                $object->fromArray( (array) $data); // load the object with data
+                $object->store(); // save the object
+                
+                // get the generated id
+                $data->id = $object->id;
+            }
+            
+            $this->form->setData($data); // fill form data
+            
+            $this->fireEvents( $object );
+            
+            TTransaction::close(); // close the transaction
+            
+            new TMessage('info', TAdiantiCoreTranslator::translate('Ferramenta cadastrada'));
+        }
+        catch (Exception $e) // in case of exception
+        {
+            new TMessage('error', $e->getMessage()); // shows the exception error message
+            $this->form->setData( $this->form->getData() ); // keep form data
+            TTransaction::rollback(); // undo all pending operations
+        }
+    }
+    public function onEdit($param) {
+
+    }
+    public function onClear($param) {
+
     }
 }
