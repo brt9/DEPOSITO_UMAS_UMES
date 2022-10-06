@@ -1,6 +1,7 @@
 <?php
 
 use Adianti\Widget\Form\TDate;
+use Adianti\Widget\Form\TDateTime;
 use Adianti\Widget\Form\TEntry;
 use Adianti\Widget\Form\TSpinner;
 
@@ -45,7 +46,7 @@ class EmprestimoList extends TStandardList
     $unique->setMinLength(1);
     $unique->setMask('{id}');
     $unique->setTip('Pesquise o emprestido pelo id, usuario ou status');
-    $data = new TDate('created_at');
+    $data = new TDateTime('created_at');
 
     // ADICIONE OS CAMPOS
     $row = $this->form->addFields(
@@ -57,7 +58,7 @@ class EmprestimoList extends TStandardList
 
     $row = $this->form->addFields(
     );
-    $data->setSize('15%');
+    $data->setSize('40%');
 
     // MANTENHA O FORMULÁRIO PREENCHIDO DURANTE A NAVEGAÇÃO COM OS DADOS DA SESSÃO
     $this->form->setData(TSession::getValue('cadastro_filter_data'));
