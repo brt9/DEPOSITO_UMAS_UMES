@@ -53,7 +53,7 @@ class EmprestimoList extends TStandardList
       [new TLabel('Campo de busca')],
       [$unique],
       [new Tlabel('Data')],
-      [$data]
+      [$data],
     );
 
     $row = $this->form->addFields(
@@ -76,19 +76,18 @@ class EmprestimoList extends TStandardList
     $this->datagrid->setHeight(320);
 
     // CRIA AS COLUNAS DA GRADE DE DADOS
+    
     $column_id = new TDataGridColumn('id', 'Id', 'center', 50);
     $column_nome = new TDataGridColumn('id_ferramenta', 'Nome da ferramenta', 'center');
     $column_usuario = new TDataGridColumn('id_usuario', 'Usuário', 'center');
     $column_status = new TDataGridColumn('id_status', 'Status', 'center');
 
-
     // ADICIONE AS COLUNAS À GRADE DE DADOS
     $this->datagrid->addColumn($column_id);
-    $this->datagrid->addColumn($column_nome);
+    $user = $this->datagrid->addColumn($column_nome);
     $this->datagrid->addColumn($column_usuario);
     $this->datagrid->addColumn($column_status);
-
-
+    
     // CRIA AS AÇÕES DA COLUNA DA GRADE DE DADOS
     $order_id = new TAction(array($this, 'onReload'));
     $order_id->setParameter('order', 'id');
@@ -98,17 +97,13 @@ class EmprestimoList extends TStandardList
     $order_usuario->setParameter('order', 'id_usuario');
     $column_usuario->setAction($order_usuario);
 
-
-
     // CRIAR AÇÃO EDITAR
     $action_edit = new TDataGridAction(array('CadastroFerramentasForm', 'onEdit'));
     $action_edit->setButtonClass('btn btn-default');
     $action_edit->setLabel(_t('Edit'));
     $action_edit->setImage('far:edit blue');
-    $action_edit->setField('CODIGO');
+    $action_edit->setField('id');
     $this->datagrid->addAction($action_edit);
-
-
 
     // CRIAR O MODELO DE GRADE DE DADOS
     $this->datagrid->createModel();

@@ -66,12 +66,14 @@ class FerramentasList extends TStandardList
     $column_id = new TDataGridColumn('id', 'Id', 'center', 50);
     $column_nome = new TDataGridColumn('nome', 'Nome da ferramenta', 'center');
     $column_quantidade = new TDataGridColumn('quantidade', 'Quantidade', 'center');
+    $column_usuario = new TDataGridColumn('usuario', 'Usuario', 'center');
 
 
     // ADICIONE AS COLUNAS À GRADE DE DADOS
     $this->datagrid->addColumn($column_id);
     $this->datagrid->addColumn($column_nome);
     $this->datagrid->addColumn($column_quantidade);
+    $this->datagrid->addColumn($column_usuario);
 
 
     // CRIA AS AÇÕES DA COLUNA DA GRADE DE DADOS

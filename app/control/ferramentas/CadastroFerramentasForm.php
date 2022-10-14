@@ -39,7 +39,7 @@ class CadastroFerramentasForm extends TPage
         $id = new TEntry('id');
         $nomeFerramenta = new TEntry('nome');
 
-        $this->quantidade    = new TSpinner('quantidade');
+        $this->quantidade = new TSpinner('quantidade');
 
         $id->setEditable(FALSE);
         // add the fields inside the form
@@ -89,7 +89,7 @@ class CadastroFerramentasForm extends TPage
         parent::add($vbox);
     }
     public function onSave($param)
-    {
+    {        var_dump($param['idg']);exit;
         try {
             TTransaction::open('bancodados'); // open a transaction
             if (isset($param['id'])) {
