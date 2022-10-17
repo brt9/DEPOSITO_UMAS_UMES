@@ -100,9 +100,9 @@ class EmprestimoFerramentasForm extends TPage
                         $pivot->ferramentas = $key;
                     }
                 }
+                $username = TSession::getValue('userid');
                 $object->store(); // save the object
 
-                $username = TSession::getValue('userid');
                 // get the generated id
                 $data->id = $object->id;
                 $username = $object->id_usuario;

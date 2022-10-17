@@ -1,7 +1,6 @@
 <?php
 
 use Adianti\Base\TStandardForm;
-use Adianti\Database\TTransaction;
 use Adianti\Widget\Form\TDateTime;
 use Adianti\Widget\Form\TEntry;
 use Adianti\Widget\Form\THidden;
@@ -22,7 +21,7 @@ use Adianti\Widget\Form\TText;
 class CadastroFerramentasForm extends TPage
 {
     protected $form;
-    protected $quantidade;
+
     /**
      * Class constructor
      * Creates the page
@@ -30,6 +29,8 @@ class CadastroFerramentasForm extends TPage
     public function __construct()
     {
         parent::__construct();
+
+
 
         $this->form = new BootstrapFormBuilder;
         $this->form->setFormTitle('Cadastro de ferramentas');
@@ -39,7 +40,7 @@ class CadastroFerramentasForm extends TPage
         $id = new TEntry('id');
         $nomeFerramenta = new TEntry('nome');
 
-        $this->quantidade = new TSpinner('quantidade');
+        $quantidade    = new TSpinner('quantidade');
 
         $id->setEditable(FALSE);
         // add the fields inside the form
@@ -50,7 +51,7 @@ class CadastroFerramentasForm extends TPage
             [$labelFerramenta = new TLabel('Ferramenta <font color="red">*</font>')],
             [$nomeFerramenta],
             [$labelQuantidade = new TLabel('Quantidade <font color="red">*</font>')],
-            [$this->quantidade],
+            [$quantidade],
         );
         $row->style = 'align-items: center';
 
@@ -66,13 +67,9 @@ class CadastroFerramentasForm extends TPage
         $labelQuantidade->setTip('Campo obrigatório');
         $labelFerramenta->style = 'left: -100%;';
         $nomeFerramenta->setSize('100%');
-        $this->quantidade->setSize('20%');
+        $quantidade->setSize('20%');
         $nomeFerramenta->placeholder = 'Nome do ferramenta';
-        $this->quantidade->setTip = ('Informe a quantidade de materiais');
-
-        //Required
-        $nomeFerramenta->addValidation('Ferramenta', new TRequiredValidator);
-        $this->quantidade->setRange(1,100, 1);
+        $quantidade->setTip = ('Informe a quantidade de materiais');
 
         // define the form action 
         $btnBack = $this->form->addActionLink(_t('Back'), new TAction(array('FerramentasList', 'onReload')), 'far:arrow-alt-circle-left White');
@@ -89,7 +86,7 @@ class CadastroFerramentasForm extends TPage
         parent::add($vbox);
     }
     public function onSave($param)
-    {        var_dump($param['idg']);exit;
+    {
         try {
             TTransaction::open('bancodados'); // open a transaction
             if (isset($param['id'])) {
@@ -103,11 +100,12 @@ class CadastroFerramentasForm extends TPage
                 // get the generated id
                 $data->id = $object->id;
             }
+
             $this->form->setData($data); // fill form data
 
             TTransaction::close(); // close the transaction
 
-            new TMessage('info', 'Ferramenta cadastrada');
+            new TMessage('info', TAdiantiCoreTranslator::translate('Ferramenta cadastrada'));
         } catch (Exception $e) // in case of exception
         {
             new TMessage('error', $e->getMessage()); // shows the exception error message
@@ -136,7 +134,5 @@ class CadastroFerramentasForm extends TPage
     }
     public function onClear($param)
     {
-        
     }
-
 }
