@@ -39,14 +39,12 @@ class CadastroFerramentasForm extends TPage
         // create the form fields
         $id = new TEntry('id');
         $nomeFerramenta = new TEntry('nome');
-
         $quantidade    = new TSpinner('quantidade');
 
-        $id->setEditable(FALSE);
         // add the fields inside the form
         $row = $this->form->addFields([new TLabel('Id')],    [$id]);
-        $id->setSize('20%');
-
+        $id->setEditable(FALSE);
+        
         $row = $this->form->addFields(
             [$labelFerramenta = new TLabel('Ferramenta <font color="red">*</font>')],
             [$nomeFerramenta],
@@ -54,18 +52,19 @@ class CadastroFerramentasForm extends TPage
             [$quantidade],
         );
         $row->style = 'align-items: center';
-
+        
         $row = $this->form->addFields(
             [$labelInfo = new TLabel('<font color="red">ATENÇÃO</font> Ao cadastrar uma ferramenta, 
             caso queira continuar cadastrando outras ferramentas, basta clicar no botão de "Limpar"
             e continuar cadastrando')],
         );
         $row->style = 'margin-top: 3rem; text-align: center';
-
+        
         //Style in form
         $labelFerramenta->setTip('Campo obrigatório');
         $labelQuantidade->setTip('Campo obrigatório');
         $labelFerramenta->style = 'left: -100%;';
+        $id->setSize('20%');
         $nomeFerramenta->setSize('100%');
         $quantidade->setSize('20%');
         $nomeFerramenta->placeholder = 'Nome do ferramenta';

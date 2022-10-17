@@ -81,7 +81,6 @@ class EmprestimoList extends TStandardList
     $column_nome = new TDataGridColumn('id_ferramenta', 'Nome da ferramenta', 'center');
     $column_usuario = new TDataGridColumn('id_usuario', 'Usuário', 'center');
     $column_status = new TDataGridColumn('id_status', 'Status', 'center');
-
     // ADICIONE AS COLUNAS À GRADE DE DADOS
     $this->datagrid->addColumn($column_id);
     $user = $this->datagrid->addColumn($column_nome);
