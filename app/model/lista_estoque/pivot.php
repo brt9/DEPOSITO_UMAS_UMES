@@ -12,25 +12,22 @@ use Adianti\Database\TRecord;
  * @copyright  Copyright (c) 2021 Barata
  * @license    http://www.adianti.com.br/framework-license
  */
-class pedido extends TRecord
+class pivot extends TRecord
 {
-    const TABLENAME = 'pedido_material';
+    const TABLENAME = 'pivot_pedido_material';
     const PRIMARYKEY = 'id';
     const IDPOLICY = 'max'; // {max, serial}
-    
-    CONST CREATEDAT = 'created_at';
-    CONST UPDATEDAT = 'updated_at';
-    CONST DELETEDAT = 'deleted_at';
-
+ 
     /**
      * Constructor method
      */
     public function __construct($id = NULL, $callObjectLoad = TRUE)
     {
         parent::__construct($id, $callObjectLoad);
-        parent::addAttribute('id');
-        parent::addAttribute('id_usuario'); 
-        parent::addAttribute('id_status');
+        parent::addAttribute('id'); 
+        parent::addAttribute('id_pedido_material'); 
+        parent::addAttribute('codigo_item'); 
+        parent::addAttribute('quantidade');
     }
     
 }
