@@ -2,11 +2,15 @@
 
 use Adianti\Base\TStandardForm;
 use Adianti\Control\TPage;
+use Adianti\Database\TTransaction;
 use Adianti\Registry\TSession;
 use Adianti\Widget\Form\TDateTime;
+use Adianti\Widget\Form\TEntry;
 use Adianti\Widget\Form\THidden;
 use Adianti\Widget\Form\TSpinner;
+use Adianti\Widget\Wrapper\TDBCombo;
 use Adianti\Widget\Wrapper\TDBUniqueSearch;
+use Sabberworm\CSS\Value\Value;
 
 /**
  * FormNestedBuilderView
@@ -21,7 +25,7 @@ use Adianti\Widget\Wrapper\TDBUniqueSearch;
 class EmprestimoFerramentasForm extends TPage
 {
     protected $form;
-    protected $xlogin;
+    protected $fieldlist;
 
     /**
      * Class constructor
@@ -36,13 +40,14 @@ class EmprestimoFerramentasForm extends TPage
         $this->form->setFormTitle("Solicitação de emprestimo");
 
         $id             = new TEntry('id');
-        $ferramenta = new TDBUniqueSearch('ferramenta', 'bancodados', 'Ferramentas', 'id', 'nome', 'nome');
+        $ferramenta = new TDBCombo('ferramenta[]', 'bancodados', 'Ferramentas', 'id', 'nome', 'nome');
         $quantidade = new TSpinner('quantidade[]');
 
         $ferramenta->placeholder = 'Pesquise pela ferramenta desejada';
-        $ferramenta->setMinLength(1);
+        $ferramenta->enableSearch();
         $ferramenta->setSize('100%');
         $quantidade->setSize('100%');
+        $id->setEditable(FALSE);
         $id->setEditable(FALSE);
         $id->setSize('20%');
 
@@ -56,8 +61,8 @@ class EmprestimoFerramentasForm extends TPage
 
         $ferramenta->setTip('Campo obrigatório');
         $quantidade->setTip('Campo obrigatório');
-        
-        $this->form->addFields( [new TLabel('id')], [$id] );
+
+        $this->form->addFields([new TLabel('id')], [$id]);
         $this->form->addField($ferramenta);
         $this->form->addField($quantidade);
 
@@ -82,41 +87,42 @@ class EmprestimoFerramentasForm extends TPage
     }
     public function onSave($param)
     {
-        try
-        {
+        try {
             // open a transaction with database 'samples'
             TTransaction::open('bancodados');
-            if (isset($param['id'])) {
-                $this->form->validate(); // validate form data
-                
-                $object = new Emprestimo();  // create an empty object
-                $data = $this->form->getData(); // get form data as array
-                $object->fromArray((array) $data); // load the object with data
-                $object->id_usuario = TSession::getValue('userid');
-                $object->id_status = 1;
-                $object->store(); // save the object
-                
-                // get the generated id
-                $data->id = $object->id;
+            $usuarioLogado = TSession::getValue('system_user_id');
+            if (isset($param["id"]) && !empty($param["id"])) {
+                $emprestimo = new Emprestimo($param["id"]);
+                $emprestimo->id_usuario = $usuarioLogado;
+                $emprestimo->id_status = 1;
+            } else {
+                $emprestimo = new Emprestimo();
+                $emprestimo->id_usuario = $usuarioLogado;
+                $emprestimo->id_status = 1;
             }
-            var_dump($data);
-             //$obj_pivots = objpivot::where('obj_id', '=', $obj->id)->delete();
+            $emprestimo->fromArray($param);
+            $emprestimo->store();
             
-            //  if( !empty($param['product_id']) AND is_array($param['id']) )
-            //  {
-                foreach( $data as $id)
-                {
-                        $pivot = new PivotEmprestimoFerramentas();
-                        $pivot->id_emprestimo = $data->id;
-                        $pivot->id_ferramenta  = $param['ferramenta'];                        
-                        $pivot->store();
+            $ferramentas = $param['ferramenta'];
+            $qtdFerramenta = $param['quantidade'];     
+            
+            
+            foreach($ferramentas as $key=>$Value){
+                var_dump($Value);
+                TTransaction::setLoggerFunction( function($message) {
+                    echo $message . '<br>';
+                });
+                
+                if(isset($ferramentas)){
+                    $pivot =  new PivotEmprestimoFerramentas();
+                    $pivot->id_emprestimo = $emprestimo->id;
+                    $pivot->id_ferramenta = intval($Value);
+                    $pivot->store();
                 }
-            // } 
-            
-            TTransaction::close(); // close the transaction
-            new TMessage('info', TAdiantiCoreTranslator::translate('Record saved'));
-        }
-        catch (Exception $e) // in case of exception
+            }
+            TTransaction::close();
+            new TMessage('info', 'Record saved');
+        } catch (Exception $e) // in case of exception
         {
             new TMessage('error', $e->getMessage());
             TTransaction::rollback();
@@ -129,9 +135,9 @@ class EmprestimoFerramentasForm extends TPage
 
                 $id = $param['key'];
                 TTransaction::open('bancodados');
-                $object = new Ferramentas($id);
+                $emprestimo = new Ferramentas($id);
 
-                $this->form->setData($object);
+                $this->form->setData($emprestimo);
                 TTransaction::close();
             } else {
                 $this->form->clear();

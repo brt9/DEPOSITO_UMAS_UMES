@@ -104,7 +104,7 @@ class CadastroFerramentasForm extends TPage
 
             TTransaction::close(); // close the transaction
 
-            new TMessage('info', TAdiantiCoreTranslator::translate('Ferramenta cadastrada'));
+            new TMessage('info','Ferramenta cadastrada');
         } catch (Exception $e) // in case of exception
         {
             new TMessage('error', $e->getMessage()); // shows the exception error message

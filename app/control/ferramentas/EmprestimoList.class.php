@@ -78,12 +78,10 @@ class EmprestimoList extends TStandardList
     // CRIA AS COLUNAS DA GRADE DE DADOS
     
     $column_id = new TDataGridColumn('id', 'Id', 'center', 50);
-    $column_nome = new TDataGridColumn('id_ferramenta', 'Nome da ferramenta', 'center');
-    $column_usuario = new TDataGridColumn('id_usuario', 'Usuário', 'center');
+    $column_usuario = new TDataGridColumn('user->name', 'Usuário', 'center');
     $column_status = new TDataGridColumn('id_status', 'Status', 'center');
     // ADICIONE AS COLUNAS À GRADE DE DADOS
     $this->datagrid->addColumn($column_id);
-    $user = $this->datagrid->addColumn($column_nome);
     $this->datagrid->addColumn($column_usuario);
     $this->datagrid->addColumn($column_status);
     
@@ -97,7 +95,7 @@ class EmprestimoList extends TStandardList
     $column_usuario->setAction($order_usuario);
 
     // CRIAR AÇÃO EDITAR
-    $action_edit = new TDataGridAction(array('CadastroFerramentasForm', 'onEdit'));
+    $action_edit = new TDataGridAction(array('EmprestimoFerramentasForm', 'onEdit'));
     $action_edit->setButtonClass('btn btn-default');
     $action_edit->setLabel(_t('Edit'));
     $action_edit->setImage('far:edit blue');

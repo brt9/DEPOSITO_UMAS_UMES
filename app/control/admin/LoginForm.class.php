@@ -1,4 +1,7 @@
 <?php
+
+use Adianti\Registry\TSession;
+
 /**
  * LoginForm
  *
@@ -202,6 +205,7 @@ class LoginForm extends TPage
 
             if ($user)
             {
+                TSession::setValue('system_user_id', $user->id);
                 ApplicationAuthenticationService::setUnit( $data->unit_id ?? null );
                 ApplicationAuthenticationService::setLang( $data->lang_id ?? null );
                 SystemAccessLogService::registerLogin();

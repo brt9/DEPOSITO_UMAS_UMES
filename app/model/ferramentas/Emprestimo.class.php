@@ -12,6 +12,7 @@ class Emprestimo extends TRecord
     const UPDATEDAT = 'updated_at';
     const DELETEDAT = 'deleted_at';
 
+    protected $idUser;
     /**
      * Constructor method
      */
@@ -24,4 +25,14 @@ class Emprestimo extends TRecord
         parent::addAttribute('id_status');
 
     }
+    public function get_User()
+    {
+        // loads the associated object
+        if (empty($this->idUser))
+            $this->idUser = new SystemUser($this->id_usuario);
+    
+        // returns the associated object
+        return $this->idUser;
+    }
+
 }
