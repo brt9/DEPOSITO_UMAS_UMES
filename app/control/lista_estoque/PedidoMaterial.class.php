@@ -42,7 +42,7 @@ class PedidoMaterial extends TPage
         $id->setEditable(FALSE);
         $id->setSize('20%');
         $id_item = new TQRCodeInputReader('id_item');
-        
+
         $id_item->setSize('100%');
 
         $descricao = new TDBCombo('descricao', 'bancodados', 'lista', 'descricao', 'descricao');
@@ -53,12 +53,12 @@ class PedidoMaterial extends TPage
         $quantidade = new TEntry('quantidade');
         $quantidade->setSize('100%');
 
-        $id_status = new Thidden('id_status');
+        /* $id_status = new Thidden('id_status');
         $id_status->setSize('100%');
 
 
-        $id_usuario = new Thidden('id_usuario');
-        $id_usuario->setSize('100%');
+        $id_usuario = new Thidden('     ');
+        $id_usuario->setSize('100%');*/
 
 
 
@@ -66,23 +66,23 @@ class PedidoMaterial extends TPage
         $this->fieldlist->generateAria();
         $this->fieldlist->width = '100%';
         $this->fieldlist->name  = 'my_field_list';
-        $this->fieldlist->addField('<b>STATUS</b>',   $id_status,   ['width' => '0%']);
-        $this->fieldlist->addField('<b>USUARIO</b>', $id_usuario, ['width' => '0%']);
+        // $this->fieldlist->addField('<b>STATUS</b>',   $id_status,   ['width' => '0%']);
+        //$this->fieldlist->addField('<b>USUARIO</b>', $id_usuario, ['width' => '0%']);
 
         $this->fieldlist->addField('<b>CODIGO ITEM</b>',  $id_item,  ['width' => '20%']);
         $this->fieldlist->addField('<b>DESCRIÇÂO</b>',  $descricao,  ['width' => '60%']);
         $this->fieldlist->addField('<b>QUANTIDADE</b>',   $quantidade,   ['width' => '20%']);
-        $this->form->addFields( [new TLabel('id')], [$id] );
-        $this->form->addField($id_usuario);
-        $this->form->addField($id_status);
+        $this->form->addFields([new TLabel('id')], [$id]);
+        // $this->form->addField($id_usuario);
+        //  $this->form->addField($id_status);
 
         $this->form->addField($id_item);
         $this->form->addField($descricao);
         $this->form->addField($quantidade);
 
         // STATUS DO PEDIDO E USUARIO SOLICITANTE
-        $id_status->addValidation('STATUS', new TRequiredValidator);
-        $id_usuario->addValidation('USUARIO', new TRequiredValidator);
+        //$id_status->addValidation('STATUS', new TRequiredValidator);
+        // $id_usuario->addValidation('USUARIO', new TRequiredValidator);
 
 
         $id_item->addValidation('CODIGO ITEM', new TRequiredValidator);
@@ -94,12 +94,12 @@ class PedidoMaterial extends TPage
         $this->fieldlist->addCloneAction();
 
 
-        $id_status->setEditable(FALSE);
-        $id_usuario->setEditable(FALSE);
+        //$id_status->setEditable(FALSE);
+        //$id_usuario->setEditable(FALSE);
         // add field list to the form
         $this->form->addContent([$this->fieldlist]);
-        $id_usuario->setValue(TSession::getValue('userid'));
-        $id_status->setValue('1');
+
+        //$id_status->setValue('1');
         // form actions
         $btnSave = $this->form->addAction('SALVAR', new TAction([$this, 'onSave']), 'fa:save white');
         $btnSave->style = 'background-color:#218231; color:white';
@@ -119,29 +119,39 @@ class PedidoMaterial extends TPage
         try {
             // open a transaction with database 'samples'
             TTransaction::open('bancodados');
-            if (isset($param['id'])) {
-                $this->form->validate();
-                $object = new pedido();
-                $data = $this->form->getData();
-                $object->fromArray((array) $data);
-                $object->id_usuario = TSession::getValue('userid');
-                $object->id_status = 1;
-                $object->store();
-                $data->id = $object->id;
+
+            $usuarioLogado = TSession::getValue('userid');
+            if (isset($param["id"]) && !empty($param["id"])) {
+                $pedido = new pedido($param["id"]);
+                $pedido->id_usuario = $usuarioLogado;
+                $pedido->id_status = 1;
+            } else {
+                $pedido = new pedido();
+                $pedido->id_usuario = $usuarioLogado;
+                $pedido->id_status = 1;
             }
-            var_dump($data);
+            $pedido->fromArray($param);
+            $pedido->store();
 
+            $codigo_item = $param['id'];
+            $codigo_item1 = $param['id_item'];
+            $quantidade = $param['quantidade'];
 
+            foreach ($pedido as $key => $Value) {
+                var_dump($Value);
+                TTransaction::setLoggerFunction(function ($message) {
+                    echo $message . '<br>';
+                });
 
-            //    pivot::where(`id`, `=`, $param[`id`])->delete();
-
-            foreach ($data as $id) {
-                $pivot = new pivot();
-                $pivot->id_pedido_material = $data->id;
-                $pivot->codigo_item  = $param['id_item'];
-                $pivot->quantidade  = $param['quantidade'];
-                $pivot->store();
+                if (isset($pedido)) {
+                    $pivot =  new pivot();
+                    $pivot->id_pedido_material = $pedido->id;
+                    $pivot->codigo_item = $codigo_item1;
+                    $pivot->quantidade = intval($quantidade);
+                }
             }
+            $pivot->store();
+
 
             TTransaction::close(); // close the transaction
             new TMessage('info', TAdiantiCoreTranslator::translate('Record saved'));
