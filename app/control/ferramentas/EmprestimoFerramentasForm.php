@@ -90,7 +90,7 @@ class EmprestimoFerramentasForm extends TPage
         try {
             // open a transaction with database 'samples'
             TTransaction::open('bancodados');
-            $usuarioLogado = TSession::getValue('system_user_id');
+            $usuarioLogado = TSession::getValue('userid');
             if (isset($param["id"]) && !empty($param["id"])) {
                 $emprestimo = new Emprestimo($param["id"]);
                 $emprestimo->id_usuario = $usuarioLogado;
@@ -102,21 +102,18 @@ class EmprestimoFerramentasForm extends TPage
             }
             $emprestimo->fromArray($param);
             $emprestimo->store();
-            
+
+            PivotEmprestimoFerramentas::where('id_emprestimo','=',$emprestimo->id)->delete();
+
             $ferramentas = $param['ferramenta'];
-            $qtdFerramenta = $param['quantidade'];     
-            
-            
-            foreach($ferramentas as $key=>$Value){
-                var_dump($Value);
-                TTransaction::setLoggerFunction( function($message) {
-                    echo $message . '<br>';
-                });
-                
-                if(isset($ferramentas)){
+            $count = count($ferramentas);
+
+            if (isset($ferramentas)) {
+                for ($i = 0; $i < $count; $i++) {
                     $pivot =  new PivotEmprestimoFerramentas();
                     $pivot->id_emprestimo = $emprestimo->id;
-                    $pivot->id_ferramenta = intval($Value);
+                    $pivot->id_ferramenta = $param['ferramenta'][$i];
+                    $pivot->quantidade = $param['quantidade'][$i];
                     $pivot->store();
                 }
             }
