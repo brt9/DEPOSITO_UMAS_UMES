@@ -2,11 +2,15 @@
 
 use Adianti\Base\TStandardForm;
 use Adianti\Control\TPage;
+use Adianti\Database\TTransaction;
 use Adianti\Registry\TSession;
 use Adianti\Widget\Form\TDateTime;
+use Adianti\Widget\Form\TEntry;
 use Adianti\Widget\Form\THidden;
 use Adianti\Widget\Form\TSpinner;
+use Adianti\Widget\Wrapper\TDBCombo;
 use Adianti\Widget\Wrapper\TDBUniqueSearch;
+use Sabberworm\CSS\Value\Value;
 
 /**
  * FORMULÁRIO DE CADASTRO DE MATERIAL
@@ -41,16 +45,16 @@ class PedidoMaterial extends TPage
         $id             = new TEntry('id');
         $id->setEditable(FALSE);
         $id->setSize('20%');
-        $id_item = new TQRCodeInputReader('id_item');
 
+        $id_item = new TQRCodeInputReader('id_item[]');
         $id_item->setSize('100%');
 
-        $descricao = new TDBCombo('descricao', 'bancodados', 'lista', 'descricao', 'descricao');
+        $descricao = new TDBCombo('descricao[]', 'bancodados', 'lista', 'descricao', 'descricao');
         $descricao->enableSearch();
         $descricao->setSize('100%');
 
 
-        $quantidade = new TEntry('quantidade');
+        $quantidade = new TSpinner('quantidade[]');
         $quantidade->setSize('100%');
 
         /* $id_status = new Thidden('id_status');
@@ -119,40 +123,48 @@ class PedidoMaterial extends TPage
         try {
             // open a transaction with database 'samples'
             TTransaction::open('bancodados');
-
             $usuarioLogado = TSession::getValue('userid');
             if (isset($param["id"]) && !empty($param["id"])) {
-                $pedido = new pedido($param["id"]);
-                $pedido->id_usuario = $usuarioLogado;
-                $pedido->id_status = 1;
-            } else {
-                $pedido = new pedido();
-                $pedido->id_usuario = $usuarioLogado;
-                $pedido->id_status = 1;
+                $object = new pedido($param["id"]);
+                $object->id_usuario = $usuarioLogado;
+                $object->id_status = 1;
+            }  else {
+                    $object = new pedido();
+                    $object->id_usuario = $usuarioLogado;
+                    $object->id_status = 1;
             }
-            $pedido->fromArray($param);
-            $pedido->store();
+            $object->fromArray($param);
+            $object->store();
 
-            $codigo_item = $param['id'];
-            $codigo_item1 = $param['id_item'];
+            pivot::where('id_pedido_material','=',$object->id)->delete();
+
+            $id_item = $param['id_item'];
             $quantidade = $param['quantidade'];
-
-            foreach ($pedido as $key => $Value) {
-                var_dump($Value);
-                TTransaction::setLoggerFunction(function ($message) {
-                    echo $message . '<br>';
-                });
-
-                if (isset($pedido)) {
-                    $pivot =  new pivot();
-                    $pivot->id_pedido_material = $pedido->id;
-                    $pivot->codigo_item = $codigo_item1;
-                    $pivot->quantidade = intval($quantidade);
-                }
-            }
-            $pivot->store();
+            $count = count($id_item);
+            
+     
 
 
+         if (isset($id_item)) {
+            for ($i = 0; $i < $count; $i++) {
+            $pivot = new pivot();
+            $pivot->id_pedido_material = $object->id;
+            $pivot->codigo_item  = $id_item[$i];
+            $pivot->quantidade  = $quantidade[$i];
+            $pivot->store(); 
+         
+        }
+    }
+
+/*
+           
+          
+           
+        
+
+
+
+          */
             TTransaction::close(); // close the transaction
             new TMessage('info', TAdiantiCoreTranslator::translate('Record saved'));
         } catch (Exception $e) // in case of exception
@@ -163,9 +175,7 @@ class PedidoMaterial extends TPage
     }
     public function onClear($param)
     {
-        $this->product_list->addHeader();
-        $this->product_list->addDetail(new stdClass);
-        $this->product_list->addCloneAction();
+  
     }
     function onEdit($param)
     {
