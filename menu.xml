@@ -15,6 +15,10 @@
         <action>PedidoMaterial</action>
         <icon>fas:water fa-fw #0138ff</icon>
       </menuitem>
+      <menuitem label="LISTA DE PEDIDOS">
+        <action>PeididoList</action>
+        <icon>fas:water fa-fw #0138ff</icon>
+      </menuitem>
     </menu>
   </menuitem>
   <menuitem label="Ferramentas">

@@ -10,7 +10,7 @@
  * @copyright  Copyright (c) 2021 Barata
  * @license    http://www.adianti.com.br/framework-license
  */
-class CadastroList extends TStandardList
+class PeididoList extends TStandardList
 {
   protected $form;     // FORMULÁRIO DE REGISTRO
   protected $datagrid; //  LISTAGEM
@@ -25,10 +25,10 @@ class CadastroList extends TStandardList
     parent::__construct();
 
     parent::setDatabase('bancodados');            // DEFINE O BANCO DE DADOS
-    parent::setActiveRecord('lista');   // DEFINE O REGISTRO ATIVO
-    parent::setDefaultOrder('descricao', 'asc');         //  DEFINE A ORDEM PADRÃO
-    parent::addFilterField('id_item', '=', 'id_item'); //  CAMPO DE FILTRO, OPERADOR, CAMPO DE FORMULÁRIO
-    parent::addFilterField('descricao', '=', 'descricao'); // CAMPO DE FILTRO, OPERADOR, CAMPO DE FORMULÁRIO
+    parent::setActiveRecord('ListaPedido');   // DEFINE O REGISTRO ATIVO
+    parent::setDefaultOrder('id', 'asc');         //  DEFINE A ORDEM PADRÃO
+    parent::addFilterField('id', '=', 'id'); //  CAMPO DE FILTRO, OPERADOR, CAMPO DE FORMULÁRIO
+    parent::addFilterField('id_status', '=', 'id_status'); // CAMPO DE FILTRO, OPERADOR, CAMPO DE FORMULÁRIO
 
     // CRIA O FORMULÁRIO
 
@@ -37,17 +37,22 @@ class CadastroList extends TStandardList
 
     // CRIE OS CAMPOS DO FORMULÁRIO
 
-    $id = new TQRCodeInputReader('id_item');
-    $descricao = new TDBCombo('descricao', 'bancodados', 'lista', 'descricao', 'descricao');
+    $id = new TQRCodeInputReader('id');
+    $id_status = new TQRCodeInputReader('id_status');
+    $id_usuario = new TQRCodeInputReader('id_usuario');
+    $data_pedido = new TQRCodeInputReader('created_at');
+
 
     // ADICIONE OS CAMPOS
 
-    $this->form->addFields([new TLabel('CODIGO DO ITEM')], [$id]);
-    $this->form->addFields([new TLabel('DESCRIÇÃO')], [$descricao]);
+    $this->form->addFields([new TLabel('CODIGO DO PEDIDO')], [$id]);
+    $this->form->addFields([new TLabel('CODIGO DO STATUS')], [$id_status]);
+    $this->form->addFields([new TLabel('USUARIO SOLICITANTE')], [$id_usuario]);
+    $this->form->addFields([new TLabel('DATA DO PEDIDO')], [$data_pedido]);
 
 
     $id->setSize('50%');
-    $descricao->setSize('50%');
+
     
 
     // MANTENHA O FORMULÁRIO PREENCHIDO DURANTE A NAVEGAÇÃO COM OS DADOS DA SESSÃO
@@ -66,43 +71,46 @@ class CadastroList extends TStandardList
     
     
     // CRIA AS COLUNAS DA GRADE DE DADOS
-    $column_id = new TDataGridColumn('id_item', 'CODIGO DO ITEM', 'center', 50);
-    $column_descricao = new TDataGridColumn('descricao', 'DESCRIÇÃO', 'left');
-    $column_quantidade_estoque = new TDataGridColumn('quantidade_estoque', 'QUANTIDADE ESTOQUE', 'left');
-    $column_update_at = new TDataGridColumn('updated_at', 'DATA DA ATUALIZAÇÂO', 'left');
+    $column_id = new TDataGridColumn('id', 'CODIGO DO PEDIDO', 'center', 50);
+    $column_id_status = new TDataGridColumn('id_status', 'CODIGO DO STATUS', 'center', 50);
+    $column_id_usuario new TDataGridColumn('user->name', 'Usuário', 'center');
+    $column_data_pedido = new TDataGridColumn('data_pedido', 'DATA DO PEDIDO', 'center', 50);
+   
   
     
     // ADICIONE AS COLUNAS À GRADE DE DADOS
     $this->datagrid->addColumn($column_id);
-    $this->datagrid->addColumn($column_descricao);
-    $this->datagrid->addColumn($column_quantidade_estoque);
-    $this->datagrid->addColumn($column_update_at);
+    $this->datagrid->addColumn($column_id_status);
+    $this->datagrid->addColumn($column_id_usuario);
+    $this->datagrid->addColumn($column_data_pedido);
+
     
     
     // CRIA AS AÇÕES DA COLUNA DA GRADE DE DADOS
     $order_id = new TAction(array($this, 'onReload'));
-    $order_id->setParameter('order', 'id_item');
+    $order_id->setParameter('order', 'id');
     $column_id->setAction($order_id);
     
-    $order_descricao = new TAction(array($this, 'onReload'));
-    $order_descricao->setParameter('order', 'descricao');
-    $column_descricao->setAction($order_descricao);
-    
-    $order_quantidade_estoque  = new TAction(array($this, 'onReload'));
-    $order_quantidade_estoque->setParameter('order', 'quantidade_estoque');
-    $column_quantidade_estoque->setAction($order_quantidade_estoque);
-    
-    $order_update_at  = new TAction(array($this, 'onReload'));
-    $order_update_at->setParameter('order', 'updated_at');
-    $column_update_at->setAction($order_update_at);
+    $order_id_status = new TAction(array($this, 'onReload'));
+    $order_id_status->setParameter('order', 'id_status');
+    $column_id_status->setAction($order_id_status);
+
+    $order_id_usuario = new TAction(array($this, 'onReload'));
+    $order_id_usuario->setParameter('order', 'id_status');
+    $column_id_usuario->setAction($order_id_status);
+
+
+    $order_data_pedido = new TAction(array($this, 'onReload'));
+    $order_data_pedido->setParameter('data_pedido', 'id_status');
+    $column_data_pedido->setAction($order_data_pedido);
     
     
     // CRIAR AÇÃO EDITAR
-    $action_edit = new TDataGridAction(array('CadastroForm', 'onEdit'));
+    $action_edit = new TDataGridAction(array('PedidoMaterial', 'onEdit'));
     $action_edit->setButtonClass('btn btn-default');
     $action_edit->setLabel(_t('Edit'));
     $action_edit->setImage('far:edit blue');
-    $action_edit->setField('id_item');
+    $action_edit->setField('id');
     $this->datagrid->addAction($action_edit);
     
     
