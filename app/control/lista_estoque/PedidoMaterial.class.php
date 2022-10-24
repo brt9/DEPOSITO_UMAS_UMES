@@ -11,6 +11,7 @@ use Adianti\Widget\Form\TSpinner;
 use Adianti\Widget\Wrapper\TDBCombo;
 use Adianti\Widget\Wrapper\TDBUniqueSearch;
 use Sabberworm\CSS\Value\Value;
+use Adianti\Util\AdiantiUIBuilder;
 
 /**
  * FORMULÁRIO DE CADASTRO DE MATERIAL
@@ -42,27 +43,24 @@ class PedidoMaterial extends TPage
         $this->form = new BootstrapFormBuilder('my_form');
         $this->form->setFormTitle('FORMULARIO DE PEDIDO DE MATERIAL');
 
-        $id             = new TEntry('id');
+        $id = new THidden('id');
         $id->setEditable(FALSE);
         $id->setSize('20%');
 
         $id_item = new TQRCodeInputReader('id_item[]');
         $id_item->setSize('100%');
-
+        $id_item->placeholder = '00000';
+        $id_item->setTip('Digite o codigo do Item Desejado');
         $descricao = new TDBCombo('descricao[]', 'bancodados', 'lista', 'descricao', 'descricao');
+        $descricao->setTip('Digite a descrição do Item Desejado');
         $descricao->enableSearch();
         $descricao->setSize('100%');
 
 
         $quantidade = new TSpinner('quantidade[]');
         $quantidade->setSize('100%');
+        $quantidade->setTip('Digite a quantidade do Item Desejado');
 
-        /* $id_status = new Thidden('id_status');
-        $id_status->setSize('100%');
-
-
-        $id_usuario = new Thidden('     ');
-        $id_usuario->setSize('100%');*/
 
 
 
@@ -70,26 +68,20 @@ class PedidoMaterial extends TPage
         $this->fieldlist->generateAria();
         $this->fieldlist->width = '100%';
         $this->fieldlist->name  = 'my_field_list';
-        // $this->fieldlist->addField('<b>STATUS</b>',   $id_status,   ['width' => '0%']);
-        //$this->fieldlist->addField('<b>USUARIO</b>', $id_usuario, ['width' => '0%']);
 
         $this->fieldlist->addField('<b>CODIGO ITEM</b>',  $id_item,  ['width' => '20%']);
         $this->fieldlist->addField('<b>DESCRIÇÂO</b>',  $descricao,  ['width' => '60%']);
         $this->fieldlist->addField('<b>QUANTIDADE</b>',   $quantidade,   ['width' => '20%']);
-        $this->form->addFields([new TLabel('id')], [$id]);
-        // $this->form->addField($id_usuario);
-        //  $this->form->addField($id_status);
+        $this->form->addFields([$id]);
 
         $this->form->addField($id_item);
         $this->form->addField($descricao);
         $this->form->addField($quantidade);
 
-        // STATUS DO PEDIDO E USUARIO SOLICITANTE
-        //$id_status->addValidation('STATUS', new TRequiredValidator);
-        // $id_usuario->addValidation('USUARIO', new TRequiredValidator);
 
 
-        $id_item->addValidation('CODIGO ITEM', new TRequiredValidator);
+
+        $id_item->addValidation('CODIGO ITEM', new TRequiredValidator($id_item));
         $descricao->addValidation('DESCRIÇÂO', new TRequiredValidator);
         $quantidade->addValidation('QUANTIDADE', new TRequiredValidator);
 
@@ -128,35 +120,34 @@ class PedidoMaterial extends TPage
                 $object = new pedido($param["id"]);
                 $object->id_usuario = $usuarioLogado;
                 $object->id_status = 1;
-            }  else {
-                    $object = new pedido();
-                    $object->id_usuario = $usuarioLogado;
-                    $object->id_status = 1;
+            } else {
+                $object = new pedido();
+                $object->id_usuario = $usuarioLogado;
+                $object->id_status = 1;
             }
             $object->fromArray($param);
             $object->store();
 
-            pivot::where('id_pedido_material','=',$object->id)->delete();
+            pivot::where('id_pedido_material', '=', $object->id)->delete();
 
             $id_item = $param['id_item'];
             $quantidade = $param['quantidade'];
             $count = count($id_item);
-            
-     
 
 
-         if (isset($id_item)) {
-            for ($i = 0; $i < $count; $i++) {
-            $pivot = new pivot();
-            $pivot->id_pedido_material = $object->id;
-            $pivot->codigo_item  = $id_item[$i];
-            $pivot->quantidade  = $quantidade[$i];
-            $pivot->store(); 
-         
-        }
-    }
 
-/*
+
+            if (isset($id_item)) {
+                for ($i = 0; $i < $count; $i++) {
+                    $pivot = new pivot();
+                    $pivot->id_pedido_material = $object->id;
+                    $pivot->codigo_item  = $id_item[$i];
+                    $pivot->quantidade  = $quantidade[$i];
+                    $pivot->store();
+                }
+            }
+
+            /*
            
           
            
@@ -175,9 +166,19 @@ class PedidoMaterial extends TPage
     }
     public function onClear($param)
     {
-  
     }
     function onEdit($param)
     {
+    }
+    public function validate()
+    {
+        // assign post data before validation
+        // validation exception would prevent
+        // the user code to execute setData()
+        $this->setData($this->getData());
+
+        foreach ($this->fields as $fieldObject) {
+            $fieldObject->validate();
+        }
     }
 }

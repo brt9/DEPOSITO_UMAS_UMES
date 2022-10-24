@@ -17,10 +17,10 @@ class ListaPedido extends TRecord
     const TABLENAME = 'pedido_material';
     const PRIMARYKEY = 'id';
     const IDPOLICY = 'max'; // {max, serial}
-    
-    CONST CREATEDAT = 'created_at';
-    CONST UPDATEDAT = 'updated_at';
-    CONST DELETEDAT = 'deleted_at';
+
+    const CREATEDAT = 'created_at';
+    const UPDATEDAT = 'updated_at';
+    const DELETEDAT = 'deleted_at';
 
     /**
      * Constructor method
@@ -40,9 +40,17 @@ class ListaPedido extends TRecord
         // loads the associated object
         if (empty($this->idUser))
             $this->idUser = new SystemUser($this->id_usuario);
-    
+
         // returns the associated object
         return $this->idUser;
     }
+    public function get_Status()
+    {
+        // loads the associated object
+        if (empty($this->idStatus))
+            $this->idStatus = new Status($this->id_status);
 
+        // returns the associated object
+        return $this->idStatus;
+    }
 }

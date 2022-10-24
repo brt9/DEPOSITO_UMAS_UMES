@@ -14,10 +14,10 @@ use Adianti\Database\TRecord;
  */
 class tdbcombo extends TRecord
 {
-    const TABLENAME = 'estoque_tdbcombo';
-    const PRIMARYKEY = 'id';
+    const TABLENAME = 'status';
+    const PRIMARYKEY = 'id_status';
     const IDPOLICY = 'max'; // {max, serial}
-    
+
 
     /**
      * Constructor method
@@ -25,8 +25,7 @@ class tdbcombo extends TRecord
     public function __construct($id = NULL, $callObjectLoad = TRUE)
     {
         parent::__construct($id, $callObjectLoad);
-        parent::addAttribute('id');
-        parent::addAttribute('descricao1'); 
+        parent::addAttribute('id_status');
+        parent::addAttribute('nome');
     }
-    
 }
