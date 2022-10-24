@@ -48,7 +48,6 @@ class EmprestimoFerramentasForm extends TPage
         $ferramenta->setSize('100%');
         $quantidade->setSize('100%');
         $id->setEditable(FALSE);
-        $id->setEditable(FALSE);
         $id->setSize('20%');
 
         //add field 
@@ -56,11 +55,15 @@ class EmprestimoFerramentasForm extends TPage
         $this->fieldlist->generateAria();
         $this->fieldlist->width = '100%';
         $this->fieldlist->name  = 'my_field_list';
-        $this->fieldlist->addField('<b>Ferramenta</b><font color="red">*</font>',  $ferramenta,  ['width' => '70%']);
-        $this->fieldlist->addField('<b>Quantidade</b><font color="red">*</font>',   $quantidade,   ['width' => '10%']);
+        $this->fieldlist->addField('<b>Ferramenta</b><font color="red">*</font>',  $ferramenta,  ['width' => '70%'], new TRequiredValidator);
+        $this->fieldlist->addField('<b>Quantidade</b><font color="red">*</font>',   $quantidade,   ['width' => '10%'], new TRequiredValidator);
 
         $ferramenta->setTip('Campo obrigatório');
         $quantidade->setTip('Campo obrigatório');
+
+        $row = $this->form->addFields(
+            [$labelInfo = new TLabel('Campos com asterisco (<font color="red">*</font>) são considerados campos obrigatórios')],
+        );
 
         $this->form->addFields([new TLabel('id')], [$id]);
         $this->form->addField($ferramenta);
@@ -103,7 +106,7 @@ class EmprestimoFerramentasForm extends TPage
             $emprestimo->fromArray($param);
             $emprestimo->store();
 
-            PivotEmprestimoFerramentas::where('id_emprestimo','=',$emprestimo->id)->delete();
+            PivotEmprestimoFerramentas::where('id_emprestimo', '=', $emprestimo->id)->delete();
 
             $ferramentas = $param['ferramenta'];
             $count = count($ferramentas);
@@ -118,7 +121,7 @@ class EmprestimoFerramentasForm extends TPage
                 }
             }
             TTransaction::close();
-            new TMessage('info', 'Record saved');
+            new TMessage('info', 'Salvo com sucesso');
         } catch (Exception $e) // in case of exception
         {
             new TMessage('error', $e->getMessage());

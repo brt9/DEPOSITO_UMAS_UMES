@@ -1,5 +1,6 @@
 <?php
 
+use Adianti\Widget\Datagrid\TDataGridColumn;
 use Adianti\Widget\Form\TDate;
 use Adianti\Widget\Form\TDateTime;
 use Adianti\Widget\Form\TEntry;
@@ -31,11 +32,12 @@ class EmprestimoList extends TStandardList
 
     parent::setDatabase('bancodados');            // DEFINE O BANCO DE DADOS
     parent::setActiveRecord('Emprestimo');   // DEFINE O REGISTRO ATIVO
-    parent::setDefaultOrder('id', 'asc');         //  DEFINE A ORDEM PADRÃO
+    parent::setDefaultOrder('id', 'desc');         //  DEFINE A ORDEM PADRÃO
     parent::addFilterField('id', '=', 'id'); // CAMPO DE FILTRO, OPERADOR, CAMPO DE FORMULÁRIO
     parent::addFilterField('id_emprestimo', '=', 'id_emprestimo'); // CAMPO DE FILTRO, OPERADOR, CAMPO DE FORMULÁRIO
     parent::addFilterField('id_usuario', '=', 'id_usuario'); //  CAMPO DE FILTRO, OPERADOR, CAMPO DE FORMULÁRIO
     parent::addFilterField('id_status', '=', 'id_status'); //  CAMPO DE FILTRO, OPERADOR, CAMPO DE FORMULÁRIO
+    parent::addFilterField('created_at', '=', 'created_at'); //  CAMPO DE FILTRO, OPERADOR, CAMPO DE FORMULÁRIO
 
     // CRIA O FORMULÁRIO
     $this->form = new BootstrapFormBuilder('form_search');
@@ -45,20 +47,20 @@ class EmprestimoList extends TStandardList
     $unique = new TDBUniqueSearch('FerramentaList', 'bancodados', 'emprestimo', 'id', 'id');
     $unique->setMinLength(1);
     $unique->setMask('{id}');
-    $unique->setTip('Pesquise o emprestido pelo id, usuario ou status');
-    $data = new TDateTime('created_at');
+    $unique->placeholder = 'Pesquise o emprestido pelo id, usuario ou status';
+    $data = new TDate('created_at');
+    $data->placeholder = 'Pesquise pela data de criação';
 
     // ADICIONE OS CAMPOS
     $row = $this->form->addFields(
-      [new TLabel('Campo de busca')],
+      [new TLabel('Id')],
       [$unique],
       [new Tlabel('Data')],
       [$data],
     );
 
-    $row = $this->form->addFields(
-    );
-    $data->setSize('40%');
+    $row = $this->form->addFields();
+    $data->setSize('70%');
 
     // MANTENHA O FORMULÁRIO PREENCHIDO DURANTE A NAVEGAÇÃO COM OS DADOS DA SESSÃO
     $this->form->setData(TSession::getValue('cadastro_filter_data'));
@@ -76,31 +78,27 @@ class EmprestimoList extends TStandardList
     $this->datagrid->setHeight(320);
 
     // CRIA AS COLUNAS DA GRADE DE DADOS
-    
+
     $column_id = new TDataGridColumn('id', 'Id', 'center', 50);
     $column_usuario = new TDataGridColumn('user->name', 'Usuário', 'center');
     $column_status = new TDataGridColumn('id_status', 'Status', 'center');
+    $column_created = new TDataGridColumn('created_at', 'Data da solicitação', 'center');
+
     // ADICIONE AS COLUNAS À GRADE DE DADOS
     $this->datagrid->addColumn($column_id);
     $this->datagrid->addColumn($column_usuario);
     $this->datagrid->addColumn($column_status);
-    
-    // CRIA AS AÇÕES DA COLUNA DA GRADE DE DADOS
-    $order_id = new TAction(array($this, 'onReload'));
-    $order_id->setParameter('order', 'id');
-    $column_id->setAction($order_id);
+    $this->datagrid->addColumn($column_created);
 
-    $order_usuario  = new TAction(array($this, 'onReload'));
-    $order_usuario->setParameter('order', 'id_usuario');
-    $column_usuario->setAction($order_usuario);
+    // CRIA AS AÇÕES DA COLUNA DA GRADE DE DADOS
+    $action1 = new TDataGridAction(['AprovacaoSolicitacaoForm', 'onShow']);
+    $action1->setField('id');
+    $this->datagrid->addAction($action1, 'Visualizar solicitação', 'fa:check-circle background-color:#218231');
 
     // CRIAR AÇÃO EDITAR
     $action_edit = new TDataGridAction(array('EmprestimoFerramentasForm', 'onEdit'));
-    $action_edit->setButtonClass('btn btn-default');
-    $action_edit->setLabel(_t('Edit'));
-    $action_edit->setImage('far:edit blue');
     $action_edit->setField('id');
-    $this->datagrid->addAction($action_edit);
+    $this->datagrid->addAction($action_edit, 'Editar solicitação', 'far:edit blue');
 
     // CRIAR O MODELO DE GRADE DE DADOS
     $this->datagrid->createModel();
@@ -123,15 +121,6 @@ class EmprestimoList extends TStandardList
     $container->add($panel);
 
     parent::add($container);
-/*     $username = TSession::getValue('userid');
-
-    TTransaction::open('bancodados'); // abre uma transação
-    $conn = TTransaction::get(); // obtém a conexão
-
-    $sth = $conn->query('SELECT name FROM system_user WHERE id = ' . $username);
-    foreach ($sth as $key) {
-      print $key['name'];
-    } */
     TTransaction::close(); // fecha a transação.
   }
 }

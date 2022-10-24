@@ -29,9 +29,7 @@ class CadastroFerramentasForm extends TPage
     public function __construct()
     {
         parent::__construct();
-
-
-
+        
         $this->form = new BootstrapFormBuilder;
         $this->form->setFormTitle('Cadastro de ferramentas');
         $this->form->generateAria(); // automatic aria-label
