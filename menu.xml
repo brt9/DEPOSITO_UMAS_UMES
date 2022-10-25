@@ -2,7 +2,7 @@
 <menu>
   <menuitem label="Página inicial">
     <action>WelcomeView</action>
-    <icon>fas:home fa-fw #0138ff</icon>
+    <icon>fas:home fa-fw</icon>
   </menuitem>
   <menuitem label="ESTOQUE">
     <icon>fas:water fa-fw #0138ff</icon>
