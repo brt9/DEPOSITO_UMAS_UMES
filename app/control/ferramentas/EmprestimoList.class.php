@@ -90,15 +90,16 @@ class EmprestimoList extends TStandardList
     $this->datagrid->addColumn($column_status);
     $this->datagrid->addColumn($column_created);
 
-    // CRIA AS AÇÕES DA COLUNA DA GRADE DE DADOS
-    $action1 = new TDataGridAction(['AprovacaoSolicitacaoForm', 'onShow']);
-    $action1->setField('id');
-    $this->datagrid->addAction($action1, 'Visualizar solicitação', 'fa:check-circle background-color:#218231');
-
+    
     // CRIAR AÇÃO EDITAR
     $action_edit = new TDataGridAction(array('EmprestimoFerramentasForm', 'onEdit'));
     $action_edit->setField('id');
     $this->datagrid->addAction($action_edit, 'Editar solicitação', 'far:edit blue');
+    
+    // Criar visualização da solicitação para o admin aprovar ou não. 
+    $action1 = new TDataGridAction(['AprovacaoSolicitacaoForm', 'onEdit']);
+    $action1->setField('id');
+    $this->datagrid->addAction($action1, 'Visualizar solicitação', 'fa:check-circle background-color:#218231');
 
     // CRIAR O MODELO DE GRADE DE DADOS
     $this->datagrid->createModel();

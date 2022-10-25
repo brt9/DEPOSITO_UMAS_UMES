@@ -41,7 +41,7 @@ class EmprestimoFerramentasForm extends TPage
 
         $id             = new TEntry('id');
         $created             = new TDateTime('created_at');
-        $ferramenta = new TDBCombo('ferramenta[]', 'bancodados', 'Ferramentas', 'id', 'nome', 'nome');
+        $ferramenta = new TDBCombo('ferramenta[]', 'bancodados', 'Ferramentas', 'id', '{id} - {nome}', 'nome');
         $quantidade = new TSpinner('quantidade[]');
 
         $ferramenta->placeholder = 'Pesquise pela ferramenta desejada';
@@ -77,13 +77,6 @@ class EmprestimoFerramentasForm extends TPage
         $this->form->addField($ferramenta);
         $this->form->addField($quantidade);
 
-        $this->fieldlist->addHeader();
-        $this->fieldlist->addDetail(new stdClass);
-        $this->fieldlist->addCloneAction();
-
-        // add field list to the form
-        $this->form->addContent([$this->fieldlist]);
-
         // form actions
         $btnBack = $this->form->addActionLink(_t('Back'), new TAction(array('EmprestimoList', 'onReload')), 'far:arrow-alt-circle-left white');
         $btnBack->style = 'background-color:gray; color:white';
@@ -96,6 +89,9 @@ class EmprestimoFerramentasForm extends TPage
         $vbox->add($this->form);
         parent::add($vbox);
     }
+    /**
+     * Metodo para salvar solicitação
+     */
     public function onSave($param)
     {
         try {
@@ -103,6 +99,7 @@ class EmprestimoFerramentasForm extends TPage
             // open a transaction with database 'samples'
             TTransaction::open('bancodados');
             $usuarioLogado = TSession::getValue('userid');
+            //Verificando se é uma edição ou criação
             if (isset($param["id"]) && !empty($param["id"])) {
                 $emprestimo = new Emprestimo($param["id"]);
                 $emprestimo->id_usuario = $usuarioLogado;
@@ -115,11 +112,12 @@ class EmprestimoFerramentasForm extends TPage
             $emprestimo->fromArray($param);
             $emprestimo->store();
 
+            //Delete emprestimo se existe.
             PivotEmprestimoFerramentas::where('id_emprestimo', '=', $emprestimo->id)->delete();
 
             $ferramentas = $param['ferramenta'];
             $count = count($ferramentas);
-
+            //Salvando items na tela pivot. 
             if (isset($ferramentas)) {
                 for ($i = 0; $i < $count; $i++) {
                     $pivot =  new PivotEmprestimoFerramentas();
@@ -137,34 +135,39 @@ class EmprestimoFerramentasForm extends TPage
             TTransaction::rollback();
         }
     }
+    /**
+     * Metodo identifica se criando ou editando e colocar itens no formulário.
+     */
     public function onEdit($param)
     {
         try {
             if (isset($param['key'])) {
-                $id = $param['key'];
-
                 TTransaction::open('bancodados');
-
-                $emprestimo = Emprestimo::find($id);
-                $this->form->setData($emprestimo);
+                $emprestimo = Emprestimo::find($param['key']);
+                $this->form->setData($emprestimo); //inserindo dados no formulario. 
 
                 $pivot = PivotEmprestimoFerramentas::where('id_emprestimo', '=', $emprestimo->id)->load();
-                $this->fieldlist->addHeader();
 
-                $arr = [];
                 if($pivot){
-                    foreach ($pivot as $key) {
-                        //$arr[] = $key;
-                        var_dump($key->id_ferramenta = $key->id_ferramenta);
-                        $key->id_ferramenta = $key->id_ferramenta;
-                        //$key->quantidade = $arr['quantidade'];
-                        $this->fieldlist->addDetail($key);
+                    $this->fieldlist->addHeader();
+                    foreach($pivot as $itens=>$value){
+                        var_dump(intval($value->id_ferramenta));
+                        $obj = new stdClass;
+                        $obj->id_ferramenta = intval($value->id_ferramenta);
+                        $obj->quantidade = $value->quantidade;
+
+                        $this->fieldlist->addDetail($obj);
                     }
+                    $this->fieldlist->addCloneAction();
                 }
+                // add field list to the form
+                $this->form->addContent([$this->fieldlist]);
                 TTransaction::close();
-                $this->fieldlist->addCloneAction();
             } else {
-                $this->form->clear();
+                $this->fieldlist->addHeader();
+                $this->fieldlist->addDetail(new stdClass);
+                $this->fieldlist->addCloneAction();
+                $this->form->addContent([$this->fieldlist]);
             }
         } catch (Exception $e) {
             new TMessage('error', $e->getMessage()); // shows the exception error message

@@ -35,30 +35,32 @@ class AprovacaoSolicitacaoForm extends TPage
      * Class constructor
      * Creates the page
      */
-    function __construct()
+    function __construct($param = null)
     {
         parent::__construct();
 
         // creates the form
         $this->form = new BootstrapFormBuilder('form_SaleMultiValue');
         $this->form->setFormTitle('Aprovar solicitação de material');
-        $this->form->generateAria(); // automatic aria-label
 
         // create the form fields
         $id             = new TEntry('id');
         $created             = new TDateTime('created_at');
-        $ferramenta = new TDBCombo('ferramenta[]', 'bancodados', 'Ferramentas', 'id', 'nome', 'nome');
+        $ferramenta = new TEntry('ferramenta[]');
         $quantidade = new TEntry('quantidade[]');
-        $qtd_emprestada = new TSpinner('qtd_emprestada[]');
+        $qtdEmprestada = new TEntry('emprestada[]');
 
-        $id->setSize('30%');
-        $ferramenta->setSize('100%');
-        $quantidade->setSize('100%');
-        $created->setSize('70%');
-
+        //Config dos campos
+        $id->setSize('20%');
         $id->setEditable(FALSE);
+
+        $created->setSize('70%');
         $created->setEditable(FALSE);
+
+        $ferramenta->setSize('90%');
         $ferramenta->setEditable(FALSE);
+
+        $quantidade->setSize('100%');
         $quantidade->setEditable(FALSE);
 
         //add field 
@@ -66,33 +68,28 @@ class AprovacaoSolicitacaoForm extends TPage
         $this->fieldlist->generateAria();
         $this->fieldlist->width = '100%';
         $this->fieldlist->name  = 'my_field_list';
-        $this->fieldlist->addField('<b>Ferramenta</b>',  $ferramenta,  ['width' => '70%'], new TRequiredValidator);
-        $this->fieldlist->addField('<b>Quantidade solicitada</b>', $quantidade, ['width' => '50%'], new TRequciredValidator);
-        $this->fieldlist->addField('<b>Quantidade emprestada</b>', $qtd_emprestada, ['width' => '10%'], new TRequiredValidator);
+        $this->fieldlist->addField('<b>Ferramenta</b><font color="red">*</font>',  $ferramenta,  ['width' => '90%'], new TRequiredValidator);
+        $this->fieldlist->addField('<b>Qtd solicitada</b><font color="red">*</font>',   $quantidade,   ['width' => '100%'], new TRequiredValidator);
+        $this->fieldlist->addField('<b>Qtd emprestada</b><font color="red">*</font>',   $qtdEmprestada,   ['width' => '10%'], new TRequiredValidator);
 
-        $row = $this->form->addFields(
-            [new TLabel('id')],
+        $this->form->addFields(
+            [new TLabel('Id da solicitação')],
             [$id],
-            [new TLabel('created_at')],
+            [new TLabel('Data da solicitação')],
             [$created],
         );
-        $row->style = 'margin-bottom: 4rem; align-items: center';
 
+        //add itens ao field list
         $this->form->addField($ferramenta);
         $this->form->addField($quantidade);
-        $this->form->addField($qtd_emprestada);
-
-        $this->fieldlist->addHeader();
-        $this->fieldlist->addDetail(new stdClass);
-
-        // add field list to the form
-        $this->form->addContent([$this->fieldlist]);
+        $this->form->addField($qtdEmprestada);
+        $this->fieldlist->disableRemoveButton();
 
         // form actions
         $btnBack = $this->form->addActionLink(_t('Back'), new TAction(array('EmprestimoList', 'onReload')), 'far:arrow-alt-circle-left white');
         $btnBack->style = 'background-color:gray; color:white';
-        /*         $btnSave = $this->form->addAction(_t('Save'), new TAction([$this, 'onSave']), 'fa:save white');
-        $btnSave->style = 'background-color:#218231; color:white'; */
+        $btnSave = $this->form->addAction(_t('Save'), new TAction([$this, 'onSave']), 'fa:save white');
+        $btnSave->style = 'background-color:#218231; color:white';
 
         // vertical box container
         $container = new TVBox;
@@ -102,7 +99,37 @@ class AprovacaoSolicitacaoForm extends TPage
         parent::add($container);
     }
 
-    public function onShow($param)
+    public function onEdit($param)
+    {
+        try {
+            if (isset($param['key'])) {
+                TTransaction::open('bancodados');
+                $emprestimo = Emprestimo::find($param['key']);
+                $this->form->setData($emprestimo); //inserindo dados no formulario. 
+
+                $pivot = PivotEmprestimoFerramentas::where('id_emprestimo', '=', $emprestimo->id)->load();
+
+                if ($pivot) {
+                    $this->fieldlist->addHeader();
+                    foreach ($pivot as $itens => $value) {
+                        $obj = new stdClass;
+                        $obj->id_ferramenta = intval($value->id_ferramenta);
+                        $obj->quantidade = $value->quantidade;
+
+                        $this->fieldlist->addDetail($obj);
+                    }
+                }
+                // add field list to the form
+                $this->form->addContent([$this->fieldlist]);
+                TTransaction::close();
+            } else {
+                $this->onClear($param);
+            }
+        } catch (Exception $e) {
+            new TMessage('error', $e->getMessage()); // shows the exception error message
+        }
+    }
+    public function onSave($param)
     {
     }
 }

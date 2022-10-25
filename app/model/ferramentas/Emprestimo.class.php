@@ -51,13 +51,4 @@ class Emprestimo extends TRecord
         // returns the associated object
         return $this->statusId;
     }
-    public function get_Pivot()
-    {
-        // loads the associated object
-        if (empty($this->pivot))
-            $this->pivot = PivotEmprestimoFerramentas::where('id_emprestimo','=',$this->id_emprestimo);
-    
-        // returns the associated object
-        return $this->pivot;
-    }
 }
