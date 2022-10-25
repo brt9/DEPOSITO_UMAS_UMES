@@ -151,7 +151,6 @@ class EmprestimoFerramentasForm extends TPage
                 if($pivot){
                     $this->fieldlist->addHeader();
                     foreach($pivot as $itens=>$value){
-                        var_dump(intval($value->id_ferramenta));
                         $obj = new stdClass;
                         $obj->id_ferramenta = intval($value->id_ferramenta);
                         $obj->quantidade = $value->quantidade;
