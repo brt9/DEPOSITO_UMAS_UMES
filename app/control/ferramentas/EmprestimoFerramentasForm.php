@@ -40,6 +40,7 @@ class EmprestimoFerramentasForm extends TPage
         $this->form->setFormTitle("Solicitação de emprestimo");
 
         $id             = new TEntry('id');
+        $created             = new TDateTime('created_at');
         $ferramenta = new TDBCombo('ferramenta[]', 'bancodados', 'Ferramentas', 'id', 'nome', 'nome');
         $quantidade = new TSpinner('quantidade[]');
 
@@ -47,8 +48,10 @@ class EmprestimoFerramentasForm extends TPage
         $ferramenta->enableSearch();
         $ferramenta->setSize('100%');
         $quantidade->setSize('100%');
+        $created->setEditable(FALSE);
         $id->setEditable(FALSE);
         $id->setSize('20%');
+        $created->setSize('70%');
 
         //add field 
         $this->fieldlist = new TFieldList;
@@ -65,7 +68,12 @@ class EmprestimoFerramentasForm extends TPage
             [$labelInfo = new TLabel('Campos com asterisco (<font color="red">*</font>) são considerados campos obrigatórios')],
         );
 
-        $this->form->addFields([new TLabel('id')], [$id]);
+        $this->form->addFields(
+            [new TLabel('id')],
+            [$id],
+            [new TLabel('Data')],
+            [$created],
+        );
         $this->form->addField($ferramenta);
         $this->form->addField($quantidade);
 
@@ -91,6 +99,7 @@ class EmprestimoFerramentasForm extends TPage
     public function onSave($param)
     {
         try {
+            $this->form->validate();
             // open a transaction with database 'samples'
             TTransaction::open('bancodados');
             $usuarioLogado = TSession::getValue('userid');
@@ -132,13 +141,28 @@ class EmprestimoFerramentasForm extends TPage
     {
         try {
             if (isset($param['key'])) {
-
                 $id = $param['key'];
-                TTransaction::open('bancodados');
-                $emprestimo = new Ferramentas($id);
 
+                TTransaction::open('bancodados');
+
+                $emprestimo = Emprestimo::find($id);
                 $this->form->setData($emprestimo);
+
+                $pivot = PivotEmprestimoFerramentas::where('id_emprestimo', '=', $emprestimo->id)->load();
+                $this->fieldlist->addHeader();
+
+                $arr = [];
+                if($pivot){
+                    foreach ($pivot as $key) {
+                        //$arr[] = $key;
+                        var_dump($key->id_ferramenta = $key->id_ferramenta);
+                        $key->id_ferramenta = $key->id_ferramenta;
+                        //$key->quantidade = $arr['quantidade'];
+                        $this->fieldlist->addDetail($key);
+                    }
+                }
                 TTransaction::close();
+                $this->fieldlist->addCloneAction();
             } else {
                 $this->form->clear();
             }

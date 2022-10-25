@@ -43,13 +43,13 @@ class EmprestimoList extends TStandardList
     $this->form = new BootstrapFormBuilder('form_search');
     $form = $this->form->setFormTitle('Emprestimo de ferramentas');
     // CRIE OS CAMPOS DO FORMULÁRIO
-
     $unique = new TDBUniqueSearch('FerramentaList', 'bancodados', 'emprestimo', 'id', 'id');
     $unique->setMinLength(1);
     $unique->setMask('{id}');
     $unique->placeholder = 'Pesquise o emprestido pelo id, usuario ou status';
     $data = new TDate('created_at');
     $data->placeholder = 'Pesquise pela data de criação';
+    $data->setMask('dd/mm/yyyy');
 
     // ADICIONE OS CAMPOS
     $row = $this->form->addFields(
@@ -80,8 +80,8 @@ class EmprestimoList extends TStandardList
     // CRIA AS COLUNAS DA GRADE DE DADOS
 
     $column_id = new TDataGridColumn('id', 'Id', 'center', 50);
-    $column_usuario = new TDataGridColumn('user->name', 'Usuário', 'center');
-    $column_status = new TDataGridColumn('id_status', 'Status', 'center');
+    $column_usuario = new TDataGridColumn('User->name', 'Usuário', 'center');
+    $column_status = new TDataGridColumn('Status->nome', 'Status', 'center');
     $column_created = new TDataGridColumn('created_at', 'Data da solicitação', 'center');
 
     // ADICIONE AS COLUNAS À GRADE DE DADOS

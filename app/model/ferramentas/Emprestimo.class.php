@@ -13,6 +13,8 @@ class Emprestimo extends TRecord
     const DELETEDAT = 'deleted_at';
 
     protected $idUser;
+    protected $statusId;
+    protected $pivot;
     /**
      * Constructor method
      */
@@ -23,16 +25,39 @@ class Emprestimo extends TRecord
         parent::addAttribute('id_usuario');
         parent::addAttribute('id_admin');
         parent::addAttribute('id_status');
-
+        parent::addAttribute('created_at');
     }
+    /**
+     * Capturar usuario
+     */
     public function get_User()
     {
         // loads the associated object
         if (empty($this->idUser))
             $this->idUser = new SystemUser($this->id_usuario);
-    
+
         // returns the associated object
         return $this->idUser;
     }
-
+    /**
+     * Format data
+     */
+    public function get_Status()
+    {
+        // loads the associated object
+        if (empty($this->statusId))
+            $this->statusId = new StatusEmprestimo($this->id_status);
+    
+        // returns the associated object
+        return $this->statusId;
+    }
+    public function get_Pivot()
+    {
+        // loads the associated object
+        if (empty($this->pivot))
+            $this->pivot = PivotEmprestimoFerramentas::where('id_emprestimo','=',$this->id_emprestimo);
+    
+        // returns the associated object
+        return $this->pivot;
+    }
 }

@@ -48,7 +48,7 @@ class AprovacaoSolicitacaoForm extends TPage
         $id             = new TEntry('id');
         $created             = new TDateTime('created_at');
         $ferramenta = new TDBCombo('ferramenta[]', 'bancodados', 'Ferramentas', 'id', 'nome', 'nome');
-        $quantidade = new TSpinner('quantidade[]');
+        $quantidade = new TEntry('quantidade[]');
         $qtd_emprestada = new TSpinner('qtd_emprestada[]');
 
         $id->setSize('30%');
@@ -58,8 +58,8 @@ class AprovacaoSolicitacaoForm extends TPage
 
         $id->setEditable(FALSE);
         $created->setEditable(FALSE);
-        $quantidade->setEditable(FALSE);
         $ferramenta->setEditable(FALSE);
+        $quantidade->setEditable(FALSE);
 
         //add field 
         $this->fieldlist = new TFieldList;
@@ -67,8 +67,8 @@ class AprovacaoSolicitacaoForm extends TPage
         $this->fieldlist->width = '100%';
         $this->fieldlist->name  = 'my_field_list';
         $this->fieldlist->addField('<b>Ferramenta</b>',  $ferramenta,  ['width' => '70%'], new TRequiredValidator);
-        $this->fieldlist->addField('<b>Quantidade solicitada</b>',   $quantidade,   ['width' => '50%'], new TRequiredValidator);
-        $this->fieldlist->addField('<b>Quantidade emprestada</b>',   $qtd_emprestada,   ['width' => '10%'], new TRequiredValidator);
+        $this->fieldlist->addField('<b>Quantidade solicitada</b>', $quantidade, ['width' => '50%'], new TRequciredValidator);
+        $this->fieldlist->addField('<b>Quantidade emprestada</b>', $qtd_emprestada, ['width' => '10%'], new TRequiredValidator);
 
         $row = $this->form->addFields(
             [new TLabel('id')],
