@@ -43,9 +43,9 @@ class PeididoList extends TStandardList
 
     // CRIE OS CAMPOS DO FORMULÁRIO
 
-    $id = new TQRCodeInputReader('id');
+    $id = new TEntry('id');
     $id_status = new TDBCombo('id_status', 'bancodados', 'Status', 'id_status', 'nome');
-    $id_usuario = new TQRCodeInputReader('id_usuario');
+    $id_usuario = new TDBCombo('id_usuario', 'bancodados', 'SystemUser', 'id', 'matricula');
     $data_pedido = new TEntry('created_at');
     $data_aprovacao = new TDateTime('updated_at');
 
@@ -54,13 +54,24 @@ class PeididoList extends TStandardList
 
     $this->form->addFields([new TLabel('CODIGO DO PEDIDO')], [$id]);
     $this->form->addFields([new TLabel('CODIGO DO STATUS')], [$id_status]);
-    $this->form->addFields([new TLabel('USUARIO SOLICITANTE')], [$id_usuario]);
+    $this->form->addFields([new TLabel('MATRICULA')], [$id_usuario]);
     $this->form->addFields([new TLabel('DATA DO PEDIDO')], [$data_pedido]);
-    $this->form->addFields([new TLabel('DATA DA APROVACAO')], [$data_aprovacao]);
+    $this->form->addFields([new TLabel('DATA DA APROVAÇÃO')], [$data_aprovacao]);
 
 
-    $id->setSize('50%');
+    $id->setTip('COLOQUE O CODIGO DO PEDIDO QUE VOCE PROCURA');
+    $id_status->setTip('COLOQUE O TIPO DE STATUS QUE VOCE PROCURA');
+    $id_usuario->setTip('COLOQUE A MATRICULA DO USUARIO PARA EFETUAR A BUSCA');
+    $data_pedido->setTip('COLOQUE A DATA DO PEDIDO PARA EFETUAR A BUSCA');
+    $data_aprovacao->setTip('COLOQUE A DATA DA APROVAÇÃO DO PEDIDO PARA EFETUAR A BUSCA');
 
+
+    $id->setSize('35%');
+    $id_status->setSize('35%');
+    $id_usuario->setSize('35%');
+    $data_pedido->setSize('35%');
+    $data_aprovacao->setSize('35%');
+    $id_usuario->enableSearch();
 
 
     // MANTENHA O FORMULÁRIO PREENCHIDO DURANTE A NAVEGAÇÃO COM OS DADOS DA SESSÃO

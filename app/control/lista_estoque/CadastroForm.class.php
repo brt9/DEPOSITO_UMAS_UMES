@@ -17,9 +17,9 @@ class CadastroForm extends TStandardForm
 {
     protected $form; //  FORMULÁRIO
 
-        // CONSTRUTOR DE CLASSE
-        // CRIA A PÁGINA E O FORMULÁRIO DE INSCRIÇÃO
-     
+    // CONSTRUTOR DE CLASSE
+    // CRIA A PÁGINA E O FORMULÁRIO DE INSCRIÇÃO
+
     function __construct()
     {
         parent::__construct();
@@ -38,17 +38,28 @@ class CadastroForm extends TStandardForm
         $DESCRICAO = new TEntry('descricao');
         $QUANTIDADE_ESTOQUE = new TEntry('quantidade_estoque');
         $colaborador_responsavel = new TEntry('id_usuario');
-      
+
 
         // ADICIONE OS CAMPOS
         $this->form->addFields([new TLabel('CODIGO ITEM')], [$CODIGO]);
         $this->form->addFields([new TLabel('DESCRIÇÃO')], [$DESCRICAO]);
         $this->form->addFields([new TLabel('QUANTIDADE EM ESTOQUE')], [$QUANTIDADE_ESTOQUE]);
         $this->form->addFields([new TLabel('COLABORADOR RESPONSAVEL')], [$colaborador_responsavel]);
-     
-        $colaborador_responsavel->setSize('70%');
+
+        $CODIGO->addValidation('CODIGO ITEM', new TRequiredValidator);
+        $CODIGO->addValidation('CODIGO ITEM', new TRequiredValidator);
+
+
+
+        $CODIGO->setSize('35%');
+        $DESCRICAO->setSize('70%');
+        $QUANTIDADE_ESTOQUE->setSize('35%');
+        $colaborador_responsavel->setSize('35%');
         $colaborador_responsavel->setValue(TSession::getValue('userid'));
         $colaborador_responsavel->setEditable(FALSE);
+
+
+
         // CRIE AS AÇÕES DO FORMULÁRIO
         $btn = $this->form->addAction(_t('Save'), new TAction(array($this, 'onSave')), 'far:save');
         $btn->class = 'btn btn-sm btn-primary';

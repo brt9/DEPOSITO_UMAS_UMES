@@ -43,25 +43,25 @@ class PedidoMaterial extends TPage
         $this->form = new BootstrapFormBuilder('my_form');
         $this->form->setFormTitle('FORMULARIO DE PEDIDO DE MATERIAL');
 
+
         $id = new THidden('id');
-        $id->setEditable(FALSE);
-        $id->setSize('20%');
-
         $id_item = new TQRCodeInputReader('id_item[]');
-        $id_item->setSize('100%');
-        $id_item->placeholder = '00000';
-        $id_item->setTip('Digite o codigo do Item Desejado');
         $descricao = new TDBCombo('descricao[]', 'bancodados', 'lista', 'descricao', 'descricao');
-        $descricao->setTip('Digite a descrição do Item Desejado');
-        $descricao->enableSearch();
-        $descricao->setSize('100%');
-
-
         $quantidade = new TSpinner('quantidade[]');
+
+        $id->setEditable(FALSE);
+
+        $id_item->setSize('100%');
+        $descricao->setSize('100%');
         $quantidade->setSize('100%');
-        $quantidade->setTip('Digite a quantidade do Item Desejado');
 
+        $id_item->setTip('DIGITE O CODIGO DO ITEM DESEJADO');
+        $descricao->setTip('DIGITE A DESCRIÇÃO DO ITEM DESEJADO');
+        $quantidade->setTip('DIGITE A QUANTIDADE DO ITEM DESEJADO');
 
+        $descricao->enableSearch();
+
+        $id_item->placeholder = '00000';
 
 
         $this->fieldlist = new TFieldList;
@@ -81,7 +81,7 @@ class PedidoMaterial extends TPage
 
 
 
-        $id_item->addValidation('CODIGO ITEM', new TRequiredValidator($id_item));
+        $id_item->addValidation('CODIGO ITEM', new TRequiredValidator);
         $descricao->addValidation('DESCRIÇÂO', new TRequiredValidator);
         $quantidade->addValidation('QUANTIDADE', new TRequiredValidator);
 
