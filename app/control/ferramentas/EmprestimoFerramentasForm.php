@@ -41,7 +41,7 @@ class EmprestimoFerramentasForm extends TPage
 
         $id             = new TEntry('id');
         $created             = new TDateTime('created_at');
-        $ferramenta = new TDBCombo('ferramenta[]', 'bancodados', 'Ferramentas', 'id', '{id} - {nome}', 'nome');
+        $ferramenta = new TDBCombo('ferramenta[]', 'bancodados', 'Ferramentas', 'id', '{id} - {nome}', 'id');
         $quantidade = new TSpinner('quantidade[]');
 
         $ferramenta->placeholder = 'Pesquise pela ferramenta desejada';
@@ -96,6 +96,7 @@ class EmprestimoFerramentasForm extends TPage
             // open a transaction with database 'samples'
             TTransaction::open('bancodados');
             $usuarioLogado = TSession::getValue('userid');
+            $status = array(1 => 'Pendente', 2 => 'Efetuado', 3 => 'Devolvido', 4 => 'Não devolvido');
             if(($param['ferramenta'] == [""]) || ($param['quantidade'] == ['0'])){
                 throw new Exception('Campo obrigatorio não pode ser vazio');
             }else{
@@ -103,11 +104,11 @@ class EmprestimoFerramentasForm extends TPage
                 if (isset($param["id"]) && !empty($param["id"])) {
                     $emprestimo = new Emprestimo($param["id"]);
                     $emprestimo->id_usuario = $usuarioLogado;
-                    $emprestimo->id_status = 1;
+                    $emprestimo->status = $status[1];
                 } else {
                     $emprestimo = new Emprestimo();
                     $emprestimo->id_usuario = $usuarioLogado;
-                    $emprestimo->id_status = 1;
+                    $emprestimo->status = $status[1];
                 }
                 $emprestimo->fromArray($param);
                 $emprestimo->store();
@@ -153,7 +154,7 @@ class EmprestimoFerramentasForm extends TPage
                     $this->fieldlist->addHeader();
                     foreach ($pivot as $itens => $value) {
                         $obj = new stdClass;
-                        $obj->id_ferramenta = intval($value->id_ferramenta);
+                        $obj->ferramenta = $value->id_ferramenta;
                         $obj->quantidade = $value->quantidade;
 
                         $this->fieldlist->addDetail($obj);

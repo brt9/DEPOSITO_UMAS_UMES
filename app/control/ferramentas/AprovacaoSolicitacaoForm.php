@@ -2,9 +2,12 @@
 
 use Adianti\Control\TPage;
 use Adianti\Control\TWindow;
+use Adianti\Database\TCriteria;
+use Adianti\Database\TFilter;
 use Adianti\Database\TTransaction;
 use Adianti\Registry\TSession;
 use Adianti\Widget\Datagrid\TDataGridAction;
+use Adianti\Widget\Form\TCombo;
 use Adianti\Widget\Form\TDateTime;
 use Adianti\Widget\Form\TEntry;
 use Adianti\Widget\Form\THidden;
@@ -43,9 +46,18 @@ class AprovacaoSolicitacaoForm extends TPage
         $this->form = new BootstrapFormBuilder('form_SaleMultiValue');
         $this->form->setFormTitle('Aprovar solicitação de material');
 
+        TTransaction::open('bancodados');
+
+        $criteria = new TCriteria();
+        $criteria->add(new TFilter('id_status',  ' = ', 2));
+
+        TTransaction::close();
+
+
         // create the form fields
         $id             = new TEntry('id');
         $created             = new TDateTime('created_at');
+        $status             = new TCombo('status');
         $ferramenta = new TEntry('ferramenta[]');
         $quantidade = new TEntry('quantidade[]');
         $qtdEmprestada = new TEntry('qtd_emprestada[]');
@@ -54,8 +66,12 @@ class AprovacaoSolicitacaoForm extends TPage
         $id->setSize('20%');
         $id->setEditable(FALSE);
 
-        $created->setSize('70%');
+        $created->setSize('60%');
         $created->setEditable(FALSE);
+
+        $status->setSize('100%');
+        $status->addItems(array(1 => 'Pendente', 2 => 'Efetuado', 3 => 'Devolvido', 4 => 'Não devolvido'));
+        //$status->setSelectedOption(2);
 
         $ferramenta->setSize('90%');
         $ferramenta->setEditable(FALSE);
@@ -77,6 +93,8 @@ class AprovacaoSolicitacaoForm extends TPage
             [$id],
             [new TLabel('Data da solicitação')],
             [$created],
+            [new TLabel('Status da solicitação')],
+            [$status],
         );
 
         //add itens ao field list
@@ -113,9 +131,9 @@ class AprovacaoSolicitacaoForm extends TPage
                     $this->fieldlist->addHeader();
                     foreach ($pivot as $itens => $value) {
                         $obj = new stdClass;
-                        $obj->id_ferramenta = intval($value->id_ferramenta);
+                        $obj->ferramenta = intval($value->id_ferramenta);
                         $obj->quantidade = $value->quantidade;
-                        $obj->qtdEmprestada = $value->quantidade;
+                        $obj->qtd_emprestada = $value->quantidade;
 
                         $this->fieldlist->addDetail($obj);
                     }
@@ -132,5 +150,49 @@ class AprovacaoSolicitacaoForm extends TPage
     }
     public function onSave($param)
     {
+        try {
+            $form = $this->form->validate();
+            // open a transaction with database 'samples'
+            TTransaction::open('bancodados');
+            $usuarioLogado = TSession::getValue('userid');
+            if (($param['ferramenta'] == [""]) || ($param['quantidade'] == ['0'])) {
+                throw new Exception('Campo obrigatorio não pode ser vazio');
+            } else {
+                //Verificando se é uma edição ou criação
+                if (isset($param["id"]) && !empty($param["id"])) {
+                    $emprestimo = new Emprestimo($param["id"]);
+                    $emprestimo->id_usuario = $usuarioLogado;
+                    $emprestimo->id_status = 4;
+                } else {
+                    $emprestimo = new Emprestimo();
+                    $emprestimo->id_usuario = $usuarioLogado;
+                    $emprestimo->id_status = 2;
+                }
+                $emprestimo->fromArray($param);
+                $emprestimo->store();
+
+                //Delete emprestimo se existe.
+                PivotEmprestimoFerramentas::where('id_emprestimo', '=', $emprestimo->id)->delete();
+
+                $ferramentas = $param['ferramenta'];
+                $count = count($ferramentas);
+                //Salvando items na tela pivot. 
+                if (isset($ferramentas)) {
+                    for ($i = 0; $i < $count; $i++) {
+                        $pivot =  new PivotEmprestimoFerramentas();
+                        $pivot->id_emprestimo = $emprestimo->id;
+                        $pivot->id_ferramenta = $param['ferramenta'][$i];
+                        $pivot->quantidade = $param['quantidade'][$i];
+                        $pivot->store();
+                    }
+                }
+            }
+            TTransaction::close();
+            new TMessage('info', 'Salvo com sucesso');
+        } catch (Exception $e) // in case of exception
+        {
+            new TMessage('error', $e->getMessage());
+            TTransaction::rollback();
+        }
     }
 }

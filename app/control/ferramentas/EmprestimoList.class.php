@@ -36,7 +36,7 @@ class EmprestimoList extends TStandardList
     parent::addFilterField('id', '=', 'id'); // CAMPO DE FILTRO, OPERADOR, CAMPO DE FORMULÁRIO
     parent::addFilterField('id_emprestimo', '=', 'id_emprestimo'); // CAMPO DE FILTRO, OPERADOR, CAMPO DE FORMULÁRIO
     parent::addFilterField('id_usuario', '=', 'id_usuario'); //  CAMPO DE FILTRO, OPERADOR, CAMPO DE FORMULÁRIO
-    parent::addFilterField('id_status', '=', 'id_status'); //  CAMPO DE FILTRO, OPERADOR, CAMPO DE FORMULÁRIO
+    parent::addFilterField('status', '=', 'status'); //  CAMPO DE FILTRO, OPERADOR, CAMPO DE FORMULÁRIO
     parent::addFilterField('created_at', '=', 'created_at'); //  CAMPO DE FILTRO, OPERADOR, CAMPO DE FORMULÁRIO
 
     // CRIA O FORMULÁRIO
@@ -81,7 +81,7 @@ class EmprestimoList extends TStandardList
 
     $column_id = new TDataGridColumn('id', 'Id', 'center', 50);
     $column_usuario = new TDataGridColumn('User->name', 'Usuário', 'center');
-    $column_status = new TDataGridColumn('Status->nome', 'Status', 'center');
+    $column_status = new TDataGridColumn('status', 'Status', 'center');
     $column_created = new TDataGridColumn('created_at', 'Data da solicitação', 'center');
 
     // ADICIONE AS COLUNAS À GRADE DE DADOS
