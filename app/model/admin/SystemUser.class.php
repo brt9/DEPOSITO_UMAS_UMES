@@ -40,7 +40,10 @@ class SystemUser extends TRecord
         parent::addAttribute('accepted_term_policy');
         parent::addAttribute('accepted_term_policy_at');
     }
-    
+    static public function getUser($userId)
+    {
+        return SystemUser::where('id', '=', $userId)->first();
+    }
     /**
      * Clone the entire object and related ones
      */
