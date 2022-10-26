@@ -130,7 +130,7 @@ class PeididoList extends TStandardList
 
 
     // CRIAR AÇÃO EDITAR
-    $action_edit = new TDataGridAction(array('PedidoMaterial', 'onEdit'));
+    $action_edit = new TDataGridAction(array('PedidoAprovacaoForm', 'onEdit'));
     $action_edit->setButtonClass('btn btn-default');
     $action_edit->setLabel(_t('Edit'));
     $action_edit->setImage('far:edit blue');
