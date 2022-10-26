@@ -18,6 +18,7 @@ class PivotEmprestimoFerramentas extends TRecord
         parent::addAttribute('id_emprestimo');
         parent::addAttribute('id_ferramenta');
         parent::addAttribute('quantidade');
+        parent::addAttribute('qtd_emprestada');
 
     }
 }

@@ -61,9 +61,6 @@ class EmprestimoFerramentasForm extends TPage
         $this->fieldlist->addField('<b>Ferramenta</b><font color="red">*</font>',  $ferramenta,  ['width' => '70%'], new TRequiredValidator);
         $this->fieldlist->addField('<b>Quantidade</b><font color="red">*</font>',   $quantidade,   ['width' => '10%'], new TRequiredValidator);
 
-        $ferramenta->setTip('Campo obrigatório');
-        $quantidade->setTip('Campo obrigatório');
-
         $row = $this->form->addFields(
             [$labelInfo = new TLabel('Campos com asterisco (<font color="red">*</font>) são considerados campos obrigatórios')],
         );
@@ -95,36 +92,40 @@ class EmprestimoFerramentasForm extends TPage
     public function onSave($param)
     {
         try {
-            $this->form->validate();
+            $form = $this->form->validate();
             // open a transaction with database 'samples'
             TTransaction::open('bancodados');
             $usuarioLogado = TSession::getValue('userid');
-            //Verificando se é uma edição ou criação
-            if (isset($param["id"]) && !empty($param["id"])) {
-                $emprestimo = new Emprestimo($param["id"]);
-                $emprestimo->id_usuario = $usuarioLogado;
-                $emprestimo->id_status = 1;
-            } else {
-                $emprestimo = new Emprestimo();
-                $emprestimo->id_usuario = $usuarioLogado;
-                $emprestimo->id_status = 1;
-            }
-            $emprestimo->fromArray($param);
-            $emprestimo->store();
+            if(($param['ferramenta'] == [""]) || ($param['quantidade'] == ['0'])){
+                throw new Exception('Campo obrigatorio não pode ser vazio');
+            }else{
+                //Verificando se é uma edição ou criação
+                if (isset($param["id"]) && !empty($param["id"])) {
+                    $emprestimo = new Emprestimo($param["id"]);
+                    $emprestimo->id_usuario = $usuarioLogado;
+                    $emprestimo->id_status = 1;
+                } else {
+                    $emprestimo = new Emprestimo();
+                    $emprestimo->id_usuario = $usuarioLogado;
+                    $emprestimo->id_status = 1;
+                }
+                $emprestimo->fromArray($param);
+                $emprestimo->store();
 
-            //Delete emprestimo se existe.
-            PivotEmprestimoFerramentas::where('id_emprestimo', '=', $emprestimo->id)->delete();
+                //Delete emprestimo se existe.
+                PivotEmprestimoFerramentas::where('id_emprestimo', '=', $emprestimo->id)->delete();
 
-            $ferramentas = $param['ferramenta'];
-            $count = count($ferramentas);
-            //Salvando items na tela pivot. 
-            if (isset($ferramentas)) {
-                for ($i = 0; $i < $count; $i++) {
-                    $pivot =  new PivotEmprestimoFerramentas();
-                    $pivot->id_emprestimo = $emprestimo->id;
-                    $pivot->id_ferramenta = $param['ferramenta'][$i];
-                    $pivot->quantidade = $param['quantidade'][$i];
-                    $pivot->store();
+                $ferramentas = $param['ferramenta'];
+                $count = count($ferramentas);
+                //Salvando items na tela pivot. 
+                if (isset($ferramentas)) {
+                    for ($i = 0; $i < $count; $i++) {
+                        $pivot =  new PivotEmprestimoFerramentas();
+                        $pivot->id_emprestimo = $emprestimo->id;
+                        $pivot->id_ferramenta = $param['ferramenta'][$i];
+                        $pivot->quantidade = $param['quantidade'][$i];
+                        $pivot->store();
+                    }
                 }
             }
             TTransaction::close();
@@ -148,9 +149,9 @@ class EmprestimoFerramentasForm extends TPage
 
                 $pivot = PivotEmprestimoFerramentas::where('id_emprestimo', '=', $emprestimo->id)->load();
 
-                if($pivot){
+                if ($pivot) {
                     $this->fieldlist->addHeader();
-                    foreach($pivot as $itens=>$value){
+                    foreach ($pivot as $itens => $value) {
                         $obj = new stdClass;
                         $obj->id_ferramenta = intval($value->id_ferramenta);
                         $obj->quantidade = $value->quantidade;

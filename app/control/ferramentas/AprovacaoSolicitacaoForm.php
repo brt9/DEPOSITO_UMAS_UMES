@@ -48,7 +48,7 @@ class AprovacaoSolicitacaoForm extends TPage
         $created             = new TDateTime('created_at');
         $ferramenta = new TEntry('ferramenta[]');
         $quantidade = new TEntry('quantidade[]');
-        $qtdEmprestada = new TEntry('emprestada[]');
+        $qtdEmprestada = new TEntry('qtd_emprestada[]');
 
         //Config dos campos
         $id->setSize('20%');
@@ -115,6 +115,7 @@ class AprovacaoSolicitacaoForm extends TPage
                         $obj = new stdClass;
                         $obj->id_ferramenta = intval($value->id_ferramenta);
                         $obj->quantidade = $value->quantidade;
+                        $obj->qtdEmprestada = $value->quantidade;
 
                         $this->fieldlist->addDetail($obj);
                     }
