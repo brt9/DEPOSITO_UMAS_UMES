@@ -5,6 +5,7 @@ use Adianti\Control\TWindow;
 use Adianti\Database\TTransaction;
 use Adianti\Registry\TSession;
 use Adianti\Widget\Datagrid\TDataGridAction;
+use Adianti\Widget\Form\TCombo;
 use Adianti\Widget\Form\TDateTime;
 use Adianti\Widget\Form\TEntry;
 use Adianti\Widget\Form\THidden;
@@ -47,8 +48,11 @@ class PedidoAprovacaoForm extends TPage
         $id             = new TEntry('id');
         $created             = new TDateTime('created_at');
         $ferramenta = new TEntry('ferramenta[]');
+        $ferramenta = new TDBCombo('ferramenta', 'bancodados', 'lista', 'id_item', '{id_item} {descricao}');
         $quantidade = new TEntry('quantidade[]');
         $qtdEmprestada = new TEntry('qtd_emprestada[]');
+        $combo_status = new TCombo('combo_status');
+        $combo_status->addItems(array('1' => 'Single', '2' => 'Committed', '3' => 'Married'));
 
         //Config dos campos
         $id->setSize('20%');
@@ -77,8 +81,10 @@ class PedidoAprovacaoForm extends TPage
             [$id],
             [new TLabel('Data da solicitação')],
             [$created],
+            [new TLabel('Data da solicitação')],
+            [$combo_status],
         );
-
+        $combo_status->setValue('3');
         //add itens ao field list
         $this->form->addField($ferramenta);
         $this->form->addField($quantidade);
@@ -116,7 +122,7 @@ class PedidoAprovacaoForm extends TPage
                         $obj->id_pedido_material =  $value->id_emprestimo;
                         $obj->ferramenta =  $value->id_item;
                         $obj->quantidade = $value->quantidade;
-                        $obj->qtdEmprestada = $value->quantidade;
+                        $obj->qtd_emprestada = $value->quantidade;
 
                         $this->fieldlist->addDetail($obj);
                     }
