@@ -92,23 +92,25 @@ class EmprestimoFerramentasForm extends TPage
     public function onSave($param)
     {
         try {
-            $form = $this->form->validate();
+            $this->form->validate();
             // open a transaction with database 'samples'
             TTransaction::open('bancodados');
+            
             $usuarioLogado = TSession::getValue('userid');
-            $status = array(1 => 'Pendente', 2 => 'Efetuado', 3 => 'Devolvido', 4 => 'Não devolvido');
-            if(($param['ferramenta'] == [""]) || ($param['quantidade'] == ['0'])){
+            $status = array('Pendente', 'Efetuado', 'Devolvido', 'Não devolvido');
+
+            if (($param['ferramenta'] == [""]) || ($param['quantidade'] == ['0'])) {
                 throw new Exception('Campo obrigatorio não pode ser vazio');
-            }else{
+            } else {
                 //Verificando se é uma edição ou criação
                 if (isset($param["id"]) && !empty($param["id"])) {
                     $emprestimo = new Emprestimo($param["id"]);
                     $emprestimo->id_usuario = $usuarioLogado;
-                    $emprestimo->status = $status[1];
+                    $emprestimo->status = $status[0];
                 } else {
                     $emprestimo = new Emprestimo();
                     $emprestimo->id_usuario = $usuarioLogado;
-                    $emprestimo->status = $status[1];
+                    $emprestimo->status = $status[0];
                 }
                 $emprestimo->fromArray($param);
                 $emprestimo->store();
