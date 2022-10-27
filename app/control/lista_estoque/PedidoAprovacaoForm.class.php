@@ -50,9 +50,9 @@ class PedidoAprovacaoForm extends TPage
         $ferramenta = new TEntry('ferramenta[]');
         $ferramenta = new TDBCombo('ferramenta', 'bancodados', 'lista', 'id_item', '{id_item} {descricao}');
         $quantidade = new TEntry('quantidade[]');
-        $qtdEmprestada = new TEntry('qtd_emprestada[]');
-        $combo_status = new TCombo('combo_status');
-        $combo_status->addItems(array('1' => 'Single', '2' => 'Committed', '3' => 'Married'));
+        $qtdEmprestada = new TEntry('qtdEmprestada[]');
+        $status = new TCombo('combo_status');
+        $status->addItems(array('1' => 'PENDENTE', '2' => 'APROVADO', '3' => 'REPROVADO'));
 
         //Config dos campos
         $id->setSize('20%');
@@ -72,19 +72,24 @@ class PedidoAprovacaoForm extends TPage
         $this->fieldlist->generateAria();
         $this->fieldlist->width = '100%';
         $this->fieldlist->name  = 'my_field_list';
-        $this->fieldlist->addField('<b>Ferramenta</b><font color="red">*</font>',  $ferramenta,  ['width' => '90%'], new TRequiredValidator);
+        $this->fieldlist->addField('<b>ITEM</b><font color="red">*</font>',  $ferramenta,  ['width' => '90%'], new TRequiredValidator);
         $this->fieldlist->addField('<b>Qtd solicitada</b><font color="red">*</font>',   $quantidade,   ['width' => '100%'], new TRequiredValidator);
         $this->fieldlist->addField('<b>Qtd emprestada</b><font color="red">*</font>',   $qtdEmprestada,   ['width' => '10%'], new TRequiredValidator);
+       
+        $row = $this->form->addFields(
+            [$labelInfo = new TLabel('Campos com asterisco (<font color="red">*</font>) são considerados campos obrigatórios')],
+        );
 
-        $this->form->addFields(
-            [new TLabel('Id da solicitação')],
+        $row = $this->form->addFields(
+            [new TLabel('Codigo da solicitação')],
             [$id],
             [new TLabel('Data da solicitação')],
             [$created],
-            [new TLabel('Data da solicitação')],
-            [$combo_status],
+            [new TLabel('Status da solicitação')],
+            [$status],
         );
-        $combo_status->setValue('3');
+        $row->style = 'margin-top:3rem;';
+        $status->setValue('2');
         //add itens ao field list
         $this->form->addField($ferramenta);
         $this->form->addField($quantidade);
@@ -122,7 +127,7 @@ class PedidoAprovacaoForm extends TPage
                         $obj->id_pedido_material =  $value->id_emprestimo;
                         $obj->ferramenta =  $value->id_item;
                         $obj->quantidade = $value->quantidade;
-                        $obj->qtd_emprestada = $value->quantidade;
+                        $obj->qtdEmprestada = $value->quantidade;
 
                         $this->fieldlist->addDetail($obj);
                     }
@@ -139,5 +144,47 @@ class PedidoAprovacaoForm extends TPage
     }
     public function onSave($param)
     {
+        try {
+            $this->form->validate();
+            // open a transaction with database 'samples'
+            TTransaction::open('bancodados');
+            $usuarioLogado = TSession::getValue('userid');
+            if ($param['status'] == "1") {
+                throw new Exception('Não pode aprovar uma solicitação com status "pendente"');
+            } else {
+                //Verificando se é uma edição ou criação
+                if (isset($param["id"]) && !empty($param["id"])) {
+                    $emprestimo = new pedido($param["id"]);
+                    $emprestimo->id_usuario = $emprestimo->id_usuario;
+                    $emprestimo->id_admin = $usuarioLogado;
+                    $emprestimo->status = $param['status'];
+                }
+                $emprestimo->fromArray($param);
+                $emprestimo->store();
+
+                //Delete emprestimo se existe.
+                pivot::where('id', '=', $emprestimo->id)->delete();
+
+                $ferramentas = $param['id_item'];
+                $count = count($ferramentas);
+                //Salvando items na tela pivot. 
+                if (isset($ferramentas)) {
+                    for ($i = 0; $i < $count; $i++) {
+                        $pivot =  new pivot();
+                        $pivot->id_emprestimo = $emprestimo->id;
+                        $pivot->id_ferramenta = $param['id_item'][$i];
+                        $pivot->quantidade = $param['quantidade'][$i];
+                        $pivot->qtdEmprestada = intval($param['quantidade_emprestada'])[$i];
+                        $pivot->store();
+                    }
+                } 
+            }
+            TTransaction::close();
+            new TMessage('info', 'Salvo com sucesso');
+        } catch (Exception $e) // in case of exception
+        {
+            new TMessage('error', $e->getMessage());
+            TTransaction::rollback();
+        }
     }
-}
+    }

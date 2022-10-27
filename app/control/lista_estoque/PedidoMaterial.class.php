@@ -141,7 +141,7 @@ class PedidoMaterial extends TPage
                 for ($i = 0; $i < $count; $i++) {
                     $pivot = new pivot();
                     $pivot->id_pedido_material = $object->id;
-                    $pivot->codigo_item  = $id_item[$i];
+                    $pivot->id_item  = $id_item[$i];
                     $pivot->quantidade  = $quantidade[$i];
                     $pivot->store();
                 }

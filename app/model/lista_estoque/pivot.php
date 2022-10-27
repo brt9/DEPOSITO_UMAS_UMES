@@ -28,5 +28,6 @@ class pivot extends TRecord
         parent::addAttribute('id_pedido_material');
         parent::addAttribute('id_item');
         parent::addAttribute('quantidade');
+        parent::addAttribute('quantidade_fornecida');
     }
 }
