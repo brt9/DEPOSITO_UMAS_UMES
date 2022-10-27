@@ -15,65 +15,71 @@ use Adianti\Widget\Form\THidden;
  */
 class CadastroForm extends TStandardForm
 {
-    protected $form; //  FORMULÁRIO
+  protected $form; //  FORMULÁRIO
 
-    // CONSTRUTOR DE CLASSE
-    // CRIA A PÁGINA E O FORMULÁRIO DE INSCRIÇÃO
+  // CONSTRUTOR DE CLASSE
+  // CRIA A PÁGINA E O FORMULÁRIO DE INSCRIÇÃO
 
-    function __construct()
-    {
-        parent::__construct();
+  function __construct()
+  {
+    parent::__construct();
 
-        $ini  = AdiantiApplicationConfig::get();
+    $ini  = AdiantiApplicationConfig::get();
 
-        $this->setDatabase('bancodados');              // DEFINE O BANCO DE DADOS
-        $this->setActiveRecord('lista');               // DEFINE O REGISTRO ATIVO
+    $this->setDatabase('bancodados');              // DEFINE O BANCO DE DADOS
+    $this->setActiveRecord('lista');               // DEFINE O REGISTRO ATIVO
 
-        // CRIA O FORMULÁRIO
-        $this->form = new BootstrapFormBuilder('form_cadastro');
-        $this->form->setFormTitle('Cadastro Items DEPOSITO');
+    // CRIA O FORMULÁRIO
+    $this->form = new BootstrapFormBuilder('form_cadastro');
+    $this->form->setFormTitle('<b>CADASTRO ITEMS DEPOSITO</b>');
 
-        // CRIE OS CAMPOS DO FORMULÁRIO
-        $CODIGO = new TEntry('id_item');
-        $DESCRICAO = new TEntry('descricao');
-        $QUANTIDADE_ESTOQUE = new TEntry('quantidade_estoque');
-        $colaborador_responsavel = new TEntry('id_usuario');
+    // CRIE OS CAMPOS DO FORMULÁRIO
+    $CODIGO = new TEntry('id_item');
+    $DESCRICAO = new TEntry('descricao');
+    $QUANTIDADE_ESTOQUE = new TEntry('quantidade_estoque');
+    $colaborador_responsavel = new TEntry('id_usuario');
 
+    $row = $this->form->addFields(
+      [$labelInfo = new TLabel('<b>Campos com asterisco (<font color="red">*</font>) são considerados campos obrigatórios</b>')],
+    );
 
-        // ADICIONE OS CAMPOS
-        $this->form->addFields([new TLabel('CODIGO ITEM')], [$CODIGO]);
-        $this->form->addFields([new TLabel('DESCRIÇÃO')], [$DESCRICAO]);
-        $this->form->addFields([new TLabel('QUANTIDADE EM ESTOQUE')], [$QUANTIDADE_ESTOQUE]);
-        $this->form->addFields([new TLabel('COLABORADOR RESPONSAVEL')], [$colaborador_responsavel]);
+    // ADICIONE OS CAMPOS
+    $row = $this->form->addFields([new TLabel('CODIGO ITEM <font color="red">*</font>')], [$CODIGO]);
+    $this->form->addFields([new TLabel('DESCRIÇÃO <font color="red">*</font>')], [$DESCRICAO]);
+    $this->form->addFields([new TLabel('QUANTIDADE <font color="red">*</font>')], [$QUANTIDADE_ESTOQUE]);
+    $this->form->addFields([new TLabel('COLABORADOR RESPONSAVEL <font color="red">*</font>')], [$colaborador_responsavel]);
 
-        $CODIGO->addValidation('CODIGO ITEM', new TRequiredValidator);
-        $CODIGO->addValidation('CODIGO ITEM', new TRequiredValidator);
-
-
-
-        $CODIGO->setSize('35%');
-        $DESCRICAO->setSize('70%');
-        $QUANTIDADE_ESTOQUE->setSize('35%');
-        $colaborador_responsavel->setSize('35%');
-        $colaborador_responsavel->setValue(TSession::getValue('userid'));
-        $colaborador_responsavel->setEditable(FALSE);
+    $CODIGO->addValidation('CODIGO ITEM <font color="red">*</font>', new TRequiredValidator);
+    $DESCRICAO->addValidation('DESCRIÇÃO <font color="red">*</font>', new TRequiredValidator);
+    $QUANTIDADE_ESTOQUE->addValidation('QUANTIDADE <font color="red">*</font>', new TRequiredValidator);
+    $colaborador_responsavel->addValidation('COLABORADOR RESPONSAVEL <font color="red">*</font>', new TRequiredValidator);
 
 
 
-        // CRIE AS AÇÕES DO FORMULÁRIO
-        $btn = $this->form->addAction(_t('Save'), new TAction(array($this, 'onSave')), 'far:save');
-        $btn->class = 'btn btn-sm btn-primary';
-        $this->form->addActionLink(_t('Clear'),  new TAction(array($this, 'onEdit')), 'fa:eraser red');
-        $this->form->addActionLink(_t('Back'), new TAction(array('CadastroList', 'onReload')), 'far:arrow-alt-circle-left blue');
 
-        // RECIPIENTE DE CAIXA VERTICAL
-        $container = new TVBox;
-        $container->style = 'width: 100%';
-        $container->add(new TXMLBreadCrumb('menu.xml', 'CadastroList'));
-        $container->add($this->form);
+    $CODIGO->setSize('35%');
+    $DESCRICAO->setSize('70%');
+    $QUANTIDADE_ESTOQUE->setSize('35%');
+    $colaborador_responsavel->setSize('35%');
+    $colaborador_responsavel->setValue(TSession::getValue('userid'));
+    $colaborador_responsavel->setEditable(FALSE);
 
-        parent::add($container);
-    }
+
+
+    // CRIE AS AÇÕES DO FORMULÁRIO
+    $btn = $this->form->addAction(_t('Save'), new TAction(array($this, 'onSave')), 'far:save');
+    $btn->class = 'btn btn-sm btn-primary';
+    $this->form->addActionLink(_t('Clear'),  new TAction(array($this, 'onEdit')), 'fa:eraser red');
+    $this->form->addActionLink(_t('Back'), new TAction(array('CadastroList', 'onReload')), 'far:arrow-alt-circle-left blue');
+
+    // RECIPIENTE DE CAIXA VERTICAL
+    $container = new TVBox;
+    $container->style = 'width: 100%';
+    $container->add(new TXMLBreadCrumb('menu.xml', 'CadastroList'));
+    $container->add($this->form);
+
+    parent::add($container);
+  }
 }
    /* $data_cadastro->setEditable(FALSE);
         $nome->setSize('70%');

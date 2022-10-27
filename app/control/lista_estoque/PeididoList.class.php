@@ -55,8 +55,8 @@ class PeididoList extends TStandardList
     $this->form->addFields([new TLabel('CODIGO DO PEDIDO')], [$id]);
     $this->form->addFields([new TLabel('CODIGO DO STATUS')], [$id_status]);
     $this->form->addFields([new TLabel('MATRICULA')], [$id_usuario]);
-    $this->form->addFields([new TLabel('DATA DO PEDIDO')], [$data_pedido]);
-    $this->form->addFields([new TLabel('DATA DA APROVAÇÃO')], [$data_aprovacao]);
+    $this->form->addFields([new TLabel('DATA DO PEDIDO<font color="red">*CORRIGIR FILTRO</font>')], [$data_pedido]);
+    $this->form->addFields([new TLabel('DATA DA APROVAÇÃO<font color="red">*CORRIGIR FILTRO</font>')], [$data_aprovacao]);
 
 
     $id->setTip('COLOQUE O CODIGO DO PEDIDO QUE VOCE PROCURA');
@@ -93,8 +93,8 @@ class PeididoList extends TStandardList
     $column_id = new TDataGridColumn('id', 'CODIGO DO PEDIDO', 'center');
     $column_id_status = new TDataGridColumn('Status->nome', 'CODIGO DO STATUS', 'center');
     $column_id_usuario = new TDataGridColumn('user->name', 'USUÁRIO', 'center');
-    $column_data_pedido = new TDataGridColumn('created_at', 'DATA DO PEDIDO', 'center');
-    $column_data_aprovacao = new TDataGridColumn('updated_at', 'DATA DA APROVACAO', 'center');
+    $column_data_pedido = new TDataGridColumn('created_at', 'DATA DO PEDIDO <font color="red">*CORRIGIR FILTRO</font>', 'center');
+    $column_data_aprovacao = new TDataGridColumn('updated_at', 'DATA DA APROVACAO <font color="red">*CORRIGIR FILTRO</font>', 'center');
 
 
 

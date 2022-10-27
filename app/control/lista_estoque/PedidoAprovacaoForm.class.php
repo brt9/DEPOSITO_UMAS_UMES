@@ -75,7 +75,7 @@ class PedidoAprovacaoForm extends TPage
         $this->fieldlist->addField('<b>ITEM</b><font color="red">*</font>',  $ferramenta,  ['width' => '90%'], new TRequiredValidator);
         $this->fieldlist->addField('<b>Qtd solicitada</b><font color="red">*</font>',   $quantidade,   ['width' => '100%'], new TRequiredValidator);
         $this->fieldlist->addField('<b>Qtd emprestada</b><font color="red">*</font>',   $qtdEmprestada,   ['width' => '10%'], new TRequiredValidator);
-       
+
         $row = $this->form->addFields(
             [$labelInfo = new TLabel('Campos com asterisco (<font color="red">*</font>) são considerados campos obrigatórios')],
         );
@@ -174,10 +174,10 @@ class PedidoAprovacaoForm extends TPage
                         $pivot->id_emprestimo = $emprestimo->id;
                         $pivot->id_ferramenta = $param['id_item'][$i];
                         $pivot->quantidade = $param['quantidade'][$i];
-                        $pivot->qtdEmprestada = intval($param['quantidade_emprestada'])[$i];
+                        $pivot->qtdEmprestada = $param['quantidade_emprestada'][$i];
                         $pivot->store();
                     }
-                } 
+                }
             }
             TTransaction::close();
             new TMessage('info', 'Salvo com sucesso');
@@ -187,4 +187,4 @@ class PedidoAprovacaoForm extends TPage
             TTransaction::rollback();
         }
     }
-    }
+}

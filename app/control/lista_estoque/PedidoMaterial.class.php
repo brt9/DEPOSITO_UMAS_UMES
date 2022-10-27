@@ -41,7 +41,7 @@ class PedidoMaterial extends TPage
 
         // CRIA O FORMULÁRIO
         $this->form = new BootstrapFormBuilder('my_form');
-        $this->form->setFormTitle('FORMULARIO DE PEDIDO DE MATERIAL');
+        $this->form->setFormTitle('<b>FORMULARIO DE PEDIDO DE MATERIAL</b>');
 
 
         $id = new THidden('id');
@@ -69,9 +69,9 @@ class PedidoMaterial extends TPage
         $this->fieldlist->width = '100%';
         $this->fieldlist->name  = 'my_field_list';
 
-        $this->fieldlist->addField('<b>CODIGO ITEM</b>',  $id_item,  ['width' => '20%']);
-        $this->fieldlist->addField('<b>DESCRIÇÂO</b>',  $descricao,  ['width' => '60%']);
-        $this->fieldlist->addField('<b>QUANTIDADE</b>',   $quantidade,   ['width' => '20%']);
+        $this->fieldlist->addField('<b>CODIGO ITEM</b><font color="red"> *</font>',  $id_item,  ['width' => '20%']);
+        $this->fieldlist->addField('<b>DESCRIÇÂO</b><font color="red"> *</font>',  $descricao,  ['width' => '60%']);
+        $this->fieldlist->addField('<b>QUANTIDADE</b><font color="red"> *</font>',   $quantidade,   ['width' => '20%']);
         $this->form->addFields([$id]);
 
         $this->form->addField($id_item);
@@ -81,11 +81,13 @@ class PedidoMaterial extends TPage
 
 
 
-        $id_item->addValidation('CODIGO ITEM', new TRequiredValidator);
-        $descricao->addValidation('DESCRIÇÂO', new TRequiredValidator);
-        $quantidade->addValidation('QUANTIDADE', new TRequiredValidator);
 
-        $this->fieldlist->addDetail(new stdClass);
+        $row = $this->form->addFields(
+            [$labelInfo = new TLabel('<b>Campos com asterisco (<font color="red">*</font>) são considerados campos obrigatórios</b>')],
+        );
+
+
+        $row =  $this->fieldlist->addDetail(new stdClass);
         $this->fieldlist->addHeader();
         $this->fieldlist->addCloneAction();
 
@@ -115,38 +117,45 @@ class PedidoMaterial extends TPage
         try {
             // open a transaction with database 'samples'
             TTransaction::open('bancodados');
+
             $usuarioLogado = TSession::getValue('userid');
-            if (isset($param["id"]) && !empty($param["id"])) {
-                $object = new pedido($param["id"]);
-                $object->id_usuario = $usuarioLogado;
-                $object->id_status = 1;
+            $status = array('PEDENTE', 'APROVADO', 'REPROVADO');
+
+            if (($param['id_item'] == [""]) || ($param['quantidade'] == ['0'])) {
+                throw new Exception('Campo obrigatorio não pode ser vazio');
             } else {
-                $object = new pedido();
-                $object->id_usuario = $usuarioLogado;
-                $object->id_status = 1;
-            }
-            $object->fromArray($param);
-            $object->store();
 
-            pivot::where('id_pedido_material', '=', $object->id)->delete();
+                if (isset($param["id"]) && !empty($param["id"])) {
+                    $object = new pedido($param["id"]);
+                    $object->id_usuario = $usuarioLogado;
+                    $object->id_status = 1;
+                } else {
+                    $object = new pedido();
+                    $object->id_usuario = $usuarioLogado;
+                    $object->id_status = 1;
+                }
+                $object->fromArray($param);
+                $object->store();
 
-            $id_item = $param['id_item'];
-            $quantidade = $param['quantidade'];
-            $count = count($id_item);
+                pivot::where('id_pedido_material', '=', $object->id)->delete();
+
+                $id_item = $param['id_item'];
+                $quantidade = $param['quantidade'];
+                $count = count($id_item);
 
 
 
 
-            if (isset($id_item)) {
-                for ($i = 0; $i < $count; $i++) {
-                    $pivot = new pivot();
-                    $pivot->id_pedido_material = $object->id;
-                    $pivot->id_item  = $id_item[$i];
-                    $pivot->quantidade  = $quantidade[$i];
-                    $pivot->store();
+                if (isset($id_item)) {
+                    for ($i = 0; $i < $count; $i++) {
+                        $pivot = new pivot();
+                        $pivot->id_pedido_material = $object->id;
+                        $pivot->id_item  = $id_item[$i];
+                        $pivot->quantidade  = $quantidade[$i];
+                        $pivot->store();
+                    }
                 }
             }
-
             /*
            
           
