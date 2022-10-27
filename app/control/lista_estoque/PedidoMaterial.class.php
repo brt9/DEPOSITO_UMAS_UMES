@@ -120,19 +120,21 @@ class PedidoMaterial extends TPage
 
             $usuarioLogado = TSession::getValue('userid');
             $status = array('PEDENTE', 'APROVADO', 'REPROVADO');
-
-            if (($param['id_item'] == [""]) || ($param['quantidade'] == ['0'])) {
-                throw new Exception('Campo obrigatorio não pode ser vazio');
+            if ($param['quantidade'] == ['0']) {
+                throw new Exception('Campo Quantidade não pode ser vazio');
+            }
+            if ($param['id_item'] == [""]) {
+                throw new Exception('Campo Codigo Item é obrigatorio não pode ser vazio');
             } else {
 
                 if (isset($param["id"]) && !empty($param["id"])) {
                     $object = new pedido($param["id"]);
                     $object->id_usuario = $usuarioLogado;
-                    $object->id_status = 1;
+                    $object->status = 'PENDENTE';
                 } else {
                     $object = new pedido();
                     $object->id_usuario = $usuarioLogado;
-                    $object->id_status = 1;
+                    $object->status = 'PENDENTE';
                 }
                 $object->fromArray($param);
                 $object->store();

@@ -31,7 +31,7 @@ class PeididoList extends TStandardList
     parent::setActiveRecord('ListaPedido');   // DEFINE O REGISTRO ATIVO
     parent::setDefaultOrder('id', 'asc');         //  DEFINE A ORDEM PADRÃO
     parent::addFilterField('id', '=', 'id'); //  CAMPO DE FILTRO, OPERADOR, CAMPO DE FORMULÁRIO
-    parent::addFilterField('id_status', '=', 'id_status'); // CAMPO DE FILTRO, OPERADOR, CAMPO DE FORMULÁRIO
+    parent::addFilterField('status', '=', 'status'); // CAMPO DE FILTRO, OPERADOR, CAMPO DE FORMULÁRIO
     parent::addFilterField('id_usuario', '=', 'id_usuario'); // CAMPO DE FILTRO, OPERADOR, CAMPO DE FORMULÁRIO
     parent::addFilterField('created_at', '=', 'created_at'); // CAMPO DE FILTRO, OPERADOR, CAMPO DE FORMULÁRIO
     parent::addFilterField('updated_at', '=', 'updated_at'); // CAMPO DE FILTRO, OPERADOR, CAMPO DE FORMULÁRIO
@@ -44,7 +44,7 @@ class PeididoList extends TStandardList
     // CRIE OS CAMPOS DO FORMULÁRIO
 
     $id = new TEntry('id');
-    $id_status = new TDBCombo('id_status', 'bancodados', 'Status', 'id_status', 'nome');
+    $id_status = new TEntry('status');
     $id_usuario = new TDBCombo('id_usuario', 'bancodados', 'SystemUser', 'id', 'matricula');
     $data_pedido = new TEntry('created_at');
     $data_aprovacao = new TDateTime('updated_at');
@@ -91,7 +91,7 @@ class PeididoList extends TStandardList
 
     // CRIA AS COLUNAS DA GRADE DE DADOS
     $column_id = new TDataGridColumn('id', 'CODIGO DO PEDIDO', 'center');
-    $column_id_status = new TDataGridColumn('Status->nome', 'CODIGO DO STATUS', 'center');
+    $column_id_status = new TDataGridColumn('status', 'CODIGO DO STATUS', 'center');
     $column_id_usuario = new TDataGridColumn('user->name', 'USUÁRIO', 'center');
     $column_data_pedido = new TDataGridColumn('created_at', 'DATA DO PEDIDO <font color="red">*CORRIGIR FILTRO</font>', 'center');
     $column_data_aprovacao = new TDataGridColumn('updated_at', 'DATA DA APROVACAO <font color="red">*CORRIGIR FILTRO</font>', 'center');
@@ -113,11 +113,11 @@ class PeididoList extends TStandardList
     $column_id->setAction($order_id);
 
     $order_id_status = new TAction(array($this, 'onReload'));
-    $order_id_status->setParameter('order', 'id_status');
+    $order_id_status->setParameter('order', 'status');
     $column_id_status->setAction($order_id_status);
 
     $order_id_usuario = new TAction(array($this, 'onReload'));
-    $order_id_usuario->setParameter('order', 'id_status');
+    $order_id_usuario->setParameter('order', 'status');
     $column_id_usuario->setAction($order_id_status);
 
     $order_data_pedido = new TAction(array($this, 'onReload'));

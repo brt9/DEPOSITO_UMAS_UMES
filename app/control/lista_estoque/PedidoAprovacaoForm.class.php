@@ -51,8 +51,8 @@ class PedidoAprovacaoForm extends TPage
         $ferramenta = new TDBCombo('ferramenta', 'bancodados', 'lista', 'id_item', '{id_item} {descricao}');
         $quantidade = new TEntry('quantidade[]');
         $qtdEmprestada = new TEntry('qtdEmprestada[]');
-        $status = new TCombo('combo_status');
-        $status->addItems(array('1' => 'PENDENTE', '2' => 'APROVADO', '3' => 'REPROVADO'));
+        $status = new TCombo('status[]');
+        $status->addItems(array('PENDENTE' => 'PENDENTE', 'APROVADO' => 'APROVADO', 'REPROVADO' => 'REPROVADO'));
 
         //Config dos campos
         $id->setSize('20%');
@@ -89,7 +89,7 @@ class PedidoAprovacaoForm extends TPage
             [$status],
         );
         $row->style = 'margin-top:3rem;';
-        $status->setValue('2');
+        $status->setValue('APROVADO');
         //add itens ao field list
         $this->form->addField($ferramenta);
         $this->form->addField($quantidade);
@@ -149,8 +149,8 @@ class PedidoAprovacaoForm extends TPage
             // open a transaction with database 'samples'
             TTransaction::open('bancodados');
             $usuarioLogado = TSession::getValue('userid');
-            if ($param['status'] == "1") {
-                throw new Exception('Não pode aprovar uma solicitação com status "pendente"');
+            if ($param['status'] == "PENDENTE") {
+                throw new Exception('Não pode aprovar uma solicitação com status "PENDENTE"');
             } else {
                 //Verificando se é uma edição ou criação
                 if (isset($param["id"]) && !empty($param["id"])) {
@@ -174,7 +174,7 @@ class PedidoAprovacaoForm extends TPage
                         $pivot->id_emprestimo = $emprestimo->id;
                         $pivot->id_ferramenta = $param['id_item'][$i];
                         $pivot->quantidade = $param['quantidade'][$i];
-                        $pivot->qtdEmprestada = $param['quantidade_emprestada'][$i];
+                        $pivot->quantidade_fornecida = $param['qtdEmprestada'][$i];
                         $pivot->store();
                     }
                 }
