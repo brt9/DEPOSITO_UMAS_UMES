@@ -76,8 +76,8 @@ class AprovacaoSolicitacaoForm extends TPage
         $this->fieldlist->generateAria();
         $this->fieldlist->width = '100%';
         $this->fieldlist->name  = 'my_field_list';
-        $this->fieldlist->addField('<b>Ferramenta</b><font color="red">*</font>',  $ferramenta,  ['width' => '90%'], new TRequiredValidator);
-        $this->fieldlist->addField('<b>Qtd solicitada</b><font color="red">*</font>',   $quantidade,   ['width' => '100%'], new TRequiredValidator);
+        $this->fieldlist->addField('<b>Ferramenta</b>',  $ferramenta,  ['width' => '90%'], new TRequiredValidator);
+        $this->fieldlist->addField('<b>Qtd solicitada</b>',   $quantidade,   ['width' => '100%'], new TRequiredValidator);
         $this->fieldlist->addField('<b>Qtd emprestada</b><font color="red">*</font>',   $qtdEmprestada,   ['width' => '10%'], new TRequiredValidator);
 
         $row = $this->form->addFields(
