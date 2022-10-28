@@ -42,16 +42,15 @@ class PedidoAprovacaoForm extends TPage
 
         // creates the form
         $this->form = new BootstrapFormBuilder('form_SaleMultiValue');
-        $this->form->setFormTitle('Aprovar solicitação de material');
+        $this->form->setFormTitle('<b>Aprovar solicitação de material</b>');
 
         // create the form fields
         $id             = new TEntry('id');
         $created             = new TDateTime('created_at');
-        $ferramenta = new TEntry('ferramenta[]');
-        $ferramenta = new TDBCombo('ferramenta', 'bancodados', 'lista', 'id_item', '{id_item} {descricao}');
+        $id_item = new TDBCombo('id_item[]', 'bancodados', 'lista', 'id_item', '{id_item} {descricao}');
         $quantidade = new TEntry('quantidade[]');
-        $qtdEmprestada = new TEntry('qtdEmprestada[]');
-        $status = new TCombo('status[]');
+        $quantidade_fornecida = new TEntry('quantidade_fornecida[]');
+        $status = new TCombo('status');
         $status->addItems(array('PENDENTE' => 'PENDENTE', 'APROVADO' => 'APROVADO', 'REPROVADO' => 'REPROVADO'));
 
         //Config dos campos
@@ -61,8 +60,8 @@ class PedidoAprovacaoForm extends TPage
         $created->setSize('70%');
         $created->setEditable(FALSE);
 
-        $ferramenta->setSize('90%');
-        $ferramenta->setEditable(FALSE);
+        $id_item->setSize('90%');
+        $id_item->setEditable(FALSE);
 
         $quantidade->setSize('100%');
         $quantidade->setEditable(FALSE);
@@ -72,9 +71,9 @@ class PedidoAprovacaoForm extends TPage
         $this->fieldlist->generateAria();
         $this->fieldlist->width = '100%';
         $this->fieldlist->name  = 'my_field_list';
-        $this->fieldlist->addField('<b>ITEM</b><font color="red">*</font>',  $ferramenta,  ['width' => '90%'], new TRequiredValidator);
+        $this->fieldlist->addField('<b>ITEM</b><font color="red">*</font>',  $id_item,  ['width' => '90%'], new TRequiredValidator);
         $this->fieldlist->addField('<b>Qtd solicitada</b><font color="red">*</font>',   $quantidade,   ['width' => '100%'], new TRequiredValidator);
-        $this->fieldlist->addField('<b>Qtd emprestada</b><font color="red">*</font>',   $qtdEmprestada,   ['width' => '10%'], new TRequiredValidator);
+        $this->fieldlist->addField('<b>Qtd emprestada</b><font color="red">*</font>',   $quantidade_fornecida,   ['width' => '10%'], new TRequiredValidator);
 
         $row = $this->form->addFields(
             [$labelInfo = new TLabel('Campos com asterisco (<font color="red">*</font>) são considerados campos obrigatórios')],
@@ -91,9 +90,9 @@ class PedidoAprovacaoForm extends TPage
         $row->style = 'margin-top:3rem;';
         $status->setValue('APROVADO');
         //add itens ao field list
-        $this->form->addField($ferramenta);
+        $this->form->addField($id_item);
         $this->form->addField($quantidade);
-        $this->form->addField($qtdEmprestada);
+        $this->form->addField($quantidade_fornecida);
         $this->fieldlist->disableRemoveButton();
 
         // form actions
@@ -115,19 +114,19 @@ class PedidoAprovacaoForm extends TPage
         try {
             if (isset($param['key'])) {
                 TTransaction::open('bancodados');
-                $emprestimo = pedido::find($param['key']);
-                $this->form->setData($emprestimo); //inserindo dados no formulario. 
+                $pedido = pedido::find($param['key']);
+                $this->form->setData($pedido); //inserindo dados no formulario. 
 
-                $pivot = pivot::where('id_pedido_material', '=', $emprestimo->id)->load();
+                $pivot = pivot::where('id_pedido_material', '=', $pedido->id)->load();
 
                 if ($pivot) {
                     $this->fieldlist->addHeader();
                     foreach ($pivot as $itens => $value) {
                         $obj = new stdClass;
                         $obj->id_pedido_material =  $value->id_emprestimo;
-                        $obj->ferramenta =  $value->id_item;
+                        $obj->id_item =  $value->id_item;
                         $obj->quantidade = $value->quantidade;
-                        $obj->qtdEmprestada = $value->quantidade;
+                        $obj->quantidade_fornecida = $value->quantidade;
 
                         $this->fieldlist->addDetail($obj);
                     }
@@ -143,7 +142,7 @@ class PedidoAprovacaoForm extends TPage
         }
     }
     public function onSave($param)
-    {
+    { 
         try {
             $this->form->validate();
             // open a transaction with database 'samples'
@@ -154,28 +153,30 @@ class PedidoAprovacaoForm extends TPage
             } else {
                 //Verificando se é uma edição ou criação
                 if (isset($param["id"]) && !empty($param["id"])) {
-                    $emprestimo = new pedido($param["id"]);
-                    $emprestimo->id_usuario = $emprestimo->id_usuario;
-                    $emprestimo->id_admin = $usuarioLogado;
-                    $emprestimo->status = $param['status'];
+                    $pedido = new pedido($param["id"]);
+                    $pedido->id_usuario = $pedido->id_usuario;
+                    $pedido->id_admin = $usuarioLogado;
+                    $pedido->status = $param['status'];
                 }
-                $emprestimo->fromArray($param);
-                $emprestimo->store();
+                $pedido->fromArray($param);
+                $pedido->store();
 
                 //Delete emprestimo se existe.
-                pivot::where('id', '=', $emprestimo->id)->delete();
+                pivot::where('id_pedido_material', '=', $pedido->id)->delete();
 
-                $ferramentas = $param['id_item'];
-                $count = count($ferramentas);
+                $id_items = $param['id_item'];
+                $count = count($id_items);
                 //Salvando items na tela pivot. 
-                if (isset($ferramentas)) {
+              
+                if (isset($id_items)) {
                     for ($i = 0; $i < $count; $i++) {
                         $pivot =  new pivot();
-                        $pivot->id_emprestimo = $emprestimo->id;
-                        $pivot->id_ferramenta = $param['id_item'][$i];
-                        $pivot->quantidade = $param['quantidade'][$i];
-                        $pivot->quantidade_fornecida = $param['qtdEmprestada'][$i];
+                        $pivot->id_pedido_material = $pedido->id;
+                        $pivot->id_item = $param['id_item'][$i];
+                        $pivot->quantidade = $param['quantidade'][$i];   
+                        $pivot->quantidade_fornecida = $param['quantidade_fornecida'][$i];
                         $pivot->store();
+                        
                     }
                 }
             }
