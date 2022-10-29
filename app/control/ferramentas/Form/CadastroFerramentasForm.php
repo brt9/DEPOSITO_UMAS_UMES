@@ -2,6 +2,7 @@
 
 use Adianti\Base\TStandardForm;
 use Adianti\Registry\TSession;
+use Adianti\Widget\Dialog\TMessage;
 use Adianti\Widget\Form\TDateTime;
 use Adianti\Widget\Form\TEntry;
 use Adianti\Widget\Form\THidden;
@@ -43,9 +44,14 @@ class CadastroFerramentasForm extends TPage
 
         // add the fields inside the form
         $row = $this->form->addFields(
+            [$labelInfo = new TLabel('Campos com asterisco (<font color="red">*</font>) são considerados campos obrigatórios')],
+        );
+
+        $row = $this->form->addFields(
             [new TLabel('Id')],    [$id],
             [new TLabel('Data de criação')],    [$created],
         );
+        $row->style = 'margin-top:3rem;';
         $id->setEditable(FALSE);
         $created->setEditable(FALSE);
         
@@ -89,19 +95,26 @@ class CadastroFerramentasForm extends TPage
         $vbox->add($this->form);
         parent::add($vbox);
     }
+    /**
+     * Save form 
+     */
     public function onSave($param)
     {
         try {
-            TTransaction::open('bancodados'); // open a transaction
+            
+            if(empty($param['nome']) or $param['quantidade'] == '0');
+                throw new Exception('Campos obrigatórios nao podem ser vazios');
+
+            TTransaction::open('bancodados');
             if (isset($param['id'])) {
                 $user = TSession::getValue('userid');//get user logged
 
-                $this->form->validate(); // validate form data
-                $object = new Ferramentas();  // create an empty object
+                $this->form->validate();
+                $object = new Ferramentas(); 
                 $data = $this->form->getData(); // get form data as array
                 $object->id_user = $user; 
                 $object->fromArray((array) $data); // load the object with data
-                $object->store(); // save the object
+                $object->store();
 
                 // get the generated id
                 $data->id = $object->id;
@@ -109,16 +122,19 @@ class CadastroFerramentasForm extends TPage
 
             $this->form->setData($data); // fill form data
 
-            TTransaction::close(); // close the transaction
+            TTransaction::close(); 
 
             new TMessage('info','Ferramenta cadastrada');
-        } catch (Exception $e) // in case of exception
+        } catch (Exception $e) 
         {
-            new TMessage('error', $e->getMessage()); // shows the exception error message
+            new TMessage('error', $e->getMessage()); 
             $this->form->setData($this->form->getData()); // keep form data
-            TTransaction::rollback(); // undo all pending operations
+            TTransaction::rollback(); 
         }
     }
+    /**
+     * Cria na view os forms para criar/editar
+     */
     public function onEdit($param)
     {
         try {
@@ -135,7 +151,7 @@ class CadastroFerramentasForm extends TPage
                 $this->form->clear();
             }
         } catch (Exception $e) {
-            new TMessage('error', $e->getMessage()); // shows the exception error message
+            new TMessage('error', $e->getMessage()); 
         }
     }
     public function onClear($param)
