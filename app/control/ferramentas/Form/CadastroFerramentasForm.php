@@ -1,6 +1,7 @@
 <?php
 
 use Adianti\Base\TStandardForm;
+use Adianti\Registry\TSession;
 use Adianti\Widget\Form\TDateTime;
 use Adianti\Widget\Form\TEntry;
 use Adianti\Widget\Form\THidden;
@@ -36,12 +37,17 @@ class CadastroFerramentasForm extends TPage
 
         // create the form fields
         $id = new TEntry('id');
+        $created = new TEntry('created');
         $nomeFerramenta = new TEntry('nome');
         $quantidade    = new TSpinner('quantidade');
 
         // add the fields inside the form
-        $row = $this->form->addFields([new TLabel('Id')],    [$id]);
+        $row = $this->form->addFields(
+            [new TLabel('Id')],    [$id],
+            [new TLabel('Data de criação')],    [$created],
+        );
         $id->setEditable(FALSE);
+        $created->setEditable(FALSE);
         
         $row = $this->form->addFields(
             [$labelFerramenta = new TLabel('Ferramenta <font color="red">*</font>')],
@@ -63,6 +69,7 @@ class CadastroFerramentasForm extends TPage
         $labelQuantidade->setTip('Campo obrigatório');
         $labelFerramenta->style = 'left: -100%;';
         $id->setSize('20%');
+        $created->setSize('60%');
         $nomeFerramenta->setSize('100%');
         $quantidade->setSize('20%');
         $nomeFerramenta->placeholder = 'Nome do ferramenta';
@@ -87,10 +94,12 @@ class CadastroFerramentasForm extends TPage
         try {
             TTransaction::open('bancodados'); // open a transaction
             if (isset($param['id'])) {
-                $this->form->validate(); // validate form data
+                $user = TSession::getValue('userid');//get user logged
 
+                $this->form->validate(); // validate form data
                 $object = new Ferramentas();  // create an empty object
                 $data = $this->form->getData(); // get form data as array
+                $object->id_user = $user; 
                 $object->fromArray((array) $data); // load the object with data
                 $object->store(); // save the object
 

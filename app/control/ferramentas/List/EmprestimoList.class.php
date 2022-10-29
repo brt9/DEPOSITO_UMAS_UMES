@@ -89,14 +89,14 @@ class EmprestimoList extends TStandardList
     $this->datagrid->addColumn($column_usuario);
     $this->datagrid->addColumn($column_status);
     $this->datagrid->addColumn($column_created);
+    $this->datagrid->disableDefaultClick();
 
-    
-    // CRIAR AÇÃO EDITAR
+    // Action edit
     $action_edit = new TDataGridAction(array('EmprestimoFerramentasForm', 'onEdit'));
     $action_edit->setField('id');
     $this->datagrid->addAction($action_edit, 'Editar solicitação', 'far:edit blue');
-    
-    // Criar visualização da solicitação para o admin aprovar ou não. 
+
+    // Visualização da solicitação para o admin. 
     $action1 = new TDataGridAction(['AprovacaoSolicitacaoForm', 'onEdit']);
     $action1->setField('id');
     $this->datagrid->addAction($action1, 'Visualizar solicitação', 'fa:check-circle background-color:#218231');
