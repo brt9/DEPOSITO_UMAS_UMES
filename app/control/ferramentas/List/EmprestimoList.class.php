@@ -1,5 +1,7 @@
 <?php
 
+use Adianti\Database\TTransaction;
+use Adianti\Registry\TSession;
 use Adianti\Widget\Datagrid\TDataGridColumn;
 use Adianti\Widget\Form\TDate;
 use Adianti\Widget\Form\TDateTime;
@@ -42,6 +44,11 @@ class EmprestimoList extends TStandardList
     // CRIA O FORMULÁRIO
     $this->form = new BootstrapFormBuilder('form_search');
     $form = $this->form->setFormTitle('Emprestimo de ferramentas');
+
+    TTransaction::open('bancodados');
+    $userSession = TSession::getValue('userid');
+    $isAdmin = SystemUserGroup::where('system_group_id', '=', 1)->load();
+    TTransaction::close();
     // CRIE OS CAMPOS DO FORMULÁRIO
     $unique = new TDBUniqueSearch('FerramentaList', 'bancodados', 'emprestimo', 'id', 'id');
     $unique->setMinLength(1);
@@ -99,7 +106,8 @@ class EmprestimoList extends TStandardList
     // Visualização da solicitação para o admin. 
     $action1 = new TDataGridAction(['AprovacaoSolicitacaoForm', 'onEdit']);
     $action1->setField('id');
-    $this->datagrid->addAction($action1, 'Visualizar solicitação', 'fa:check-circle background-color:#218231');
+    if ($userSession == $isAdmin[0]->system_user_id)
+      $this->datagrid->addAction($action1, 'Visualizar solicitação', 'fa:check-circle background-color:#218231');
 
     // CRIAR O MODELO DE GRADE DE DADOS
     $this->datagrid->createModel();
