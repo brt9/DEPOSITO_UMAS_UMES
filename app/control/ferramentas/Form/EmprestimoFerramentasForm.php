@@ -42,7 +42,7 @@ class EmprestimoFerramentasForm extends TPage
         $id             = new TEntry('id');
         $created             = new TDateTime('created_at');
         $ferramenta = new TDBCombo('ferramenta[]', 'bancodados', 'Ferramentas', 'id', '{id} - {nome}', 'id');
-        $quantidade = new TSpinner('quantidade[]');
+        $quantidade = new TEntry('quantidade[]');
 
         $ferramenta->placeholder = 'Pesquise pela ferramenta desejada';
         $ferramenta->enableSearch();
@@ -119,23 +119,30 @@ class EmprestimoFerramentasForm extends TPage
                 //Delete emprestimo se existe.
                 PivotEmprestimoFerramentas::where('id_emprestimo', '=', $emprestimo->id)->delete();
 
-                $ferramentas = $param['ferramenta'];
-                $tool = new Ferramentas($param['ferramenta']);
+                $ferramentas = array_map(function ($value) {
+                    return (int)$value;
+                }, $param['ferramenta']);
                 $count = count($ferramentas);
 
                 //Salvando items na tela pivot. 
                 if (isset($ferramentas)) {
                     for ($i = 0; $i < $count; $i++) {
+
                         $pivot =  new PivotEmprestimoFerramentas();
                         $pivot->id_emprestimo = $emprestimo->id;
                         $pivot->id_ferramenta = $param['ferramenta'][$i];
+                        $tools = Ferramentas::where('id', 'in', $ferramentas)->load();
+                        $qtdTools = [];
+                        foreach ($tools as $key) {
+                            $qtdTools[] = $key->quantidade;
+                        }
                         //Verifica se a quantidade solicitada for maior que a do estoque 
-                        if ($tool->quantidade <= array_values($param['quantidade'])) {
-                            throw new Exception(
-                                'A quantidade na linha '. ($i+1) .' não pode ser maior que a disponível no estoque que é: '. $tool->quantidade
-                            );
-                        }else{
+                        if ($param['quantidade'][$i] < $qtdTools[$i]) {
                             $pivot->quantidade = $param['quantidade'][$i];
+                        } else {
+                            throw new Exception(
+                                'A quantidade na ' . ($i + 1) . '° linha não pode ser maior que a disponível no estoque que é: '. $qtdTools[$i]
+                            );
                         }
                         $pivot->store();
                     }
