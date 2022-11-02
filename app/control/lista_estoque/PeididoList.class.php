@@ -80,6 +80,10 @@ class PeididoList extends TStandardList
     // ADICIONE AS AÇÕES DO FORMULÁRIO DE PESQUISA
     $btn = $this->form->addAction(_t('Find'), new TAction(array($this, 'onSearch')), 'fa:search');
     $this->form->addAction("Novo Item", new TAction(["CadastroForm", "onEdit"]), "fa:plus-circle green");
+
+
+
+
     $btn->class = 'btn btn-sm btn-primary';
 
     // CRIA UMA GRADE DE DADOS
@@ -130,12 +134,21 @@ class PeididoList extends TStandardList
 
 
     // CRIAR AÇÃO EDITAR
-    $action_edit = new TDataGridAction(array('PedidoAprovacaoForm', 'onEdit'));
+    $action_edit = new TDataGridAction(array('PedidoEditForm', 'onEdit'));
     $action_edit->setButtonClass('btn btn-default');
-    $action_edit->setLabel(_t('Edit'));
+    $action_edit->setLabel('Editar Pedido');
     $action_edit->setImage('far:edit blue');
     $action_edit->setField('id');
     $this->datagrid->addAction($action_edit);
+
+
+    $action1 = new TDataGridAction(['PedidoAprovacaoForm', 'onEdit']);
+    $action1->setField('id');
+    $this->datagrid->addAction($action1, 'Aprovar solicitação', 'fa:check-circle background-color:#218231');
+
+    $action1 = new TDataGridAction(['PedidoAprovacaoForm', 'onEdit']);
+    $action1->setField('id');
+    $this->datagrid->addAction($action1, 'Gerar Relatorio', 'fa:file-pdf red');
 
 
 
@@ -158,7 +171,7 @@ class PeididoList extends TStandardList
     $container->add(new TXMLBreadCrumb('menu.xml', __CLASS__));
     $container->add($this->form);
     $container->add($panel);
-
+    $this->datagrid->disableDefaultClick();
     parent::add($container);
   }
 }
