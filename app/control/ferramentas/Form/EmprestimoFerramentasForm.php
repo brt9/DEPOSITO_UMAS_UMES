@@ -95,13 +95,14 @@ class EmprestimoFerramentasForm extends TPage
             $this->form->validate();
             // open a transaction with database 'samples'
             TTransaction::open('bancodados');
-            
+
             $usuarioLogado = TSession::getValue('userid');
             $status = array('Pendente', 'Efetuado', 'Devolvido', 'Não devolvido');
 
             if (($param['ferramenta'] == [""]) || ($param['quantidade'] == ['0'])) {
                 throw new Exception('Campo obrigatorio não pode ser vazio');
             } else {
+
                 //Verificando se é uma edição ou criação
                 if (isset($param["id"]) && !empty($param["id"])) {
                     $emprestimo = new Emprestimo($param["id"]);
@@ -119,14 +120,23 @@ class EmprestimoFerramentasForm extends TPage
                 PivotEmprestimoFerramentas::where('id_emprestimo', '=', $emprestimo->id)->delete();
 
                 $ferramentas = $param['ferramenta'];
+                $tool = new Ferramentas($param['ferramenta']);
                 $count = count($ferramentas);
+
                 //Salvando items na tela pivot. 
                 if (isset($ferramentas)) {
                     for ($i = 0; $i < $count; $i++) {
                         $pivot =  new PivotEmprestimoFerramentas();
                         $pivot->id_emprestimo = $emprestimo->id;
                         $pivot->id_ferramenta = $param['ferramenta'][$i];
-                        $pivot->quantidade = $param['quantidade'][$i];
+                        //Verifica se a quantidade solicitada for maior que a do estoque 
+                        if ($tool->quantidade < array_values($param['quantidade'])) {
+                            throw new Exception(
+                                'A quantidade na linha '. ($i+1) .' não pode ser maior que a disponível no estoque que é: '. $tool->quantidade
+                            );
+                        }else{
+                            $pivot->quantidade = $param['quantidade'][$i];
+                        }
                         $pivot->store();
                     }
                 }
