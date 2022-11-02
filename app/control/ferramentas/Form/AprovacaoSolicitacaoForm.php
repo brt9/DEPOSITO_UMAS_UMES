@@ -50,7 +50,7 @@ class AprovacaoSolicitacaoForm extends TPage
         $id             = new TEntry('id');
         $created             = new TDateTime('created_at');
         $status             = new TCombo('status');
-        $status->addItems(['Pendente' =>'Pendente', 'Efetuado'=> 'Efetuado' ,'Devolvido'=> 'Devolvido' , 'Não devolvido'=> 'Não devolvido' ]);
+        $status->addItems(['Pendente' => 'Pendente', 'Efetuado' => 'Efetuado', 'Devolvido' => 'Devolvido', 'Não devolvido' => 'Não devolvido']);
         $ferramenta = new TEntry('ferramenta[]');
         $quantidade = new TEntry('quantidade[]');
         $qtdEmprestada = new TEntry('qtd_emprestada[]');
@@ -171,6 +171,7 @@ class AprovacaoSolicitacaoForm extends TPage
                 PivotEmprestimoFerramentas::where('id_emprestimo', '=', $emprestimo->id)->delete();
 
                 $ferramentas = $param['ferramenta'];
+                $tool = new Ferramentas($param['ferramenta']);
                 $count = count($ferramentas);
                 //Salvando items na tela pivot. 
                 if (isset($ferramentas)) {
@@ -179,10 +180,20 @@ class AprovacaoSolicitacaoForm extends TPage
                         $pivot->id_emprestimo = $emprestimo->id;
                         $pivot->id_ferramenta = $param['ferramenta'][$i];
                         $pivot->quantidade = $param['quantidade'][$i];
-                        $pivot->qtd_emprestada = $param['qtd_emprestada'][$i];
+                        if ($tool->quantidade < array_values($param['qtd_emprestada'])) {
+                            throw new Exception(
+                                'A quantidade na linha ' . ($i + 1) . ' não pode ser maior que a disponível no estoque que é: ' . $tool->quantidade
+                            );
+                        } elseif ($param['quantidade'] < $param['qtd_emprestada']) {
+                            throw new Exception(
+                                'A quantidade empretada na linha ' . ($i + 1) . ' não pode ser maior que a quantidade solicitada'
+                            );
+                        } else {
+                            $pivot->qtd_emprestada = $param['qtd_emprestada'][$i];
+                        }
                         $pivot->store();
                     }
-                } 
+                }
             }
             TTransaction::close();
             new TMessage('info', 'Salvo com sucesso');

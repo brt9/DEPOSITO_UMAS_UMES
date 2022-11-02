@@ -130,7 +130,7 @@ class EmprestimoFerramentasForm extends TPage
                         $pivot->id_emprestimo = $emprestimo->id;
                         $pivot->id_ferramenta = $param['ferramenta'][$i];
                         //Verifica se a quantidade solicitada for maior que a do estoque 
-                        if ($tool->quantidade < array_values($param['quantidade'])) {
+                        if ($tool->quantidade <= array_values($param['quantidade'])) {
                             throw new Exception(
                                 'A quantidade na linha '. ($i+1) .' não pode ser maior que a disponível no estoque que é: '. $tool->quantidade
                             );
