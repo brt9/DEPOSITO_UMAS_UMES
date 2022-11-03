@@ -129,7 +129,11 @@ class EmprestimoFerramentasForm extends TPage
                 //Salvando items na tela pivot. 
                 if (isset($ferramentas)) {
                     for ($i = 0; $i < $count; $i++) {
-
+                        if(empty($param['quantidade'][$i])){
+                            throw new Exception('A quantidade está vazia na linha ' . ($i + 1));
+                        }elseif(empty($ferramentas[$i])) {
+                            throw new Exception('A ferramenta está vazia na linha ' . ($i + 1));
+                        }
                         $pivot =  new PivotEmprestimoFerramentas();
                         $pivot->id_emprestimo = $emprestimo->id;
                         $pivot->id_ferramenta = $param['ferramenta'][$i];
