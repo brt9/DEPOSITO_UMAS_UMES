@@ -13,8 +13,7 @@ class Emprestimo extends TRecord
     const DELETEDAT = 'deleted_at';
 
     protected $idUser;
-    protected $statusId;
-    protected $pivot;
+
     /**
      * Constructor method
      */
