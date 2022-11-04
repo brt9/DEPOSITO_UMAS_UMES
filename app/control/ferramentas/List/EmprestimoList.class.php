@@ -53,14 +53,14 @@ class EmprestimoList extends TStandardList
     $unique = new TDBUniqueSearch('FerramentaList', 'bancodados', 'emprestimo', 'id', 'id');
     $unique->setMinLength(1);
     $unique->setMask('{id}');
-    $unique->placeholder = 'Pesquise o emprestido pelo id, usuario ou status';
+    $unique->placeholder = 'Pesquise o emprestido pela númeração da solicitação';
     $data = new TDate('created_at');
     $data->placeholder = 'Pesquise pela data de criação';
     $data->setMask('dd/mm/yyyy');
 
     // ADICIONE OS CAMPOS
     $row = $this->form->addFields(
-      [new TLabel('Id')],
+      [new TLabel('Número da solicitação')],
       [$unique],
       [new Tlabel('Data')],
       [$data],
