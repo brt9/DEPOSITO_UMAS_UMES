@@ -86,7 +86,7 @@ class PedidoEditForm extends TPage
         //add itens ao field list
         $this->form->addField($id_item);
         $this->form->addField($quantidade);
-        $this->fieldlist->disableRemoveButton();
+
 
         // form actions
         $btnBack = $this->form->addActionLink(_t('Back'), new TAction(array('PeididoList', 'onReload')), 'far:arrow-alt-circle-left white');
@@ -107,16 +107,16 @@ class PedidoEditForm extends TPage
         try {
             if (isset($param['key'])) {
                 TTransaction::open('bancodados');
-                $emprestimo = pedido::find($param['key']);
+                $pedido = pedido::find($param['key']);
                 $this->form->setData($pedido); //inserindo dados no formulario. 
 
-                $pivot = PivotEmprestimoFerramentas::where('id_pedido_material', '=', $emprestimo->id)->load();
+                $pivot = pivot::where('id_pedido_material', '=', $pedido->id)->load();
 
                 if ($pivot) {
                     $this->fieldlist->addHeader();
                     foreach ($pivot as $itens => $value) {
                         $obj = new stdClass;
-                        $obj->ferramenta = $value->id_ferramenta;
+                        $obj->id_item = $value->id_item;
                         $obj->quantidade = $value->quantidade;
 
                         $this->fieldlist->addDetail($obj);
@@ -136,38 +136,7 @@ class PedidoEditForm extends TPage
             new TMessage('error', $e->getMessage()); // shows the exception error message
         }
     }
-    /////////////////////////////////////////
-    {
-        try {
-            if (isset($param['key'])) {
-                TTransaction::open('bancodados');
-                $pedido = pedido::find($param['key']);
-                $this->form->setData($pedido); //inserindo dados no formulario. 
 
-                $pivot = pivot::where('id_pedido_material', '=', $pedido->id)->load();
-
-                if ($pivot) {
-                    $this->fieldlist->addHeader();
-                    foreach ($pivot as $itens => $value) {
-                        $obj = new stdClass;
-                        $obj->id_pedido_material =  $value->id_emprestimo;
-                        $obj->id_item =  $value->id_item;
-                        $obj->quantidade = $value->quantidade;
-                        $obj->quantidade_fornecida = $value->quantidade;
-
-                        $this->fieldlist->addDetail($obj);
-                    }
-                }
-                // add field list to the form
-                $this->form->addContent([$this->fieldlist]);
-                TTransaction::close();
-            } else {
-                $this->onClear($param);
-            }
-        } catch (Exception $e) {
-            new TMessage('error', $e->getMessage()); // shows the exception error message
-        }
-    }
     public function onSave($param)
     {
         try {
