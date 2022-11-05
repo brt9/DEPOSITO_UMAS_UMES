@@ -27,10 +27,6 @@ class EmprestimoFerramentasForm extends TPage
     protected $form;
     protected $fieldlist;
 
-    /**
-     * Class constructor
-     * Creates the page
-     */
     public function __construct()
     {
         parent::__construct();
@@ -90,6 +86,8 @@ class EmprestimoFerramentasForm extends TPage
     }
     /**
      * Metodo para salvar solicitação
+     * @var param
+     * @return void 
      */
     public function onSave($param)
     {
@@ -99,21 +97,21 @@ class EmprestimoFerramentasForm extends TPage
             TTransaction::open('bancodados');
 
             $usuarioLogado = TSession::getValue('userid');
-            $status = array('Pendente', 'Efetuado', 'Devolvido', 'Não devolvido');
-
+            $duplicates = $this->getDuplicates($param['ferramenta']);
             if (($param['ferramenta'] == [""]) || ($param['quantidade'] == ['0'])) {
                 throw new Exception('Campo obrigatorio não pode ser vazio');
+            } elseif (!empty($duplicates)) {
+                throw new Exception('Uma ferramentas nao poder ser solicitada mais de uma vez');
             } else {
-
                 //Verificando se é uma edição ou criação
                 if (isset($param["id"]) && !empty($param["id"])) {
                     $emprestimo = new Emprestimo($param["id"]);
                     $emprestimo->id_usuario = $usuarioLogado;
-                    $emprestimo->status = $status[0];
+                    $emprestimo->status = 'PENDENTE';
                 } else {
                     $emprestimo = new Emprestimo();
                     $emprestimo->id_usuario = $usuarioLogado;
-                    $emprestimo->status = $status[0];
+                    $emprestimo->status = 'PENDENTE';
                 }
                 $emprestimo->fromArray($param);
                 $emprestimo->store();
@@ -129,11 +127,13 @@ class EmprestimoFerramentasForm extends TPage
                 //Salvando items na tela pivot. 
                 if (isset($ferramentas)) {
                     for ($i = 0; $i < $count; $i++) {
-                        if(empty($param['quantidade'][$i])){
+
+                        if (empty($param['quantidade'][$i])) {
                             throw new Exception('A quantidade está vazia na linha ' . ($i + 1));
-                        }elseif(empty($ferramentas[$i])) {
+                        } elseif (empty($ferramentas[$i])) {
                             throw new Exception('A ferramenta está vazia na linha ' . ($i + 1));
                         }
+
                         $pivot =  new PivotEmprestimoFerramentas();
                         $pivot->id_emprestimo = $emprestimo->id;
                         $pivot->id_ferramenta = $param['ferramenta'][$i];
@@ -147,7 +147,7 @@ class EmprestimoFerramentasForm extends TPage
                             $pivot->quantidade = $param['quantidade'][$i];
                         } else {
                             throw new Exception(
-                                'A quantidade na ' . ($i + 1) . '° linha não pode ser maior que a disponível no estoque que é: '. $qtdTools[$i]
+                                'A quantidade na ' . ($i + 1) . '° linha não pode ser maior que a disponível no estoque que é: ' . $qtdTools[$i]
                             );
                         }
                         $pivot->store();
@@ -164,6 +164,8 @@ class EmprestimoFerramentasForm extends TPage
     }
     /**
      * Metodo identifica se criando ou editando e colocar itens no formulário.
+     * @var param
+     * @return Form
      */
     public function onEdit($param)
     {
@@ -199,11 +201,25 @@ class EmprestimoFerramentasForm extends TPage
             new TMessage('error', $e->getMessage()); // shows the exception error message
         }
     }
+    /**
+     * Limpar todos o formulário
+     * @var param
+     * @return Fieldlist
+     */
     public function onClear($param)
     {
         $this->fieldlist->addHeader();
         $this->fieldlist->addDetail(new stdClass);
         $this->fieldlist->addCloneAction();
         $this->form->addContent([$this->fieldlist]);
+    }
+    /**
+     * Verificar se existe ferramentas(ou qualquer outro parametro) duplicados no formulário
+     * @var param 
+     * @return Array
+     */
+    function getDuplicates($param)
+    {
+        return array_unique(array_diff_assoc($param, array_unique($param)));
     }
 }
