@@ -42,7 +42,7 @@ class PedidoEditForm extends TPage
 
         // creates the form
         $this->form = new BootstrapFormBuilder('form_SaleMultiValue');
-        $this->form->setFormTitle('<b>Aprovar solicitação de material</b>');
+        $this->form->setFormTitle('<b>Editar Pedido de material</b>');
 
         // create the form fields
         $id             = new TEntry('id');
@@ -61,11 +61,8 @@ class PedidoEditForm extends TPage
         $created->setEditable(FALSE);
 
         $id_item->setSize('100%');
-        $id_item->setEditable(FALSE);
-
+        $id_item->enableSearch();
         $quantidade->setSize('100%');
-        $quantidade->setEditable(FALSE);
-
         //add field 
         $this->fieldlist = new TFieldList;
         $this->fieldlist->generateAria();
@@ -73,7 +70,6 @@ class PedidoEditForm extends TPage
         $this->fieldlist->name  = 'my_field_list';
         $this->fieldlist->addField('<b>ITEM</b><font color="red">*</font>',  $id_item,  ['width' => '90%'], new TRequiredValidator);
         $this->fieldlist->addField('<b>Qtd solicitada</b><font color="red">*</font>',   $quantidade,   ['width' => '100%'], new TRequiredValidator);
-        $this->fieldlist->addField('<b>Qtd emprestada</b><font color="red">*</font>',   $quantidade_fornecida,   ['width' => '10%'], new TRequiredValidator);
 
         $row = $this->form->addFields(
             [$labelInfo = new TLabel('Campos com asterisco (<font color="red">*</font>) são considerados campos obrigatórios')],
@@ -83,16 +79,13 @@ class PedidoEditForm extends TPage
             [new TLabel('Codigo da solicitação')],
             [$id],
             [new TLabel('Data da solicitação')],
-            [$created],
-            [new TLabel('Status da solicitação')],
-            [$status],
+            [$created]
         );
         $row->style = 'margin-top:3rem;';
         $status->setValue('APROVADO');
         //add itens ao field list
         $this->form->addField($id_item);
         $this->form->addField($quantidade);
-        $this->form->addField($quantidade_fornecida);
         $this->fieldlist->disableRemoveButton();
 
         // form actions
@@ -110,6 +103,40 @@ class PedidoEditForm extends TPage
     }
 
     public function onEdit($param)
+    {
+        try {
+            if (isset($param['key'])) {
+                TTransaction::open('bancodados');
+                $emprestimo = pedido::find($param['key']);
+                $this->form->setData($pedido); //inserindo dados no formulario. 
+
+                $pivot = PivotEmprestimoFerramentas::where('id_pedido_material', '=', $emprestimo->id)->load();
+
+                if ($pivot) {
+                    $this->fieldlist->addHeader();
+                    foreach ($pivot as $itens => $value) {
+                        $obj = new stdClass;
+                        $obj->ferramenta = $value->id_ferramenta;
+                        $obj->quantidade = $value->quantidade;
+
+                        $this->fieldlist->addDetail($obj);
+                    }
+                    $this->fieldlist->addCloneAction();
+                }
+                // add field list to the form
+                $this->form->addContent([$this->fieldlist]);
+                TTransaction::close();
+            } else {
+                $this->fieldlist->addHeader();
+                $this->fieldlist->addDetail(new stdClass);
+                $this->fieldlist->addCloneAction();
+                $this->form->addContent([$this->fieldlist]);
+            }
+        } catch (Exception $e) {
+            new TMessage('error', $e->getMessage()); // shows the exception error message
+        }
+    }
+    /////////////////////////////////////////
     {
         try {
             if (isset($param['key'])) {
