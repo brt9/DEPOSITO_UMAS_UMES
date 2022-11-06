@@ -166,7 +166,7 @@ class EmprestimoFerramentasForm extends TPage
     /**
      * Metodo identifica se criando ou editando e colocar itens no formulário.
      * @var param request
-     * @return Form forms 
+     * @return View forms 
      */
     public function onEdit($param)
     {
@@ -206,7 +206,7 @@ class EmprestimoFerramentasForm extends TPage
     /**
      * Limpar todos o formulário
      * @var param request 
-     * @return Fieldlist forms
+     * @return View forms
      */
     public function onClear($param)
     {

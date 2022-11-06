@@ -30,25 +30,33 @@ class EmprestimoList extends TStandardList
   // CONSTRUTOR DE PÁGINA
   public function __construct()
   {
-    parent::__construct();
+    TTransaction::open('bancodados');
+    $userSession = TSession::getValue('userid');
+    $isAdmin = SystemUserGroup::where('system_group_id', '=', 1)->load();
 
+    $crit = new TCriteria();
+    $crit->add(new TFilter('id_usuario','=',$userSession));
+    TTransaction::close();
+    parent::__construct();
+    
     parent::setDatabase('bancodados');            // DEFINE O BANCO DE DADOS
     parent::setActiveRecord('Emprestimo');   // DEFINE O REGISTRO ATIVO
     parent::setDefaultOrder('id', 'desc');         //  DEFINE A ORDEM PADRÃO
-    parent::addFilterField('id', '=', 'id'); // CAMPO DE FILTRO, OPERADOR, CAMPO DE FORMULÁRIO
-    parent::addFilterField('id_emprestimo', '=', 'id_emprestimo'); // CAMPO DE FILTRO, OPERADOR, CAMPO DE FORMULÁRIO
-    parent::addFilterField('id_usuario', '=', 'id_usuario'); //  CAMPO DE FILTRO, OPERADOR, CAMPO DE FORMULÁRIO
-    parent::addFilterField('status', '=', 'status'); //  CAMPO DE FILTRO, OPERADOR, CAMPO DE FORMULÁRIO
-    parent::addFilterField('created_at', '=', 'created_at'); //  CAMPO DE FILTRO, OPERADOR, CAMPO DE FORMULÁRIO
 
+    if($userSession == $isAdmin[0]->system_user_id){
+      parent::addFilterField('id', '=', 'id'); // CAMPO DE FILTRO, OPERADOR, CAMPO DE FORMULÁRIO
+      parent::addFilterField('id_emprestimo', '=', 'id_emprestimo'); // CAMPO DE FILTRO, OPERADOR, CAMPO DE FORMULÁRIO
+      parent::addFilterField('id_usuario', '=', 'id_usuario'); //  CAMPO DE FILTRO, OPERADOR, CAMPO DE FORMULÁRIO
+      parent::addFilterField('status', '=', 'status'); //  CAMPO DE FILTRO, OPERADOR, CAMPO DE FORMULÁRIO
+      parent::addFilterField('created_at', '=', 'created_at');
+    }else{
+      parent::setCriteria($crit);
+    }
+      
     // CRIA O FORMULÁRIO
     $this->form = new BootstrapFormBuilder('form_search');
     $form = $this->form->setFormTitle('Emprestimo de ferramentas');
 
-    TTransaction::open('bancodados');
-    $userSession = TSession::getValue('userid');
-    $isAdmin = SystemUserGroup::where('system_group_id', '=', 1)->load();
-    TTransaction::close();
     // CRIE OS CAMPOS DO FORMULÁRIO
     $unique = new TDBUniqueSearch('FerramentaList', 'bancodados', 'emprestimo', 'id', 'id');
     $unique->setMinLength(1);
