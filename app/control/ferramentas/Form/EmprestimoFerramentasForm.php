@@ -142,7 +142,7 @@ class EmprestimoFerramentasForm extends TPage
                             $qtdTools[] = $key->quantidade;
                         }
                         //Verifica se a quantidade solicitada for maior que a do estoque 
-                        if ($param['quantidade'][$i] < $qtdTools[$i]) {
+                        if ($param['quantidade'][$i] <= $qtdTools[$i]) {
                             $pivot->quantidade = $param['quantidade'][$i];
                         } else {
                             throw new Exception(
@@ -221,11 +221,11 @@ class EmprestimoFerramentasForm extends TPage
      */
     public function fireEvents($param)
     {
-        if (isset($param['id'])) {
+        if (!empty($param['id'])) {
             TTransaction::open('bancodados');
             $emprestimo = Emprestimo::find($param['id']);
             $this->form->setData($emprestimo); //inserindo dados no formulario. 
-
+            
             $pivot = PivotEmprestimoFerramentas::where('id_emprestimo', '=', $emprestimo->id)->load();
 
             if ($pivot) {

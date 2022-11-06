@@ -109,6 +109,10 @@ class EmprestimoList extends TStandardList
     if ($userSession == $isAdmin[0]->system_user_id)
       $this->datagrid->addAction($action1, 'Visualizar solicitação', 'fa:check-circle background-color:#218231');
 
+    $delete = new TDataGridAction([$this, 'onDeleteSessionVar'],   ['id' => '{id}']);
+    if ($userSession == $isAdmin[0]->system_user_id)
+      $this->datagrid->addAction($delete, 'Apagar solicitação', 'fas:trash-alt red');
+
     // CRIAR O MODELO DE GRADE DE DADOS
     $this->datagrid->createModel();
 
@@ -131,5 +135,32 @@ class EmprestimoList extends TStandardList
 
     parent::add($container);
     TTransaction::close(); // fecha a transação.
+  }
+  /**
+   * Ask before deletion
+   */
+  public static function onDeleteSessionVar($param)
+  {
+    $action1 = new TAction(array(__CLASS__, 'deleteSessionVar'));
+    $action1->setParameters($param);
+    new TQuestion('Tem certeza que quer apagar ?', $action1);
+  }
+
+  /**
+   * Delete session var
+   */
+  public static function deleteSessionVar($param)
+  {
+    try {
+      TTransaction::open('bancodados');
+      $emprestimo = Emprestimo::find($param['id']);
+      $emprestimo->Delete();
+      AdiantiCoreApplication::gotoPage('EmprestimoList');
+      TTransaction::close();
+      new TMessage('info', TAdiantiCoreTranslator::translate('Record deleted')); // success message
+
+    } catch (Exception $e) {
+      new TMessage('error', $e->getMessage()); // shows the exception error message
+    }
   }
 }
