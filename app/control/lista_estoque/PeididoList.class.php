@@ -24,22 +24,37 @@ class PeididoList extends TStandardList
 
   // CONSTRUTOR DE PÁGINA
   public function __construct()
-  {
+  {    TTransaction::open('bancodados');
+    $userSession = TSession::getValue('userid');
+    $isAdmin = SystemUserGroup::where('system_group_id', '=', 1)->load();
+
+    $crit = new TCriteria();
+    $crit->add(new TFilter('id_usuario','=',$userSession));
+    TTransaction::close();
     parent::__construct();
 
     parent::setDatabase('bancodados');            // DEFINE O BANCO DE DADOS
     parent::setActiveRecord('ListaPedido');   // DEFINE O REGISTRO ATIVO
-    parent::setDefaultOrder('id', 'asc');         //  DEFINE A ORDEM PADRÃO
+    parent::setDefaultOrder('id', 'desc');         //  DEFINE A ORDEM PADRÃO
     parent::addFilterField('id', '=', 'id'); //  CAMPO DE FILTRO, OPERADOR, CAMPO DE FORMULÁRIO
     parent::addFilterField('status', '=', 'status'); // CAMPO DE FILTRO, OPERADOR, CAMPO DE FORMULÁRIO
-    parent::addFilterField('id_usuario', '=', 'id_usuario'); // CAMPO DE FILTRO, OPERADOR, CAMPO DE FORMULÁRIO
     parent::addFilterField('created_at', '=', 'created_at'); // CAMPO DE FILTRO, OPERADOR, CAMPO DE FORMULÁRIO
     parent::addFilterField('updated_at', '=', 'updated_at'); // CAMPO DE FILTRO, OPERADOR, CAMPO DE FORMULÁRIO
+    if($userSession == $isAdmin[0]->system_user_id){
+      parent::addFilterField('id_usuario', '=', 'userid'); // CAMPO DE FILTRO, OPERADOR, CAMPO DE FORMULÁRIO
+    }else{
+      parent::setCriteria($crit);
+    }
 
     // CRIA O FORMULÁRIO
 
     $this->form = new BootstrapFormBuilder('form_search');
     $this->form->setFormTitle('ESTOQUE UMAS UMES');
+
+    TTransaction::open('bancodados');
+    $userSession = TSession::getValue('userid');
+    $isAdmin = SystemUserGroup::where('system_group_id', '=', 1)->load();
+    TTransaction::close();
 
     // CRIE OS CAMPOS DO FORMULÁRIO
 
@@ -73,7 +88,7 @@ class PeididoList extends TStandardList
     $data_aprovacao->setSize('35%');
     $id_usuario->enableSearch();
 
-
+    
     // MANTENHA O FORMULÁRIO PREENCHIDO DURANTE A NAVEGAÇÃO COM OS DADOS DA SESSÃO
     $this->form->setData(TSession::getValue('cadastro_filter_data'));
 
@@ -92,16 +107,21 @@ class PeididoList extends TStandardList
     $this->datagrid->style = 'width: 100%';
     $this->datagrid->setHeight(320);
 
-
+    
     // CRIA AS COLUNAS DA GRADE DE DADOS
     $column_id = new TDataGridColumn('id', 'CODIGO DO PEDIDO', 'center');
     $column_id_status = new TDataGridColumn('status', 'CODIGO DO STATUS', 'center');
-    $column_id_usuario = new TDataGridColumn('user->name', 'USUÁRIO', 'center');
+    if ($userSession == $isAdmin[0]->system_user_id){
+      $column_id_usuario = new TDataGridColumn('user->name', 'USUÁRIO', 'center');
+    }else {
+      $column_id_usuario = new TDataGridColumn('user->name', 'USUÁRIO', 'center');
+    }
+  
     $column_data_pedido = new TDataGridColumn('created_at', 'DATA DO PEDIDO <font color="red">*CORRIGIR FILTRO</font>', 'center');
     $column_data_aprovacao = new TDataGridColumn('updated_at', 'DATA DA APROVACAO <font color="red">*CORRIGIR FILTRO</font>', 'center');
 
 
-
+ 
     // ADICIONE AS COLUNAS À GRADE DE DADOS
     $this->datagrid->addColumn($column_id);
     $this->datagrid->addColumn($column_id_status);
@@ -120,9 +140,11 @@ class PeididoList extends TStandardList
     $order_id_status->setParameter('order', 'status');
     $column_id_status->setAction($order_id_status);
 
+
+
     $order_id_usuario = new TAction(array($this, 'onReload'));
-    $order_id_usuario->setParameter('order', 'status');
-    $column_id_usuario->setAction($order_id_status);
+    $order_id_usuario->setParameter('order', 'id_usuario');
+    $column_id_usuario->setAction($order_id_usuario);
 
     $order_data_pedido = new TAction(array($this, 'onReload'));
     $order_data_pedido->setParameter('created_at', 'created_at');
@@ -144,12 +166,13 @@ class PeididoList extends TStandardList
 
     $action1 = new TDataGridAction(['PedidoAprovacaoForm', 'onEdit']);
     $action1->setField('id');
+    if ($userSession == $isAdmin[0]->system_user_id)
     $this->datagrid->addAction($action1, 'Aprovar solicitação', 'fa:check-circle background-color:#218231');
 
-    $action1 = new TDataGridAction(['PedidoAprovacaoForm', 'onEdit']);
-    $action1->setField('id');
-    $this->datagrid->addAction($action1, 'Gerar Relatorio', 'fa:file-pdf red');
 
+    $delete = new TDataGridAction([$this, 'onDeleteSessionVar'],   ['id' => '{id}']);
+    if ($userSession == $isAdmin[0]->system_user_id)
+      $this->datagrid->addAction($delete, 'Apagar solicitação', 'fas:trash-alt red');
 
 
     // CRIAR O MODELO DE GRADE DE DADOS
@@ -173,6 +196,30 @@ class PeididoList extends TStandardList
     $container->add($panel);
     $this->datagrid->disableDefaultClick();
     parent::add($container);
+  }
+  public static function onDeleteSessionVar($param)
+  {
+    $action1 = new TAction(array(__CLASS__, 'deleteSessionVar'));
+    $action1->setParameters($param);
+    new TQuestion('Tem certeza que quer apagar ?', $action1);
+  }
+
+  /**
+   * Delete session var
+   */
+  public static function deleteSessionVar($param)
+  {
+    try {
+      TTransaction::open('bancodados');
+      $pedido = pedido::find($param['id']);
+      $pedido->Delete();
+      AdiantiCoreApplication::gotoPage('PeididoList');
+      TTransaction::close();
+      new TMessage('info', TAdiantiCoreTranslator::translate('Record deleted')); // success message
+
+    } catch (Exception $e) {
+      new TMessage('error', $e->getMessage()); // shows the exception error message
+    }
   }
 }
 //    $this->form->addFields([new TLabel('ID')], [$id]);

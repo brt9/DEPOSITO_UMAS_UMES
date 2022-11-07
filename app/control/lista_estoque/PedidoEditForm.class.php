@@ -50,8 +50,11 @@ class PedidoEditForm extends TPage
         $id_item = new TDBCombo('id_item[]', 'bancodados', 'lista', 'id_item', '{id_item} {descricao}');
         $quantidade = new TEntry('quantidade[]');
         $quantidade_fornecida = new TEntry('quantidade_fornecida[]');
-        $status = new TCombo('status');
-        $status->addItems(array('PENDENTE' => 'PENDENTE', 'APROVADO' => 'APROVADO', 'REPROVADO' => 'REPROVADO'));
+        $status = new TEntry('status');
+        TTransaction::open('bancodados');
+        $pedido = pedido::find($param['id']);
+        TTransaction::close();
+        
 
         //Config dos campos
         $id->setSize('20%');
@@ -63,8 +66,18 @@ class PedidoEditForm extends TPage
         $id_item->setSize('100%');
         $id_item->enableSearch();
         $quantidade->setSize('100%');
+        $status->setEditable(FALSE);
         //add field 
         $this->fieldlist = new TFieldList;
+
+        if($pedido->status != "PENDENTE"){
+            $id_item->setEditable(FALSE);
+            $quantidade->setEditable(FALSE);
+            $this->fieldlist->disableRemoveButton(false);
+            
+            }
+
+
         $this->fieldlist->generateAria();
         $this->fieldlist->width = '100%';
         $this->fieldlist->name  = 'my_field_list';
@@ -79,14 +92,16 @@ class PedidoEditForm extends TPage
             [new TLabel('Codigo da solicitação')],
             [$id],
             [new TLabel('Data da solicitação')],
-            [$created]
+            [$created],
+            [new TLabel('Status da solicitação')],
+            [$status]
         );
         $row->style = 'margin-top:3rem;';
         $status->setValue('APROVADO');
         //add itens ao field list
         $this->form->addField($id_item);
         $this->form->addField($quantidade);
-
+    
 
         // form actions
         $btnBack = $this->form->addActionLink(_t('Back'), new TAction(array('PeididoList', 'onReload')), 'far:arrow-alt-circle-left white');
@@ -121,7 +136,8 @@ class PedidoEditForm extends TPage
 
                         $this->fieldlist->addDetail($obj);
                     }
-                    $this->fieldlist->addCloneAction();
+                    if($pedido->status == "PENDENTE"){
+                    $this->fieldlist->addCloneAction();}
                 }
                 // add field list to the form
                 $this->form->addContent([$this->fieldlist]);
