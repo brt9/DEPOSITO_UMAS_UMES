@@ -54,7 +54,7 @@ class PedidoEditForm extends TPage
         TTransaction::open('bancodados');
         $pedido = pedido::find($param['id']);
         TTransaction::close();
-        
+
 
         //Config dos campos
         $id->setSize('20%');
@@ -70,12 +70,11 @@ class PedidoEditForm extends TPage
         //add field 
         $this->fieldlist = new TFieldList;
 
-        if($pedido->status != "PENDENTE"){
+        if ($pedido->status != "PENDENTE") {
             $id_item->setEditable(FALSE);
             $quantidade->setEditable(FALSE);
             $this->fieldlist->disableRemoveButton(false);
-            
-            }
+        }
 
 
         $this->fieldlist->generateAria();
@@ -101,7 +100,8 @@ class PedidoEditForm extends TPage
         //add itens ao field list
         $this->form->addField($id_item);
         $this->form->addField($quantidade);
-    
+
+
 
         // form actions
         $btnBack = $this->form->addActionLink(_t('Back'), new TAction(array('PeididoList', 'onReload')), 'far:arrow-alt-circle-left white');
@@ -136,8 +136,9 @@ class PedidoEditForm extends TPage
 
                         $this->fieldlist->addDetail($obj);
                     }
-                    if($pedido->status == "PENDENTE"){
-                    $this->fieldlist->addCloneAction();}
+                    if ($pedido->status == "PENDENTE") {
+                        $this->fieldlist->addCloneAction();
+                    }
                 }
                 // add field list to the form
                 $this->form->addContent([$this->fieldlist]);

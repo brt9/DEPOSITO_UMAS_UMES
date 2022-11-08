@@ -24,12 +24,13 @@ class PeididoList extends TStandardList
 
   // CONSTRUTOR DE PÁGINA
   public function __construct()
-  {    TTransaction::open('bancodados');
+  {
+    TTransaction::open('bancodados');
     $userSession = TSession::getValue('userid');
     $isAdmin = SystemUserGroup::where('system_group_id', '=', 1)->load();
 
     $crit = new TCriteria();
-    $crit->add(new TFilter('id_usuario','=',$userSession));
+    $crit->add(new TFilter('id_usuario', '=', $userSession));
     TTransaction::close();
     parent::__construct();
 
@@ -40,9 +41,10 @@ class PeididoList extends TStandardList
     parent::addFilterField('status', '=', 'status'); // CAMPO DE FILTRO, OPERADOR, CAMPO DE FORMULÁRIO
     parent::addFilterField('created_at', '=', 'created_at'); // CAMPO DE FILTRO, OPERADOR, CAMPO DE FORMULÁRIO
     parent::addFilterField('updated_at', '=', 'updated_at'); // CAMPO DE FILTRO, OPERADOR, CAMPO DE FORMULÁRIO
-    if($userSession == $isAdmin[0]->system_user_id){
+    parent::addFilterField('id_usuario', '=', 'id_usuario');
+    if ($userSession == $isAdmin[0]->system_user_id) {
       parent::addFilterField('id_usuario', '=', 'userid'); // CAMPO DE FILTRO, OPERADOR, CAMPO DE FORMULÁRIO
-    }else{
+    } else {
       parent::setCriteria($crit);
     }
 
@@ -88,14 +90,14 @@ class PeididoList extends TStandardList
     $data_aprovacao->setSize('35%');
     $id_usuario->enableSearch();
 
-    
+
     // MANTENHA O FORMULÁRIO PREENCHIDO DURANTE A NAVEGAÇÃO COM OS DADOS DA SESSÃO
     $this->form->setData(TSession::getValue('cadastro_filter_data'));
 
     // ADICIONE AS AÇÕES DO FORMULÁRIO DE PESQUISA
     $btn = $this->form->addAction(_t('Find'), new TAction(array($this, 'onSearch')), 'fa:search');
     $this->form->addAction("Novo Item", new TAction(["CadastroForm", "onEdit"]), "fa:plus-circle green");
-
+    $this->form->addAction('Save as PDF', new TAction([$this, 'exportAsPDF'], ['register_state' => 'false']), 'far:file-pdf red');
 
 
 
@@ -107,21 +109,21 @@ class PeididoList extends TStandardList
     $this->datagrid->style = 'width: 100%';
     $this->datagrid->setHeight(320);
 
-    
+
     // CRIA AS COLUNAS DA GRADE DE DADOS
     $column_id = new TDataGridColumn('id', 'CODIGO DO PEDIDO', 'center');
     $column_id_status = new TDataGridColumn('status', 'CODIGO DO STATUS', 'center');
-    if ($userSession == $isAdmin[0]->system_user_id){
+    if ($userSession == $isAdmin[0]->system_user_id) {
       $column_id_usuario = new TDataGridColumn('user->name', 'USUÁRIO', 'center');
-    }else {
+    } else {
       $column_id_usuario = new TDataGridColumn('user->name', 'USUÁRIO', 'center');
     }
-  
+
     $column_data_pedido = new TDataGridColumn('created_at', 'DATA DO PEDIDO <font color="red">*CORRIGIR FILTRO</font>', 'center');
     $column_data_aprovacao = new TDataGridColumn('updated_at', 'DATA DA APROVACAO <font color="red">*CORRIGIR FILTRO</font>', 'center');
 
 
- 
+
     // ADICIONE AS COLUNAS À GRADE DE DADOS
     $this->datagrid->addColumn($column_id);
     $this->datagrid->addColumn($column_id_status);
@@ -167,13 +169,18 @@ class PeididoList extends TStandardList
     $action1 = new TDataGridAction(['PedidoAprovacaoForm', 'onEdit']);
     $action1->setField('id');
     if ($userSession == $isAdmin[0]->system_user_id)
-    $this->datagrid->addAction($action1, 'Aprovar solicitação', 'fa:check-circle background-color:#218231');
+      $this->datagrid->addAction($action1, 'Aprovar solicitação', 'fa:check-circle background-color:#218231');
 
 
     $delete = new TDataGridAction([$this, 'onDeleteSessionVar'],   ['id' => '{id}']);
     if ($userSession == $isAdmin[0]->system_user_id)
       $this->datagrid->addAction($delete, 'Apagar solicitação', 'fas:trash-alt red');
 
+
+
+    $action2 = new TDataGridAction(['PeididoList', 'exportAsPDF']);
+    $action2->setField('id');
+    $this->datagrid->addAction($action2, 'Gerar Relatorio', 'fa:file-pdf red');
 
     // CRIAR O MODELO DE GRADE DE DADOS
     $this->datagrid->createModel();
@@ -221,7 +228,39 @@ class PeididoList extends TStandardList
       new TMessage('error', $e->getMessage()); // shows the exception error message
     }
   }
+  public function exportAsPDF($param)
+  {
+    try {
+      // string with HTML contents
+      $html = clone $this->datagrid;
+      $contents = file_get_contents('app/resources/styles-print.html') . $html->getContents();
+
+      // converts the HTML template into PDF
+      $dompdf = new \Dompdf\Dompdf();
+      $dompdf->loadHtml($contents);
+      $dompdf->setPaper('A4', 'landscape');
+      $dompdf->render();
+
+      $file = 'app/output/cash-register.pdf';
+
+      // write and open file
+      file_put_contents($file, $dompdf->output());
+
+      $window = TWindow::create('Invoice', 0.8, 0.8);
+      $object = new TElement('object');
+      $object->data  = $file;
+      $object->type  = 'application/pdf';
+      $object->style = "width: 100%; height:calc(100% - 10px)";
+      $object->add('O navegador não suporta a exibição deste conteúdo, <a style="color:#007bff;" target=_newwindow href="' . $object->data . '"> clique aqui para baixar</a>...');
+
+      $window->add($object);
+      $window->show();
+    } catch (Exception $e) {
+      new TMessage('error', $e->getMessage());
+    }
+  }
 }
+
 //    $this->form->addFields([new TLabel('ID')], [$id]);
 // $this->form->addFields([new TLabel('QUANTIDADE ESTOQUE')], [$QUANTIDADE_ESTOQUE]);
 // $this->form->addFields([new TLabel('DATA')], [$DATA]);
