@@ -33,7 +33,7 @@ class PedidoMaterial extends TPage
     function __construct()
     {
         parent::__construct();
-
+       
         $ini  = AdiantiApplicationConfig::get();
 
         //  $this->setDatabase('bancodados');              // DEFINE O BANCO DE DADOS
@@ -81,7 +81,6 @@ class PedidoMaterial extends TPage
 
 
 
-
         $row = $this->form->addFields(
             [$labelInfo = new TLabel('<b>Campos com asterisco (<font color="red">*</font>) são considerados campos obrigatórios</b>')],
         );
@@ -96,6 +95,38 @@ class PedidoMaterial extends TPage
         //$id_usuario->setEditable(FALSE);
         // add field list to the form
         $this->form->addContent([$this->fieldlist]);
+
+
+
+
+        //////////////////
+
+        try
+        {
+            TTransaction::open('bancodados'); // abre uma transação
+            $conn = TTransaction::get(); // obtém a conexão
+            
+            $sth = $conn->prepare('SELECT * from estoque_gms
+                                   WHERE id_item = 119');
+            
+            $sth->execute(array(3,12));
+            $result = $sth->fetchAll();
+            
+            // exibe os resultados
+            foreach ($result as $row1)
+            {
+                print $row1['id_item'] . '-';
+                print $row1['descricao'] . "<br>\n";
+            }
+            TTransaction::close(); // fecha a transação.
+        }
+        catch (Exception $e)
+        {
+            new TMessage('error', $e->getMessage());
+        }
+        $id_item->setValue($row1['id_item']);
+        $descricao->setValue($row1['descricao']);
+       
 
         //$id_status->setValue('1');
         // form actions

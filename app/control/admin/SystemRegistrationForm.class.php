@@ -30,9 +30,9 @@ class SystemRegistrationForm extends TPage
         $login      = new TEntry('login');
         $name       = new TEntry('name');
         $email      = new TEntry('email');
+        $matricula = new TEntry('matricula');
         $password   = new TPassword('password');
         $repassword = new TPassword('repassword');
-        $matricula = new TEntry('matricula');
         
         $this->form->addAction( _t('Save'),  new TAction([$this, 'onSave']), 'far:save')->{'class'} = 'btn btn-sm btn-primary';
         $this->form->addAction( _t('Clear'), new TAction([$this, 'onClear']), 'fa:eraser red' );
@@ -40,25 +40,44 @@ class SystemRegistrationForm extends TPage
         
         $login->addValidation( _t('Login'), new TRequiredValidator);
         $name->addValidation( _t('Name'), new TRequiredValidator);
-        $email->addValidation( _t('Email'), new TRequiredValidator);
+        $email->addValidation( _t('Email'), new TEmailValidator);
+        $matricula->addValidation(('matricula'), new TRequiredValidator);
         $password->addValidation( _t('Password'), new TRequiredValidator);
         $repassword->addValidation( _t('Password confirmation'), new TRequiredValidator);
-        $matricula->addValidation(('matricula'), new TRequiredValidator);
         
         // define the sizes
         $name->setSize('100%');
         $login->setSize('100%');
-        $password->setSize('100%');
-        $repassword->setSize('100%');
         $email->setSize('100%');
         $matricula->setSize('100%');
-        
-        $this->form->addFields( [new TLabel(_t('Login'), 'red')],    [$login] );
-        $this->form->addFields( [new TLabel(_t('Name'), 'red')],     [$name] );
-        $this->form->addFields( [new TLabel(_t('Email'), 'red')],    [$email] );
-        $this->form->addFields( [new TLabel(('Matricula'), 'red')],    [$matricula] );
-        $this->form->addFields( [new TLabel(_t('Password'), 'red')], [$password] );
-        $this->form->addFields( [new TLabel(_t('Password confirmation'), 'red')], [$repassword] );
+        $password->setSize('100%');
+        $repassword->setSize('100%');
+
+       
+
+
+        $this->form->addFields( [new TLabel(('Login<font color="red"> *</font>'), 'red')],    [$login] );
+        $this->form->addFields( [new TLabel(('Nome<font color="red"> *</font>'), 'red')],     [$name] );
+        $this->form->addFields( [new TLabel(('Email<font color="red"> *</font>'), 'red')],    [$email] );
+        $this->form->addFields( [new TLabel(('Matrícula<font color="red">*</font>'), 'red')],    [$matricula] );
+        $this->form->addFields( [new TLabel(('Senha<font color="red"> *</font>'), 'red')], [$password] );
+        $this->form->addFields( [new TLabel(('Confirma Senha<font color="red"> *</font>'), 'red')], [$repassword] );
+
+
+        $login->placeholder = 'Login';
+        $login->setTip('Digite o login que sera utilizado no sistema');
+        $name->placeholder = 'Nome';
+        $name->setTip('Digite o seu nome completo');
+        $password->placeholder = '*******';
+        $password->setTip('Digite a senha');
+        $repassword->placeholder = '*******';
+        $repassword->setTip('Confirme a senha');
+        $email->placeholder = 'E-mail';
+        $email->setTip('Digite seu endereço de e-mail');
+        $matricula->placeholder = '000000';
+        $matricula->setMask('999999');
+        $matricula->setTip('Digite a sua matricula');
+
         
         // add the container to the page
         $wrapper = new TElement('div');
