@@ -40,7 +40,7 @@ class PeididoList extends TStandardList
     parent::addFilterField('id', '=', 'id'); //  CAMPO DE FILTRO, OPERADOR, CAMPO DE FORMULÁRIO
     parent::addFilterField('status', '=', 'status'); // CAMPO DE FILTRO, OPERADOR, CAMPO DE FORMULÁRIO
     parent::addFilterField('created_at', '=', 'created_at'); // CAMPO DE FILTRO, OPERADOR, CAMPO DE FORMULÁRIO
-    parent::addFilterField('updated_at', '=', 'updated_at'); // CAMPO DE FILTRO, OPERADOR, CAMPO DE FORMULÁRIO
+    parent::addFilterField('cast(data_time as date)', '=', 'updated_at'); // CAMPO DE FILTRO, OPERADOR, CAMPO DE FORMULÁRIO
     parent::addFilterField('id_usuario', '=', 'id_usuario');
     if ($userSession == $isAdmin[0]->system_user_id) {
       parent::addFilterField('id_usuario', '=', 'userid'); // CAMPO DE FILTRO, OPERADOR, CAMPO DE FORMULÁRIO
@@ -61,10 +61,11 @@ class PeididoList extends TStandardList
     // CRIE OS CAMPOS DO FORMULÁRIO
 
     $id = new TEntry('id');
-    $id_status = new TEntry('status');
+    $id_status = new TCombo('status');
+    $id_status->addItems(array('PENDENTE' => 'PENDENTE', 'APROVADO' => 'APROVADO', 'REPROVADO' => 'REPROVADO'));
     $id_usuario = new TDBCombo('id_usuario', 'bancodados', 'SystemUser', 'id', 'matricula');
-    $data_pedido = new TEntry('created_at');
-    $data_aprovacao = new TDateTime('updated_at');
+    $data_pedido = new TDate('created_at');
+    $data_aprovacao = new TDate('updated_at');
 
 
     // ADICIONE OS CAMPOS
@@ -72,8 +73,8 @@ class PeididoList extends TStandardList
     $this->form->addFields([new TLabel('CODIGO DO PEDIDO')], [$id]);
     $this->form->addFields([new TLabel('CODIGO DO STATUS')], [$id_status]);
     $this->form->addFields([new TLabel('MATRICULA')], [$id_usuario]);
-    $this->form->addFields([new TLabel('DATA DO PEDIDO<font color="red">*CORRIGIR FILTRO</font>')], [$data_pedido]);
-    $this->form->addFields([new TLabel('DATA DA APROVAÇÃO<font color="red">*CORRIGIR FILTRO</font>')], [$data_aprovacao]);
+    $this->form->addFields([new TLabel('DATA DO PEDIDO')], [$data_pedido]);
+    $this->form->addFields([new TLabel('DATA DA APROVAÇÃO')], [$data_aprovacao]);
 
 
     $id->setTip('COLOQUE O CODIGO DO PEDIDO QUE VOCE PROCURA');
@@ -90,7 +91,9 @@ class PeididoList extends TStandardList
     $data_aprovacao->setSize('35%');
     $id_usuario->enableSearch();
 
-
+    $data_pedido->setMask('dd/mm/yyyy');
+    $data_aprovacao->setMask('dd/mm/yyyy');
+    
     // MANTENHA O FORMULÁRIO PREENCHIDO DURANTE A NAVEGAÇÃO COM OS DADOS DA SESSÃO
     $this->form->setData(TSession::getValue('cadastro_filter_data'));
 
@@ -110,6 +113,10 @@ class PeididoList extends TStandardList
     $this->datagrid->setHeight(320);
 
 
+    
+  
+    
+
     // CRIA AS COLUNAS DA GRADE DE DADOS
     $column_id = new TDataGridColumn('id', 'CODIGO DO PEDIDO', 'center');
     $column_id_status = new TDataGridColumn('status', 'CODIGO DO STATUS', 'center');
@@ -119,10 +126,13 @@ class PeididoList extends TStandardList
       $column_id_usuario = new TDataGridColumn('user->name', 'USUÁRIO', 'center');
     }
 
-    $column_data_pedido = new TDataGridColumn('created_at', 'DATA DO PEDIDO <font color="red">*CORRIGIR FILTRO</font>', 'center');
-    $column_data_aprovacao = new TDataGridColumn('updated_at', 'DATA DA APROVACAO <font color="red">*CORRIGIR FILTRO</font>', 'center');
+    $column_data_pedido = new TDataGridColumn('created_at', 'DATA DO PEDIDO' , 'center');
+    $column_data_aprovacao = new TDataGridColumn('updated_at', 'DATA DA APROVACAO', 'center');
+    
 
-
+    $column_data_pedido->setTransformer(array($this, 'formatDate'));
+    $column_data_aprovacao->setTransformer(array($this, 'formatDate'));
+    
 
     // ADICIONE AS COLUNAS À GRADE DE DADOS
     $this->datagrid->addColumn($column_id);
@@ -130,9 +140,8 @@ class PeididoList extends TStandardList
     $this->datagrid->addColumn($column_id_usuario);
     $this->datagrid->addColumn($column_data_pedido);
     $this->datagrid->addColumn($column_data_aprovacao);
-
-
-
+    
+   
     // CRIA AS AÇÕES DA COLUNA DA GRADE DE DADOS
     $order_id = new TAction(array($this, 'onReload'));
     $order_id->setParameter('order', 'id');
@@ -203,6 +212,8 @@ class PeididoList extends TStandardList
     $container->add($panel);
     $this->datagrid->disableDefaultClick();
     parent::add($container);
+
+    
   }
   public static function onDeleteSessionVar($param)
   {
@@ -258,5 +269,10 @@ class PeididoList extends TStandardList
     } catch (Exception $e) {
       new TMessage('error', $e->getMessage());
     }
+  }
+  public function formatDate($date, $object)
+  {
+      $dt = new DateTime($date);
+      return $dt->format('d/m/Y - H:i');
   }
 }

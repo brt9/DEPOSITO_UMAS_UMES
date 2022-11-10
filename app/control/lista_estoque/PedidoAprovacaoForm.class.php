@@ -88,7 +88,7 @@ class PedidoAprovacaoForm extends TPage
             [$status],
         );
         $row->style = 'margin-top:3rem;';
-        $status->setValue('APROVADO');
+       
         //add itens ao field list
         $this->form->addField($id_item);
         $this->form->addField($quantidade);
@@ -105,8 +105,10 @@ class PedidoAprovacaoForm extends TPage
         $container = new TVBox;
         $container->style = 'width: 90%; margin:40px';
         $container->add($this->form);
-
+        
         parent::add($container);
+        $status->setValue('APROVADO');
+        $status->setDefaultOption(false);
     }
 
     public function onEdit($param)
