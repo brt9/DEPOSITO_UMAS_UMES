@@ -12,6 +12,7 @@ use Adianti\Widget\Wrapper\TDBCombo;
 use Adianti\Widget\Wrapper\TDBUniqueSearch;
 use Sabberworm\CSS\Value\Value;
 use Adianti\Util\AdiantiUIBuilder;
+use Adianti\Widget\Form\TForm;
 
 /**
  * FORMULÁRIO DE CADASTRO DE MATERIAL
@@ -26,14 +27,14 @@ use Adianti\Util\AdiantiUIBuilder;
 class PedidoMaterial extends TPage
 {
     protected $form; //  FORMULÁRIO
-
+    protected $descricao; //  FORMULÁRIO
     // CONSTRUTOR DE CLASSE
     // CRIA A PÁGINA E O FORMULÁRIO DE INSCRIÇÃO
 
     function __construct()
     {
         parent::__construct();
-       
+
         $ini  = AdiantiApplicationConfig::get();
 
         //  $this->setDatabase('bancodados');              // DEFINE O BANCO DE DADOS
@@ -46,20 +47,21 @@ class PedidoMaterial extends TPage
 
         $id = new THidden('id');
         $id_item = new TQRCodeInputReader('id_item[]');
-        $descricao = new TDBCombo('descricao[]', 'bancodados', 'lista', 'descricao', 'descricao');
+        $this->descricao = new TDBCombo('descricao[]', 'bancodados', 'lista', 'descricao', 'descricao');
         $quantidade = new TSpinner('quantidade[]');
 
         $id->setEditable(FALSE);
 
         $id_item->setSize('100%');
-        $descricao->setSize('100%');
+        $id_item->setChangeAction(new TAction(array($this, 'onChange')));
+        $this->descricao->setSize('100%');
         $quantidade->setSize('100%');
 
         $id_item->setTip('DIGITE O CODIGO DO ITEM DESEJADO');
-        $descricao->setTip('DIGITE A DESCRIÇÃO DO ITEM DESEJADO');
+        $this->descricao->setTip('DIGITE A DESCRIÇÃO DO ITEM DESEJADO');
         $quantidade->setTip('DIGITE A QUANTIDADE DO ITEM DESEJADO');
 
-        $descricao->enableSearch();
+        $this->descricao->enableSearch();
 
         $id_item->placeholder = '00000';
 
@@ -70,12 +72,12 @@ class PedidoMaterial extends TPage
         $this->fieldlist->name  = 'my_field_list';
 
         $this->fieldlist->addField('<b>CODIGO ITEM</b><font color="red"> *</font>',  $id_item,  ['width' => '20%']);
-        $this->fieldlist->addField('<b>DESCRIÇÂO</b><font color="red"> *</font>',  $descricao,  ['width' => '60%']);
+        $this->fieldlist->addField('<b>DESCRIÇÂO</b><font color="red"> *</font>',  $this->descricao,  ['width' => '60%']);
         $this->fieldlist->addField('<b>QUANTIDADE</b><font color="red"> *</font>',   $quantidade,   ['width' => '20%']);
         $this->form->addFields([$id]);
 
         $this->form->addField($id_item);
-        $this->form->addField($descricao);
+        $this->form->addField($this->descricao);
         $this->form->addField($quantidade);
 
 
@@ -101,32 +103,7 @@ class PedidoMaterial extends TPage
 
         //////////////////
 
-        try
-        {
-            TTransaction::open('bancodados'); // abre uma transação
-            $conn = TTransaction::get(); // obtém a conexão
-            
-            $sth = $conn->prepare('SELECT * from estoque_gms
-                                   WHERE id_item = 119');
-            
-            $sth->execute(array(3,12));
-            $result = $sth->fetchAll();
-            
-            // exibe os resultados
-            foreach ($result as $row1)
-            {
-                print $row1['id_item'] . '-';
-                print $row1['descricao'] . "<br>\n";
-            }
-            TTransaction::close(); // fecha a transação.
-        }
-        catch (Exception $e)
-        {
-            new TMessage('error', $e->getMessage());
-        }
-        $id_item->setValue($row1['id_item']);
-        $descricao->setValue($row1['descricao']);
-       
+
 
         //$id_status->setValue('1');
         // form actions
@@ -221,6 +198,23 @@ class PedidoMaterial extends TPage
 
         foreach ($this->fields as $fieldObject) {
             $fieldObject->validate();
+        }
+    }
+    public function onChange($param)
+    {
+        try {
+            TTransaction::open('bancodados'); // abre uma transação
+            $list = lista::where('id_item', '=', $param['id_item'])->load();
+            var_dump($list[0]->descricao);
+
+            TTransaction::close(); // fecha a transação.
+            $obj = new stdClass();
+            $obj->descricao = $list[0]->descricao;
+
+            $this->descricao = $list[0]->descricao;
+            TForm::sendData('my_form', $this->descricao);
+        } catch (Exception $e) {
+            new TMessage('error', $e->getMessage());
         }
     }
 }

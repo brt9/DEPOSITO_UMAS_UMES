@@ -18,6 +18,10 @@ class cadastro extends TRecord
     const PRIMARYKEY = 'id_item';
     const IDPOLICY =  'max'; // {max, serial}
 
+    const CREATEDAT = 'created_at';
+    const UPDATEDAT = 'updated_at';
+    const DELETEDAT = 'deleted_at';
+
     /**
      * Constructor method
      */
@@ -27,6 +31,8 @@ class cadastro extends TRecord
         parent::addAttribute('id_item');
         parent::addAttribute('descricao');
         parent::addAttribute('quantidade_estoque');
-        parent::addAttribute('data_cadastro_item');
+        parent::addAttribute('id_usuario');
+        parent::addAttribute('id_admin');
+        parent::addAttribute('created_at');
     }
 }

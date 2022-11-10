@@ -96,7 +96,7 @@ class PeididoList extends TStandardList
 
     // ADICIONE AS AÇÕES DO FORMULÁRIO DE PESQUISA
     $btn = $this->form->addAction(_t('Find'), new TAction(array($this, 'onSearch')), 'fa:search');
-    $this->form->addAction("Novo Item", new TAction(["CadastroForm", "onEdit"]), "fa:plus-circle green");
+    $this->form->addAction("Novo Item", new TAction(["PedidoMaterial", "onEdit"]), "fa:plus-circle green");
     $this->form->addAction('Save as PDF', new TAction([$this, 'exportAsPDF'], ['register_state' => 'false']), 'far:file-pdf red');
 
 
@@ -260,16 +260,3 @@ class PeididoList extends TStandardList
     }
   }
 }
-
-//    $this->form->addFields([new TLabel('ID')], [$id]);
-// $this->form->addFields([new TLabel('QUANTIDADE ESTOQUE')], [$QUANTIDADE_ESTOQUE]);
-// $this->form->addFields([new TLabel('DATA')], [$DATA]);
-/*// create DELETE action
-$action_del = new TDataGridAction(array($this, 'onDelete'));
-$action_del->setButtonClass('btn btn-default');
-$action_del->setLabel(_t('Delete'));
-$action_del->setImage('far:trash-alt red');
-$action_del->setField('CODIGO');
-$this->datagrid->addAction($action_del);*/
-//$this->form->addAction(_t('New'),  new TAction(array('cadastroForm', 'onEdit')), 'fa:plus green');
-// $sexo->addItems(['MASCULINO' => 'MASCULINO', 'FEMININO' => 'FEMININO']);
