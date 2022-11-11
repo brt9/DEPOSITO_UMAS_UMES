@@ -12,6 +12,7 @@
  */
 class CadastroList extends TStandardList
 {
+  
   protected $form;     // FORMULÁRIO DE REGISTRO
   protected $datagrid; //  LISTAGEM
   protected $pageNavigation;
@@ -39,15 +40,23 @@ class CadastroList extends TStandardList
 
     $id = new TQRCodeInputReader('id_item');
     $descricao = new TDBCombo('descricao', 'bancodados', 'lista', 'descricao', 'descricao');
+    
 
     // ADICIONE OS CAMPOS
 
     $this->form->addFields([new TLabel('CODIGO DO ITEM')], [$id]);
     $this->form->addFields([new TLabel('DESCRIÇÃO')], [$descricao]);
 
-
     $id->setSize('50%');
+    $id->placeholder = '00000';
+    $id->setMask('99999');
+    $id->maxlength = 5;
+    $id->setTip('Digite o codigo do item desejado');
+
+
+    $descricao->enableSearch();
     $descricao->setSize('50%');
+    $descricao->setTip('Digite a descrição do item desejado');
 
 
     // MANTENHA O FORMULÁRIO PREENCHIDO DURANTE A NAVEGAÇÃO COM OS DADOS DA SESSÃO
@@ -55,7 +64,7 @@ class CadastroList extends TStandardList
 
     // ADICIONE AS AÇÕES DO FORMULÁRIO DE PESQUISA
     $btn = $this->form->addAction(_t('Find'), new TAction(array($this, 'onSearch')), 'fa:search');
-    $this->form->addAction("Novo Item", new TAction(["CadastroForm", "onEdit"]), "fa:plus-circle green");
+    $this->form->addAction("Cadastrar Novo Item", new TAction(["CadastroForm", "onEdit"]), "fa:plus-circle green");
     $btn->class = 'btn btn-sm btn-primary';
 
     // CRIA UMA GRADE DE DADOS
@@ -68,7 +77,7 @@ class CadastroList extends TStandardList
     // CRIA AS COLUNAS DA GRADE DE DADOS
     $column_id = new TDataGridColumn('id_item', 'CODIGO DO ITEM', 'center', 50);
     $column_descricao = new TDataGridColumn('descricao', 'DESCRIÇÃO', 'left');
-    $column_quantidade_estoque = new TDataGridColumn('quantidade_estoque', 'QUANTIDADE ESTOQUE', 'left');
+    $column_quantidade_estoque = new TDataGridColumn('quantidade_estoque', 'QUANTIDADE EM ESTOQUE', 'left');
     $column_update_at = new TDataGridColumn('updated_at', 'DATA DA ATUALIZAÇÂO', 'left');
 
 
@@ -78,6 +87,7 @@ class CadastroList extends TStandardList
     $this->datagrid->addColumn($column_quantidade_estoque);
     $this->datagrid->addColumn($column_update_at);
 
+    $column_update_at->setTransformer(array($this, 'formatDate'));
 
     // CRIA AS AÇÕES DA COLUNA DA GRADE DE DADOS
     $order_id = new TAction(array($this, 'onReload'));
@@ -128,6 +138,11 @@ class CadastroList extends TStandardList
     $container->add($panel);
 
     parent::add($container);
+  }
+  public function formatDate($date, $object)
+  {
+      $dt = new DateTime($date);
+      return $dt->format('d/m/Y - H:i');
   }
 }
 //    $this->form->addFields([new TLabel('ID')], [$id]);

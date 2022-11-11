@@ -131,7 +131,7 @@ class PeididoList extends TStandardList
     
 
     $column_data_pedido->setTransformer(array($this, 'formatDate'));
-    $column_data_aprovacao->setTransformer(array($this, 'formatDate'));
+   $column_data_aprovacao->setTransformer(array($this, 'formatDate1'));
     
 
     // ADICIONE AS COLUNAS À GRADE DE DADOS
@@ -275,4 +275,11 @@ class PeididoList extends TStandardList
       $dt = new DateTime($date);
       return $dt->format('d/m/Y - H:i');
   }
+  public function formatDate1($date, $object)
+{
+    $dt = new DateTime($date);
+    return $dt->format('d/m/Y - H:i');
 }
+}
+
+
