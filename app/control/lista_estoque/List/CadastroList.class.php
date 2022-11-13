@@ -75,6 +75,7 @@ class CadastroList extends TStandardList
   {
     $this->form->addAction("Cadastrar Novo Item", new TAction(["CadastroForm", "onEdit"]), "fa:plus-circle green");
     $btn->class = 'btn btn-sm btn-primary';
+  
   }else{}
    
 
