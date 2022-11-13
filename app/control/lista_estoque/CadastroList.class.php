@@ -69,12 +69,13 @@ class CadastroList extends TStandardList
     $this->form->setData(TSession::getValue('cadastro_filter_data'));
 
     // ADICIONE AS AÇÕES DO FORMULÁRIO DE PESQUISA
-    $btn = $this->form->addAction(_t('Find'), new TAction(array($this, 'onSearch')), 'fa:search');
+    $btn = $this->form->addAction('Buscar', new TAction(array($this, 'onSearch')), 'fa:search white');
+    $btn->style = 'background-color:#2c7097; color:white';
     if ($userSession == $isAdmin[0]->system_user_id)
   {
     $this->form->addAction("Cadastrar Novo Item", new TAction(["CadastroForm", "onEdit"]), "fa:plus-circle green");
     $btn->class = 'btn btn-sm btn-primary';
-  }
+  }else{}
    
 
     // CRIA UMA GRADE DE DADOS
