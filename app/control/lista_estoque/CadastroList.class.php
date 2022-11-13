@@ -19,7 +19,8 @@ class CadastroList extends TStandardList
   protected $formgrid;
   protected $deleteButton;
   protected $transformCallback;
-
+  private static $formName = 'form_search';
+  private $showMethods = ['onReload', 'onSearch'];
   // CONSTRUTOR DE PÁGINA
   public function __construct()
   {
@@ -32,7 +33,7 @@ class CadastroList extends TStandardList
     parent::addFilterField('descricao', '=', 'descricao'); // CAMPO DE FILTRO, OPERADOR, CAMPO DE FORMULÁRIO
 
     // CRIA O FORMULÁRIO
-
+   
     $this->form = new BootstrapFormBuilder('form_search');
     $this->form->setFormTitle('ESTOQUE UMAS UMES');
 
@@ -66,6 +67,8 @@ class CadastroList extends TStandardList
     $btn = $this->form->addAction(_t('Find'), new TAction(array($this, 'onSearch')), 'fa:search');
     $this->form->addAction("Cadastrar Novo Item", new TAction(["CadastroForm", "onEdit"]), "fa:plus-circle green");
     $btn->class = 'btn btn-sm btn-primary';
+
+   
 
     // CRIA UMA GRADE DE DADOS
     $this->datagrid = new BootstrapDatagridWrapper(new TDataGrid);
@@ -115,8 +118,9 @@ class CadastroList extends TStandardList
     $action_edit->setField('id_item');
     $this->datagrid->addAction($action_edit);
 
-
-
+    TScript::create('$(\'#' . self::$formName . '\').collapse(\'toggle\');');
+ $this->form->addHeaderActionLink('Filtros de busca', new TAction(array($this, 'toggleSearch')), 'fa:filter green fa-fw');
+        
     // CRIAR O MODELO DE GRADE DE DADOS
     $this->datagrid->createModel();
 
@@ -137,12 +141,27 @@ class CadastroList extends TStandardList
     $container->add($this->form);
     $container->add($panel);
 
+     
     parent::add($container);
   }
   public function formatDate($date, $object)
   {
       $dt = new DateTime($date);
       return $dt->format('d/m/Y - H:i');
+  }
+  static function toggleSearch()
+  {
+      // também pode apagar esses blocos if/else se não quiser usar a "memória" de estado do form
+      if (TSession::getValue('toggleSearch_'.self::$formName) == 1) {
+          TSession::setValue('toggleSearch_'.self::$formName,0);
+      } else {
+          TSession::setValue('toggleSearch_'.self::$formName,1);
+      }
+
+      // esta linha é a responsável por abrir/fechar o form
+      TScript::create('$(\'#' . self::$formName . '\').collapse(\'toggle\');');
+      // caso retire a função de "memória", copie a linha acima para dentro do onSearch,
+      // para que o form "permaneça aberto" (reabra automaticamente) ao realizar buscas
   }
 }
 //    $this->form->addFields([new TLabel('ID')], [$id]);
