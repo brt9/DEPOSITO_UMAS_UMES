@@ -4,6 +4,8 @@ use Adianti\Base\TStandardForm;
 use Adianti\Control\TPage;
 use Adianti\Database\TTransaction;
 use Adianti\Registry\TSession;
+use Adianti\Widget\Dialog\TMessage;
+use Adianti\Widget\Form\TDate;
 use Adianti\Widget\Form\TDateTime;
 use Adianti\Widget\Form\TEntry;
 use Adianti\Widget\Form\THidden;
@@ -26,6 +28,7 @@ class EmprestimoFerramentasForm extends TPage
 {
     protected $form;
     protected $fieldlist;
+    protected $html;
 
     public function __construct()
     {
@@ -85,6 +88,46 @@ class EmprestimoFerramentasForm extends TPage
         parent::add($vbox);
     }
     /**
+     * Metodo identifica se criando ou editando e colocar itens no formulário.
+     * @var param request
+     * @return View forms 
+     */
+    public function onEdit($param)
+    {
+        try {
+            if (isset($param['key'])) {
+                TTransaction::open('bancodados');
+                $emprestimo = Emprestimo::find($param['key']);
+                $this->form->setData($emprestimo); //inserindo dados no formulario. 
+
+                $pivot = PivotEmprestimoFerramentas::where('id_emprestimo', '=', $emprestimo->id)->load();
+
+                if ($pivot) {
+                    $this->fieldlist->addHeader();
+                    foreach ($pivot as $itens => $value) {
+                        $obj = new stdClass;
+                        $obj->ferramenta = $value->id_ferramenta;
+                        $obj->quantidade = $value->quantidade;
+
+                        $this->fieldlist->addDetail($obj);
+                    }
+                    $this->fieldlist->addCloneAction();
+                }
+                // add field list to the form
+                $this->form->addContent([$this->fieldlist]);
+                TTransaction::close();
+            } else {
+                $this->fieldlist->addHeader();
+                $this->fieldlist->addDetail(new stdClass);
+                $this->fieldlist->addCloneAction();
+                $this->form->addContent([$this->fieldlist]);
+            }
+        } catch (Exception $e) {
+            new TMessage('error', $e->getMessage()); // shows the exception error message
+            $this->fireEvents($param);
+        }
+    }
+    /**
      * Metodo para salvar solicitação
      * @var param
      * @return void 
@@ -131,7 +174,7 @@ class EmprestimoFerramentasForm extends TPage
                         } elseif (empty($ferramentas[$i])) {
                             throw new Exception('A ferramenta está vazia na linha ' . ($i + 1));
                         } elseif (!empty($duplicates[$i])) {
-                            throw new Exception('Ferramenta repetida na linha '.($i+1).'. Uma ferramentas nao poder ser solicitada mais de uma vez');
+                            throw new Exception('Ferramenta repetida na linha ' . ($i + 1) . '. Uma ferramentas nao poder ser solicitada mais de uma vez');
                         }
                         $pivot =  new PivotEmprestimoFerramentas();
                         $pivot->id_emprestimo = $emprestimo->id;
@@ -144,6 +187,8 @@ class EmprestimoFerramentasForm extends TPage
                         //Verifica se a quantidade solicitada for maior que a do estoque 
                         if ($param['quantidade'][$i] <= $qtdTools[$i]) {
                             $pivot->quantidade = $param['quantidade'][$i];
+                            $result = $qtdTools[$i] - $param['quantidade'][$i];//valor subtraido.
+                            $this->updateQuantidade($pivot->id_ferramenta, $result);
                         } else {
                             throw new Exception(
                                 'A quantidade na ' . ($i + 1) . '° linha não pode ser maior que a disponível no estoque que é: ' . $qtdTools[$i]
@@ -153,6 +198,7 @@ class EmprestimoFerramentasForm extends TPage
                     }
                 }
             }
+
             TTransaction::close();
             $this->fireEvents($param);
             new TMessage('info', 'Salvo com sucesso');
@@ -164,43 +210,21 @@ class EmprestimoFerramentasForm extends TPage
         }
     }
     /**
-     * Metodo identifica se criando ou editando e colocar itens no formulário.
-     * @var param request
-     * @return View forms 
+     * Atualizar a quantidade de ferramentas
+     * @var id id da ferramenta
+     * @var value valor da ferramenta a ser atualizado
      */
-    public function onEdit($param)
+    public function updateQuantidade($id, $value)
     {
         try {
-            if (isset($param['key'])) {
-                TTransaction::open('bancodados');
-                $emprestimo = Emprestimo::find($param['key']);
-                $this->form->setData($emprestimo); //inserindo dados no formulario. 
-
-                $pivot = PivotEmprestimoFerramentas::where('id_emprestimo', '=', $emprestimo->id)->load();
-
-                if ($pivot) {
-                    $this->fieldlist->addHeader();
-                    foreach ($pivot as $itens => $value) {
-                        $obj = new stdClass;
-                        $obj->ferramenta = $value->id_ferramenta;
-                        $obj->quantidade = $value->quantidade;
-
-                        $this->fieldlist->addDetail($obj);
-                    }
-                    $this->fieldlist->addCloneAction();
-                }
-                // add field list to the form
-                $this->form->addContent([$this->fieldlist]);
-                TTransaction::close();
-            } else {
-                $this->fieldlist->addHeader();
-                $this->fieldlist->addDetail(new stdClass);
-                $this->fieldlist->addCloneAction();
-                $this->form->addContent([$this->fieldlist]);
-            }
+            TTransaction::open('bancodados');
+            Ferramentas::where('id','=',$id)
+            ->set('quantidade', $value)
+            ->update();
+            TTransaction::close();
         } catch (Exception $e) {
-            new TMessage('error', $e->getMessage()); // shows the exception error message
-            $this->fireEvents($param);
+            new TMessage('error', $e->getMessage());
+            TTransaction::rollback();
         }
     }
     /**
@@ -225,7 +249,7 @@ class EmprestimoFerramentasForm extends TPage
             TTransaction::open('bancodados');
             $emprestimo = Emprestimo::find($param['id']);
             $this->form->setData($emprestimo); //inserindo dados no formulario. 
-            
+
             $pivot = PivotEmprestimoFerramentas::where('id_emprestimo', '=', $emprestimo->id)->load();
 
             if ($pivot) {
@@ -257,5 +281,70 @@ class EmprestimoFerramentasForm extends TPage
     function getDuplicates($param)
     {
         return array_unique(array_diff_assoc($param, array_unique($param)));
+    }
+    /**
+     * Gerar pdf das ferramentas solicitadas. 
+     */
+    public function onGenerate($param = null)
+    {
+        try {
+            TTransaction::open('bancodados');
+
+            /*             $model = model::find($param['id'])
+
+                $replaces = $model->toArray();
+
+                // verificar de tem campo vazio 
+                foreach ($replaces as $k => $v){
+                verificação 		
+                }
+
+                $replace['date'] = TData::date2br($model->data);
+                $replace['campoTextArea'] = strip_tags($model->textArea); */
+            // load all customers
+            $this->html = new THtmlRenderer('app/resources/pdf.html');
+
+            $emprestimo = new Emprestimo($param['id']);
+            $pivot = new PivotEmprestimoFerramentas($emprestimo->id);
+
+            $replace = $emprestimo->toArray();
+            $replace['created_at'] = TDate::date2br($emprestimo->created_at);
+
+            $this->html->enableSection('main', $replace);
+
+            // wrap the page content using vertical box
+            $vbox = new TVBox;
+            $vbox->style = 'width: 100%';
+            $vbox->add(new TXMLBreadCrumb('menu.xml', __CLASS__));
+            $vbox->add($this->html);
+            parent::add($vbox);
+
+            $contents = $this->html->getContents();
+
+            $options = new \Dompdf\Options();
+            $options->setChroot(getcwd());
+
+            // converts the HTML template into PDF
+            $dompdf = new \Dompdf\Dompdf($options);
+            $dompdf->loadHtml($contents);
+            $dompdf->setPaper('A4', 'portrait');
+            $dompdf->render();
+
+            // write and open file
+            file_put_contents('app/output/document.pdf', $dompdf->output());
+
+            // open window to show pdf
+            $window = TWindow::create(_t('Document HTML->PDF'), 0.8, 0.8);
+            $object = new TElement('object');
+            $object->data  = 'app/output/document.pdf';
+            $object->type  = 'application/pdf';
+            $object->style = "width: 100%; height:calc(100% - 10px)";
+            $object->add('O navegador não suporta a exibição deste conteúdo, <a style="color:#007bff;" target=_newwindow href="' . $object->data . '"> clique aqui para baixar</a>...');
+
+            $window->add($object);
+            $window->show();
+        } catch (Exception $e) {
+            new TMessage('error', $e->getMessage());
+        }
     }
 }

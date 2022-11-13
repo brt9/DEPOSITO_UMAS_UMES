@@ -35,24 +35,24 @@ class EmprestimoList extends TStandardList
     $isAdmin = SystemUserGroup::where('system_group_id', '=', 1)->load();
 
     $crit = new TCriteria();
-    $crit->add(new TFilter('id_usuario','=',$userSession));
+    $crit->add(new TFilter('id_usuario', '=', $userSession));
     TTransaction::close();
     parent::__construct();
-    
+
     parent::setDatabase('bancodados');            // DEFINE O BANCO DE DADOS
     parent::setActiveRecord('Emprestimo');   // DEFINE O REGISTRO ATIVO
     parent::setDefaultOrder('id', 'desc');         //  DEFINE A ORDEM PADRÃO
 
     parent::addFilterField('id', '=', 'id'); // CAMPO DE FILTRO, OPERADOR, CAMPO DE FORMULÁRIO
     parent::addFilterField('id_emprestimo', '=', 'id_emprestimo'); // CAMPO DE FILTRO, OPERADOR, CAMPO DE FORMULÁRIO
-    if($userSession == $isAdmin[0]->system_user_id){
+    if ($userSession == $isAdmin[0]->system_user_id) {
       parent::addFilterField('id_usuario', '=', 'id_usuario'); //  CAMPO DE FILTRO, OPERADOR, CAMPO DE FORMULÁRIO
-    }else{
+    } else {
       parent::setCriteria($crit);
     }
     parent::addFilterField('status', '=', 'status'); //  CAMPO DE FILTRO, OPERADOR, CAMPO DE FORMULÁRIO
     parent::addFilterField('created_at', '=', 'created_at');
-      
+
     // CRIA O FORMULÁRIO
     $this->form = new BootstrapFormBuilder('form_search');
     $form = $this->form->setFormTitle('Emprestimo de ferramentas');
@@ -120,6 +120,10 @@ class EmprestimoList extends TStandardList
     $delete = new TDataGridAction([$this, 'onDeleteSessionVar'],   ['id' => '{id}']);
     if ($userSession == $isAdmin[0]->system_user_id)
       $this->datagrid->addAction($delete, 'Apagar solicitação', 'fas:trash-alt red');
+
+    $pdf = new TDataGridAction(array('EmprestimoFerramentasForm', 'onGenerate'));
+    $pdf->setField('id');
+    $this->datagrid->addAction($pdf, 'Gerar PDF','fas:file-pdf red');
 
     // CRIAR O MODELO DE GRADE DE DADOS
     $this->datagrid->createModel();
