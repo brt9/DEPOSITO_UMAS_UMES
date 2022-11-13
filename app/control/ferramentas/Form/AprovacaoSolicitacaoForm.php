@@ -51,7 +51,9 @@ class AprovacaoSolicitacaoForm extends TPage
         $created             = new TDateTime('created_at');
         $status             = new TCombo('status');
         $status->addItems(['Pendente' => 'Pendente', 'Efetuado' => 'Efetuado', 'Devolvido' => 'Devolvido', 'Não devolvido' => 'Não devolvido']);
-        $ferramenta = new TEntry('ferramenta[]');
+
+        $ferramenta = new TDBCombo('ferramenta[]', 'bancodados', 'Ferramentas', 'id', '{id} - {nome}', 'id');
+
         $quantidade = new TEntry('quantidade[]');
         $qtdEmprestada = new TEntry('qtd_emprestada[]');
 
@@ -170,8 +172,11 @@ class AprovacaoSolicitacaoForm extends TPage
                 //Delete emprestimo se existe.
                 PivotEmprestimoFerramentas::where('id_emprestimo', '=', $emprestimo->id)->delete();
 
-                $ferramentas = $param['ferramenta'];
-                $tool = new Ferramentas($param['ferramenta']);
+                $ferramentas = array_map(function ($value) {
+                    return (int)$value;
+                }, $param['ferramenta']);
+
+
                 $count = count($ferramentas);
                 //Salvando items na tela pivot. 
                 if (isset($ferramentas)) {
@@ -180,13 +185,20 @@ class AprovacaoSolicitacaoForm extends TPage
                         $pivot->id_emprestimo = $emprestimo->id;
                         $pivot->id_ferramenta = $param['ferramenta'][$i];
                         $pivot->quantidade = $param['quantidade'][$i];
-                        if ($tool->quantidade < array_values($param['qtd_emprestada'])) {
+
+                        $tools = Ferramentas::where('id', 'in', $ferramentas)->load();
+                        $tool = [];
+                        foreach ($tools as $key) {
+                            $tool[] = $key->quantidade;
+                        }
+                        if ($tool[$i] < $param['qtd_emprestada'][$i]) {
                             throw new Exception(
-                                'A quantidade na linha ' . ($i + 1) . ' não pode ser maior que a disponível no estoque que é: ' . $tool->quantidade
+                                'A quantidade na linha ' . ($i + 1) . ' não pode ser maior que a disponível no estoque que é: ' . $tool[$i]
                             );
-                        } elseif ($param['quantidade'] < $param['qtd_emprestada']) {
+                        } elseif ($param['quantidade'][$i] < $param['qtd_emprestada'][$i]) {
                             throw new Exception(
-                                'A quantidade empretada na linha ' . ($i + 1) . ' não pode ser maior que a quantidade solicitada'
+                                'A quantidade emprestada na linha ' . ($i + 1) . ' não pode ser maior que a quantidade solicitada'
+
                             );
                         } else {
                             $pivot->qtd_emprestada = $param['qtd_emprestada'][$i];

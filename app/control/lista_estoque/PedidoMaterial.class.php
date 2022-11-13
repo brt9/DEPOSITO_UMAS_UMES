@@ -12,6 +12,7 @@ use Adianti\Widget\Wrapper\TDBCombo;
 use Adianti\Widget\Wrapper\TDBUniqueSearch;
 use Sabberworm\CSS\Value\Value;
 use Adianti\Util\AdiantiUIBuilder;
+use Adianti\Widget\Form\TForm;
 
 /**
  * FORMULÁRIO DE CADASTRO DE MATERIAL
@@ -26,7 +27,7 @@ use Adianti\Util\AdiantiUIBuilder;
 class PedidoMaterial extends TPage
 {
     protected $form; //  FORMULÁRIO
-
+    protected $descricao; //  FORMULÁRIO
     // CONSTRUTOR DE CLASSE
     // CRIA A PÁGINA E O FORMULÁRIO DE INSCRIÇÃO
 
@@ -46,20 +47,25 @@ class PedidoMaterial extends TPage
 
         $id = new THidden('id');
         $id_item = new TQRCodeInputReader('id_item[]');
-        $descricao = new TDBCombo('descricao[]', 'bancodados', 'lista', 'descricao', 'descricao');
+        $this->descricao = new TDBCombo('descricao[]', 'bancodados', 'lista', 'descricao', 'descricao');
         $quantidade = new TSpinner('quantidade[]');
 
+      
         $id->setEditable(FALSE);
-
-        $id_item->setSize('100%');
-        $descricao->setSize('100%');
+        $this->descricao->setSize('100%');
         $quantidade->setSize('100%');
+        
+        $id_item->setSize('100%');
+        $id_item->setChangeAction(new TAction(array($this, 'onChange')));
+        $id_item->setTip('Digite o codigo do item desejado');
+        $id_item->placeholder = '00000';
+        $id_item->setMask('99999');
+        $id_item->maxlength = 5;
 
-        $id_item->setTip('DIGITE O CODIGO DO ITEM DESEJADO');
-        $descricao->setTip('DIGITE A DESCRIÇÃO DO ITEM DESEJADO');
-        $quantidade->setTip('DIGITE A QUANTIDADE DO ITEM DESEJADO');
+        $this->descricao->setTip('Digite a descrição do item desejado');
+        $quantidade->setTip('Digite a quantidade do item desejado');
 
-        $descricao->enableSearch();
+        $this->descricao->enableSearch();
 
         $id_item->placeholder = '00000';
 
@@ -70,14 +76,13 @@ class PedidoMaterial extends TPage
         $this->fieldlist->name  = 'my_field_list';
 
         $this->fieldlist->addField('<b>CODIGO ITEM</b><font color="red"> *</font>',  $id_item,  ['width' => '20%']);
-        $this->fieldlist->addField('<b>DESCRIÇÂO</b><font color="red"> *</font>',  $descricao,  ['width' => '60%']);
+        $this->fieldlist->addField('<b>DESCRIÇÃO</b><font color="red"> *</font>',  $this->descricao,  ['width' => '60%']);
         $this->fieldlist->addField('<b>QUANTIDADE</b><font color="red"> *</font>',   $quantidade,   ['width' => '20%']);
         $this->form->addFields([$id]);
 
         $this->form->addField($id_item);
-        $this->form->addField($descricao);
+        $this->form->addField($this->descricao);
         $this->form->addField($quantidade);
-
 
 
 
@@ -96,6 +101,13 @@ class PedidoMaterial extends TPage
         //$id_usuario->setEditable(FALSE);
         // add field list to the form
         $this->form->addContent([$this->fieldlist]);
+
+
+
+
+        //////////////////
+
+
 
         //$id_status->setValue('1');
         // form actions
@@ -120,19 +132,23 @@ class PedidoMaterial extends TPage
 
             $usuarioLogado = TSession::getValue('userid');
             $status = array('PEDENTE', 'APROVADO', 'REPROVADO');
-
-            if (($param['id_item'] == [""]) || ($param['quantidade'] == ['0'])) {
-                throw new Exception('Campo obrigatorio não pode ser vazio');
-            } else {
+          
+            if ($param['id_item'] == [""]) {
+                throw new Exception('Campo Codigo Item é obrigatorio não pode ser vazio');
+            }  if ($param['descricao'] == [""]) {
+                throw new Exception('Campo Descrição é obrigatorio não pode ser vazio');
+            }    if ($param['quantidade'] == ['0']) {
+                throw new Exception('Campo Quantidade não pode ser vazio');
+            }else {
 
                 if (isset($param["id"]) && !empty($param["id"])) {
                     $object = new pedido($param["id"]);
                     $object->id_usuario = $usuarioLogado;
-                    $object->id_status = 1;
+                    $object->status = 'PENDENTE';
                 } else {
                     $object = new pedido();
                     $object->id_usuario = $usuarioLogado;
-                    $object->id_status = 1;
+                    $object->status = 'PENDENTE';
                 }
                 $object->fromArray($param);
                 $object->store();
@@ -188,6 +204,23 @@ class PedidoMaterial extends TPage
 
         foreach ($this->fields as $fieldObject) {
             $fieldObject->validate();
+        }
+    }
+    public function onChange($param)
+    {
+        try {
+            TTransaction::open('bancodados'); // abre uma transação
+            $list = lista::where('id_item', '=', $param['id_item'])->load();
+            var_dump($list[0]->descricao);
+
+            TTransaction::close(); // fecha a transação.
+            $obj = new stdClass();
+            $obj->descricao = $list[0]->descricao;
+
+            $this->descricao = $list[0]->descricao;
+            TForm::sendData('my_form', $this->descricao);
+        } catch (Exception $e) {
+            new TMessage('error', $e->getMessage());
         }
     }
 }

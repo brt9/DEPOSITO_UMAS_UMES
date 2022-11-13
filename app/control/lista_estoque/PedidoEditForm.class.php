@@ -25,7 +25,7 @@ use Sabberworm\CSS\Value\Value;
  * @copyright  Copyright (c) 2006 Adianti Solutions Ltd. (http://www.adianti.com.br)
  * @license    http://www.adianti.com.br/framework-license
  */
-class PedidoAprovacaoForm extends TPage
+class PedidoEditForm extends TPage
 {
     protected $form;
     protected $fieldlist;
@@ -42,44 +42,46 @@ class PedidoAprovacaoForm extends TPage
 
         // creates the form
         $this->form = new BootstrapFormBuilder('form_SaleMultiValue');
-        $this->form->setFormTitle('<b>Aprovar solicitação de material</b>');
+        $this->form->setFormTitle('<b>Editar Pedido de material</b>');
 
         // create the form fields
         $id             = new TEntry('id');
         $created             = new TDateTime('created_at');
-        $updated             = new TDateTime('updated_at');
         $id_item = new TDBCombo('id_item[]', 'bancodados', 'lista', 'id_item', '{id_item} {descricao}');
         $quantidade = new TEntry('quantidade[]');
         $quantidade_fornecida = new TEntry('quantidade_fornecida[]');
-        $status = new TCombo('status');
-        $status->addItems(array('PENDENTE' => 'PENDENTE', 'APROVADO' => 'APROVADO', 'REPROVADO' => 'REPROVADO'));
+        $status = new TEntry('status');
+        TTransaction::open('bancodados');
+        $pedido = pedido::find($param['id']);
+        TTransaction::close();
+
 
         //Config dos campos
-        $id->setSize('50%');
+        $id->setSize('20%');
         $id->setEditable(FALSE);
 
-        $created->setSize('50%');
+        $created->setSize('100%');
         $created->setEditable(FALSE);
 
-        $updated->setSize('50%');
-        $updated->setEditable(FALSE);
-
-        $status->setSize('50%');
-
-        $id_item->setSize('90%');
-        $id_item->setEditable(FALSE);
-
+        $id_item->setSize('100%');
+        $id_item->enableSearch();
         $quantidade->setSize('100%');
-        $quantidade->setEditable(FALSE);
-
+        $status->setEditable(FALSE);
         //add field 
         $this->fieldlist = new TFieldList;
+
+        if ($pedido->status != "PENDENTE") {
+            $id_item->setEditable(FALSE);
+            $quantidade->setEditable(FALSE);
+            $this->fieldlist->disableRemoveButton(false);
+        }
+
+
         $this->fieldlist->generateAria();
         $this->fieldlist->width = '100%';
         $this->fieldlist->name  = 'my_field_list';
         $this->fieldlist->addField('<b>ITEM</b><font color="red">*</font>',  $id_item,  ['width' => '90%'], new TRequiredValidator);
         $this->fieldlist->addField('<b>Qtd solicitada</b><font color="red">*</font>',   $quantidade,   ['width' => '100%'], new TRequiredValidator);
-        $this->fieldlist->addField('<b>Qtd emprestada</b><font color="red">*</font>',   $quantidade_fornecida,   ['width' => '10%'], new TRequiredValidator);
 
         $row = $this->form->addFields(
             [$labelInfo = new TLabel('Campos com asterisco (<font color="red">*</font>) são considerados campos obrigatórios')],
@@ -88,22 +90,18 @@ class PedidoAprovacaoForm extends TPage
         $row = $this->form->addFields(
             [new TLabel('Codigo da solicitação')],
             [$id],
-            [new TLabel('Status da solicitação')],
-            [$status],
-        );
-        $row1 = $this->form->addFields(
             [new TLabel('Data da solicitação')],
             [$created],
-            [new TLabel('Data da Aprovação')],
-            [$updated],
+            [new TLabel('Status da solicitação')],
+            [$status]
         );
         $row->style = 'margin-top:3rem;';
-       
+        $status->setValue('APROVADO');
         //add itens ao field list
         $this->form->addField($id_item);
         $this->form->addField($quantidade);
-        $this->form->addField($quantidade_fornecida);
-        $this->fieldlist->disableRemoveButton();
+
+
 
         // form actions
         $btnBack = $this->form->addActionLink(_t('Back'), new TAction(array('PeididoList', 'onReload')), 'far:arrow-alt-circle-left white');
@@ -115,10 +113,8 @@ class PedidoAprovacaoForm extends TPage
         $container = new TVBox;
         $container->style = 'width: 90%; margin:40px';
         $container->add($this->form);
-        
+
         parent::add($container);
-        $status->setValue('APROVADO');
-        $status->setDefaultOption(false);
     }
 
     public function onEdit($param)
@@ -135,26 +131,31 @@ class PedidoAprovacaoForm extends TPage
                     $this->fieldlist->addHeader();
                     foreach ($pivot as $itens => $value) {
                         $obj = new stdClass;
-                        $obj->id_pedido_material =  $value->id_emprestimo;
-                        $obj->id_item =  $value->id_item;
+                        $obj->id_item = $value->id_item;
                         $obj->quantidade = $value->quantidade;
-                        $obj->quantidade_fornecida = $value->quantidade;
 
                         $this->fieldlist->addDetail($obj);
+                    }
+                    if ($pedido->status == "PENDENTE") {
+                        $this->fieldlist->addCloneAction();
                     }
                 }
                 // add field list to the form
                 $this->form->addContent([$this->fieldlist]);
                 TTransaction::close();
             } else {
-                $this->onClear($param);
+                $this->fieldlist->addHeader();
+                $this->fieldlist->addDetail(new stdClass);
+                $this->fieldlist->addCloneAction();
+                $this->form->addContent([$this->fieldlist]);
             }
         } catch (Exception $e) {
             new TMessage('error', $e->getMessage()); // shows the exception error message
         }
     }
+
     public function onSave($param)
-    { 
+    {
         try {
             $this->form->validate();
             // open a transaction with database 'samples'
@@ -179,16 +180,15 @@ class PedidoAprovacaoForm extends TPage
                 $id_items = $param['id_item'];
                 $count = count($id_items);
                 //Salvando items na tela pivot. 
-              
+
                 if (isset($id_items)) {
                     for ($i = 0; $i < $count; $i++) {
                         $pivot =  new pivot();
                         $pivot->id_pedido_material = $pedido->id;
                         $pivot->id_item = $param['id_item'][$i];
-                        $pivot->quantidade = $param['quantidade'][$i];   
+                        $pivot->quantidade = $param['quantidade'][$i];
                         $pivot->quantidade_fornecida = $param['quantidade_fornecida'][$i];
                         $pivot->store();
-                        
                     }
                 }
             }

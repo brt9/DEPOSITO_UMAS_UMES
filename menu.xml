@@ -11,20 +11,12 @@
         <action>CadastroList</action>
         <icon>fas:water fa-fw #0138ff</icon>
       </menuitem>
-      <menuitem label="CADASTRO DE PRODUTO">
-        <action>CadastroForm</action>
-        <icon>fas:water fa-fw #0138ff</icon>
-      </menuitem>
       <menuitem label="PEDIDO MATERIAL">
         <action>PedidoMaterial</action>
         <icon>fas:water fa-fw #0138ff</icon>
       </menuitem>
       <menuitem label="LISTA DE PEDIDOS">
         <action>PeididoList</action>
-        <icon>fas:water fa-fw #0138ff</icon>
-      </menuitem>
-      <menuitem label="APRVACAO">
-        <action>PedidoAprovacaoForm</action>
         <icon>fas:water fa-fw #0138ff</icon>
       </menuitem>
     </menu>
@@ -146,19 +138,6 @@
       <menuitem label="Session dump">
         <action>SystemSessionDumpView</action>
         <icon>fas:code fa-fw</icon>
-      </menuitem>
-    </menu>
-  </menuitem>
-  <menuitem label="Common pages">
-    <menu>
-      <menuitem label="Common page 1">
-        <action>CommonPage</action>
-      </menuitem>
-      <menuitem label="Common page 2">
-        <action>CommonPage</action>
-      </menuitem>
-      <menuitem label="Common page 3">
-        <action>CommonPage</action>
       </menuitem>
     </menu>
   </menuitem>

@@ -29,7 +29,7 @@ class ListaPedido extends TRecord
     {
         parent::__construct($id, $callObjectLoad);
         parent::addAttribute('id');
-        parent::addAttribute('id_status');
+        parent::addAttribute('status');
         parent::addAttribute('id_usuario');
         parent::addAttribute('created_at');
         parent::addAttribute('updated_at');
@@ -44,13 +44,5 @@ class ListaPedido extends TRecord
         // returns the associated object
         return $this->idUser;
     }
-    public function get_Status()
-    {
-        // loads the associated object
-        if (empty($this->idStatus))
-            $this->idStatus = new Status($this->id_status);
 
-        // returns the associated object
-        return $this->idStatus;
-    }
-}
+ }

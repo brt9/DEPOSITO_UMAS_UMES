@@ -31,7 +31,7 @@ class pedido extends TRecord
         parent::addAttribute('id');
         parent::addAttribute('id_usuario');
         parent::addAttribute('id_admin');
-        parent::addAttribute('id_status');
+        parent::addAttribute('status');
         parent::addAttribute('created_at');
         parent::addAttribute('updated_at');
     }

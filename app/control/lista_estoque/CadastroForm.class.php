@@ -31,13 +31,13 @@ class CadastroForm extends TStandardForm
 
     // CRIA O FORMULÁRIO
     $this->form = new BootstrapFormBuilder('form_cadastro');
-    $this->form->setFormTitle('<b>CADASTRO ITEMS DEPOSITO</b>');
+    $this->form->setFormTitle('<b>CADASTRO ITENS DEPOSITO</b>');
 
     // CRIE OS CAMPOS DO FORMULÁRIO
     $CODIGO = new TEntry('id_item');
     $DESCRICAO = new TEntry('descricao');
     $QUANTIDADE_ESTOQUE = new TEntry('quantidade_estoque');
-    $colaborador_responsavel = new TEntry('id_usuario');
+    $colaborador_responsavel = new THidden('id_usuario');
 
     $row = $this->form->addFields(
       [$labelInfo = new TLabel('<b>Campos com asterisco (<font color="red">*</font>) são considerados campos obrigatórios</b>')],
@@ -47,7 +47,7 @@ class CadastroForm extends TStandardForm
     $row = $this->form->addFields([new TLabel('CODIGO ITEM <font color="red">*</font>')], [$CODIGO]);
     $this->form->addFields([new TLabel('DESCRIÇÃO <font color="red">*</font>')], [$DESCRICAO]);
     $this->form->addFields([new TLabel('QUANTIDADE <font color="red">*</font>')], [$QUANTIDADE_ESTOQUE]);
-    $this->form->addFields([new TLabel('COLABORADOR RESPONSAVEL <font color="red">*</font>')], [$colaborador_responsavel]);
+    $this->form->addFields([new TLabel('')], [$colaborador_responsavel]);
 
     $CODIGO->addValidation('CODIGO ITEM <font color="red">*</font>', new TRequiredValidator);
     $DESCRICAO->addValidation('DESCRIÇÃO <font color="red">*</font>', new TRequiredValidator);
@@ -55,12 +55,23 @@ class CadastroForm extends TStandardForm
     $colaborador_responsavel->addValidation('COLABORADOR RESPONSAVEL <font color="red">*</font>', new TRequiredValidator);
 
 
+    $CODIGO->setTip('Digite o codigo do item que deseja cadastrar');
+    $CODIGO->placeholder = '00000';
+    $CODIGO->setSize('25%');
+    $CODIGO->setMask('99999');
+    $CODIGO->maxlength = 5;
 
-
-    $CODIGO->setSize('35%');
+    $DESCRICAO->setTip('Digite a descrição do item desejado');
     $DESCRICAO->setSize('70%');
-    $QUANTIDADE_ESTOQUE->setSize('35%');
-    $colaborador_responsavel->setSize('35%');
+    $DESCRICAO->placeholder = 'Descrição do Item';
+
+    $QUANTIDADE_ESTOQUE->setTip('Digite a quantidade do item desejado');
+    $QUANTIDADE_ESTOQUE->setSize('70%');
+    $QUANTIDADE_ESTOQUE->placeholder = 'Descrição do Item';
+    $QUANTIDADE_ESTOQUE->setMask('99999');
+    $QUANTIDADE_ESTOQUE->placeholder = '00000';
+
+    $colaborador_responsavel->setSize('70%');
     $colaborador_responsavel->setValue(TSession::getValue('userid'));
     $colaborador_responsavel->setEditable(FALSE);
 
