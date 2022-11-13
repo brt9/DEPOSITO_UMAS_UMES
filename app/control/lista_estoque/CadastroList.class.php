@@ -20,7 +20,6 @@ class CadastroList extends TStandardList
   protected $deleteButton;
   protected $transformCallback;
   private static $formName = 'form_search';
-  private $showMethods = ['onReload', 'onSearch'];
   // CONSTRUTOR DE PÁGINA
   public function __construct()
   {
@@ -36,6 +35,12 @@ class CadastroList extends TStandardList
    
     $this->form = new BootstrapFormBuilder('form_search');
     $this->form->setFormTitle('ESTOQUE UMAS UMES');
+
+    TTransaction::open('bancodados');
+    $userSession = TSession::getValue('userid');
+    $isAdmin = SystemUserGroup::where('system_group_id', '=', 1)->load();
+    TTransaction::close();
+
 
     // CRIE OS CAMPOS DO FORMULÁRIO
 
@@ -65,9 +70,11 @@ class CadastroList extends TStandardList
 
     // ADICIONE AS AÇÕES DO FORMULÁRIO DE PESQUISA
     $btn = $this->form->addAction(_t('Find'), new TAction(array($this, 'onSearch')), 'fa:search');
+    if ($userSession == $isAdmin[0]->system_user_id)
+  {
     $this->form->addAction("Cadastrar Novo Item", new TAction(["CadastroForm", "onEdit"]), "fa:plus-circle green");
     $btn->class = 'btn btn-sm btn-primary';
-
+  }
    
 
     // CRIA UMA GRADE DE DADOS
@@ -117,10 +124,9 @@ class CadastroList extends TStandardList
     $action_edit->setImage('far:edit blue');
     $action_edit->setField('id_item');
     $this->datagrid->addAction($action_edit);
-
-    TScript::create('$(\'#' . self::$formName . '\').collapse(\'toggle\');');
- $this->form->addHeaderActionLink('Filtros de busca', new TAction(array($this, 'toggleSearch')), 'fa:filter green fa-fw');
-        
+    
+    $this->form->addHeaderActionLink('Filtros de busca', new TAction(array($this, 'toggleSearch')), 'fa:filter green fa-fw');
+    TScript::create('$(\'#' . self::$formName . '\').addClass(\'collapse\');');
     // CRIAR O MODELO DE GRADE DE DADOS
     $this->datagrid->createModel();
 

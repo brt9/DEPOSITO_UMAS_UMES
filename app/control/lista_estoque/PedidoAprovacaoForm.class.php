@@ -47,6 +47,7 @@ class PedidoAprovacaoForm extends TPage
         // create the form fields
         $id             = new TEntry('id');
         $created             = new TDateTime('created_at');
+        $updated             = new TDateTime('updated_at');
         $id_item = new TDBCombo('id_item[]', 'bancodados', 'lista', 'id_item', '{id_item} {descricao}');
         $quantidade = new TEntry('quantidade[]');
         $quantidade_fornecida = new TEntry('quantidade_fornecida[]');
@@ -54,11 +55,16 @@ class PedidoAprovacaoForm extends TPage
         $status->addItems(array('PENDENTE' => 'PENDENTE', 'APROVADO' => 'APROVADO', 'REPROVADO' => 'REPROVADO'));
 
         //Config dos campos
-        $id->setSize('20%');
+        $id->setSize('50%');
         $id->setEditable(FALSE);
 
-        $created->setSize('70%');
+        $created->setSize('50%');
         $created->setEditable(FALSE);
+
+        $updated->setSize('50%');
+        $updated->setEditable(FALSE);
+
+        $status->setSize('50%');
 
         $id_item->setSize('90%');
         $id_item->setEditable(FALSE);
@@ -82,10 +88,14 @@ class PedidoAprovacaoForm extends TPage
         $row = $this->form->addFields(
             [new TLabel('Codigo da solicitação')],
             [$id],
-            [new TLabel('Data da solicitação')],
-            [$created],
             [new TLabel('Status da solicitação')],
             [$status],
+        );
+        $row1 = $this->form->addFields(
+            [new TLabel('Data da solicitação')],
+            [$created],
+            [new TLabel('Data da Aprovação')],
+            [$updated],
         );
         $row->style = 'margin-top:3rem;';
        

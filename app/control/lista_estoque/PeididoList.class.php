@@ -21,7 +21,7 @@ class PeididoList extends TStandardList
   protected $formgrid;
   protected $deleteButton;
   protected $transformCallback;
-
+  private static $formName = 'form_search';
   // CONSTRUTOR DE PÁGINA
   public function __construct()
   {
@@ -77,14 +77,19 @@ class PeididoList extends TStandardList
     $this->form->addFields([new TLabel('DATA DA APROVAÇÃO')], [$data_aprovacao]);
 
 
-    $id->setTip('COLOQUE O CODIGO DO PEDIDO QUE VOCE PROCURA');
-    $id_status->setTip('COLOQUE O TIPO DE STATUS QUE VOCE PROCURA');
-    $id_usuario->setTip('COLOQUE A MATRICULA DO USUARIO PARA EFETUAR A BUSCA');
-    $data_pedido->setTip('COLOQUE A DATA DO PEDIDO PARA EFETUAR A BUSCA');
-    $data_aprovacao->setTip('COLOQUE A DATA DA APROVAÇÃO DO PEDIDO PARA EFETUAR A BUSCA');
+    $id->setTip('Digite codigo do pedido que voce procura');
+    $id_status->setTip('Selecione o tipo de status que voce procura');
+    $id_usuario->setTip('Digite a matricula do usuario para efetuar a busca');
+    $data_pedido->setTip('Selecione a data do pedido para efetuar a busca');
+    $data_aprovacao->setTip('Selecione a data da aprovação do pedido para efetuar a busca');
 
-
+  
+    $id->placeholder = '00000';
+    $id->setMask('99999');
+    $id->maxlength = 5;
     $id->setSize('35%');
+    $id_status->setDefaultOption('Selecionar');
+
     $id_status->setSize('35%');
     $id_usuario->setSize('35%');
     $data_pedido->setSize('35%');
@@ -204,6 +209,9 @@ class PeididoList extends TStandardList
     $panel->add($this->datagrid);
     $panel->addFooter($this->pageNavigation);
 
+    $this->form->addHeaderActionLink('Filtros de busca', new TAction(array($this, 'toggleSearch')), 'fa:filter green fa-fw');
+    TScript::create('$(\'#' . self::$formName . '\').addClass(\'collapse\');');
+    
     // recipiente de caixa vertical
     $container = new TVBox;
     $container->style = 'width: 100%';
@@ -277,8 +285,23 @@ class PeididoList extends TStandardList
   }
   public function formatDate1($date, $object)
 {
+
     $dt = new DateTime($date);
     return $dt->format('d/m/Y - H:i');
+}
+static function toggleSearch()
+{
+    // também pode apagar esses blocos if/else se não quiser usar a "memória" de estado do form
+    if (TSession::getValue('toggleSearch_'.self::$formName) == 1) {
+        TSession::setValue('toggleSearch_'.self::$formName,0);
+    } else {
+        TSession::setValue('toggleSearch_'.self::$formName,1);
+    }
+
+    // esta linha é a responsável por abrir/fechar o form
+    TScript::create('$(\'#' . self::$formName . '\').collapse(\'toggle\');');
+    // caso retire a função de "memória", copie a linha acima para dentro do onSearch,
+    // para que o form "permaneça aberto" (reabra automaticamente) ao realizar buscas
 }
 }
 
