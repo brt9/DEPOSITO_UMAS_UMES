@@ -58,7 +58,7 @@ class CadastroList extends TStandardList
     $id->setMask('99999');
     $id->maxlength = 5;
     $id->setTip('Digite o codigo do item desejado');
-
+//
 
     $descricao->enableSearch();
     $descricao->setSize('50%');
