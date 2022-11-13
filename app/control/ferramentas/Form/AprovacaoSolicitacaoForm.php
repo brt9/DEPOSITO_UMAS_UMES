@@ -51,7 +51,9 @@ class AprovacaoSolicitacaoForm extends TPage
         $created             = new TDateTime('created_at');
         $status             = new TCombo('status');
         $status->addItems(['Pendente' => 'Pendente', 'Efetuado' => 'Efetuado', 'Devolvido' => 'Devolvido', 'Não devolvido' => 'Não devolvido']);
+
         $ferramenta = new TDBCombo('ferramenta[]', 'bancodados', 'Ferramentas', 'id', '{id} - {nome}', 'id');
+
         $quantidade = new TEntry('quantidade[]');
         $qtdEmprestada = new TEntry('qtd_emprestada[]');
 
@@ -169,9 +171,11 @@ class AprovacaoSolicitacaoForm extends TPage
 
                 //Delete emprestimo se existe.
                 PivotEmprestimoFerramentas::where('id_emprestimo', '=', $emprestimo->id)->delete();
+
                 $ferramentas = array_map(function ($value) {
                     return (int)$value;
                 }, $param['ferramenta']);
+
 
                 $count = count($ferramentas);
                 //Salvando items na tela pivot. 
@@ -181,6 +185,7 @@ class AprovacaoSolicitacaoForm extends TPage
                         $pivot->id_emprestimo = $emprestimo->id;
                         $pivot->id_ferramenta = $param['ferramenta'][$i];
                         $pivot->quantidade = $param['quantidade'][$i];
+
                         $tools = Ferramentas::where('id', 'in', $ferramentas)->load();
                         $tool = [];
                         foreach ($tools as $key) {
@@ -193,6 +198,7 @@ class AprovacaoSolicitacaoForm extends TPage
                         } elseif ($param['quantidade'][$i] < $param['qtd_emprestada'][$i]) {
                             throw new Exception(
                                 'A quantidade emprestada na linha ' . ($i + 1) . ' não pode ser maior que a quantidade solicitada'
+
                             );
                         } else {
                             $pivot->qtd_emprestada = $param['qtd_emprestada'][$i];

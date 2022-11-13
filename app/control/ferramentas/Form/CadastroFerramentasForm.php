@@ -48,10 +48,12 @@ class CadastroFerramentasForm extends TPage
         );
 
         $row = $this->form->addFields(
+
             [new TLabel('Id')],
             [$id],
             [new TLabel('Data de criação')],
             [$created],
+
         );
         $row->style = 'margin-top:3rem;';
         $id->setEditable(FALSE);
@@ -103,6 +105,7 @@ class CadastroFerramentasForm extends TPage
     public function onSave($param)
     {
         try {
+
             if (empty($param['nome']) or $param['quantidade'] == '0') {
                 throw new Exception('Campos obrigatórios nao podem ser vazios');
             }
@@ -115,6 +118,7 @@ class CadastroFerramentasForm extends TPage
                 $object = new Ferramentas();
                 $data = $this->form->getData(); // get form data as array
                 $object->id_user = $user;
+
                 $object->fromArray((array) $data); // load the object with data
                 $object->store();
 
@@ -124,6 +128,7 @@ class CadastroFerramentasForm extends TPage
 
             $this->form->setData($data); // fill form data
 
+
             TTransaction::close();
             $this->fireEvents($param);
             new TMessage('info', 'Ferramenta cadastrada');
@@ -132,6 +137,7 @@ class CadastroFerramentasForm extends TPage
             $this->form->setData($this->form->getData()); // keep form data
             TTransaction::rollback();
             $this->fireEvents($param);
+
         }
     }
     /**
@@ -140,10 +146,12 @@ class CadastroFerramentasForm extends TPage
     public function onEdit($param)
     {
         try {
+
             if (isset($param['id'])) {
 
                 TTransaction::open('bancodados');
                 $object = new Ferramentas($param['id']);
+
 
                 $this->form->setData($object);
                 TTransaction::close();
@@ -151,13 +159,16 @@ class CadastroFerramentasForm extends TPage
                 $this->form->clear();
             }
         } catch (Exception $e) {
+
             new TMessage('error', $e->getMessage());
             $this->fireEvents($param);
+
         }
     }
     public function onClear($param)
     {
     }
+
     /**
      * Fire form events
      * @param $param Request
@@ -180,4 +191,5 @@ class CadastroFerramentasForm extends TPage
             new TMessage('error', $e->getMessage());
         }
     }
+
 }
