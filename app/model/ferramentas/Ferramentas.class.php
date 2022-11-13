@@ -12,6 +12,7 @@ class Ferramentas extends TRecord
     const UPDATEDAT = 'updated_at';
     const DELETEDAT = 'deleted_at';
 
+    protected $idUser;
     /**
      * Constructor method
      */
@@ -21,6 +22,19 @@ class Ferramentas extends TRecord
         parent::addAttribute('id');
         parent::addAttribute('nome');
         parent::addAttribute('quantidade');
+        parent::addAttribute('id_user');
+        parent::addAttribute('created_at');
+    }
+    /**
+     * Capturar usuario
+     */
+    public function get_User()
+    {
+        // loads the associated object
+        if (empty($this->idUser))
+            $this->idUser = new SystemUser($this->id_user);
 
+        // returns the associated object
+        return $this->idUser;
     }
 }

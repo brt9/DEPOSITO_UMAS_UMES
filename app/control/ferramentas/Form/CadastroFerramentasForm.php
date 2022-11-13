@@ -1,6 +1,8 @@
 <?php
 
 use Adianti\Base\TStandardForm;
+use Adianti\Registry\TSession;
+use Adianti\Widget\Dialog\TMessage;
 use Adianti\Widget\Form\TDateTime;
 use Adianti\Widget\Form\TEntry;
 use Adianti\Widget\Form\THidden;
@@ -29,20 +31,32 @@ class CadastroFerramentasForm extends TPage
     public function __construct()
     {
         parent::__construct();
-        
+
         $this->form = new BootstrapFormBuilder;
         $this->form->setFormTitle('Cadastro de ferramentas');
         $this->form->generateAria(); // automatic aria-label
 
         // create the form fields
         $id = new TEntry('id');
+        $created = new TEntry('created');
         $nomeFerramenta = new TEntry('nome');
         $quantidade    = new TSpinner('quantidade');
 
         // add the fields inside the form
-        $row = $this->form->addFields([new TLabel('Id')],    [$id]);
+        $row = $this->form->addFields(
+            [$labelInfo = new TLabel('Campos com asterisco (<font color="red">*</font>) são considerados campos obrigatórios')],
+        );
+
+        $row = $this->form->addFields(
+            [new TLabel('Id')],
+            [$id],
+            [new TLabel('Data de criação')],
+            [$created],
+        );
+        $row->style = 'margin-top:3rem;';
         $id->setEditable(FALSE);
-        
+        $created->setEditable(FALSE);
+
         $row = $this->form->addFields(
             [$labelFerramenta = new TLabel('Ferramenta <font color="red">*</font>')],
             [$nomeFerramenta],
@@ -50,19 +64,20 @@ class CadastroFerramentasForm extends TPage
             [$quantidade],
         );
         $row->style = 'align-items: center';
-        
+
         $row = $this->form->addFields(
             [$labelInfo = new TLabel('<font color="red">ATENÇÃO</font> Ao cadastrar uma ferramenta, 
             caso queira continuar cadastrando outras ferramentas, basta clicar no botão de "Limpar"
             e continuar cadastrando')],
         );
         $row->style = 'margin-top: 3rem; text-align: center';
-        
+
         //Style in form
         $labelFerramenta->setTip('Campo obrigatório');
         $labelQuantidade->setTip('Campo obrigatório');
         $labelFerramenta->style = 'left: -100%;';
         $id->setSize('20%');
+        $created->setSize('60%');
         $nomeFerramenta->setSize('100%');
         $quantidade->setSize('20%');
         $nomeFerramenta->placeholder = 'Nome do ferramenta';
@@ -82,17 +97,26 @@ class CadastroFerramentasForm extends TPage
         $vbox->add($this->form);
         parent::add($vbox);
     }
+    /**
+     * Save form 
+     */
     public function onSave($param)
     {
         try {
-            TTransaction::open('bancodados'); // open a transaction
-            if (isset($param['id'])) {
-                $this->form->validate(); // validate form data
+            if (empty($param['nome']) or $param['quantidade'] == '0') {
+                throw new Exception('Campos obrigatórios nao podem ser vazios');
+            }
 
-                $object = new Ferramentas();  // create an empty object
+            TTransaction::open('bancodados');
+            if (isset($param['id'])) {
+                $user = TSession::getValue('userid'); //get user logged
+
+                $this->form->validate();
+                $object = new Ferramentas();
                 $data = $this->form->getData(); // get form data as array
+                $object->id_user = $user;
                 $object->fromArray((array) $data); // load the object with data
-                $object->store(); // save the object
+                $object->store();
 
                 // get the generated id
                 $data->id = $object->id;
@@ -100,23 +124,50 @@ class CadastroFerramentasForm extends TPage
 
             $this->form->setData($data); // fill form data
 
-            TTransaction::close(); // close the transaction
-
-            new TMessage('info','Ferramenta cadastrada');
-        } catch (Exception $e) // in case of exception
-        {
-            new TMessage('error', $e->getMessage()); // shows the exception error message
+            TTransaction::close();
+            $this->fireEvents($param);
+            new TMessage('info', 'Ferramenta cadastrada');
+        } catch (Exception $e) {
+            new TMessage('error', $e->getMessage());
             $this->form->setData($this->form->getData()); // keep form data
-            TTransaction::rollback(); // undo all pending operations
+            TTransaction::rollback();
+            $this->fireEvents($param);
         }
     }
+    /**
+     * Cria na view os forms para criar/editar
+     */
     public function onEdit($param)
     {
         try {
-            if (isset($param['key'])) {
+            if (isset($param['id'])) {
 
-                $id = $param['key'];
-                var_dump($id);
+                TTransaction::open('bancodados');
+                $object = new Ferramentas($param['id']);
+
+                $this->form->setData($object);
+                TTransaction::close();
+            } else {
+                $this->form->clear();
+            }
+        } catch (Exception $e) {
+            new TMessage('error', $e->getMessage());
+            $this->fireEvents($param);
+        }
+    }
+    public function onClear($param)
+    {
+    }
+    /**
+     * Fire form events
+     * @param $param Request
+     */
+    public function fireEvents($param)
+    {
+        try {
+            if (isset($param['id'])) {
+
+                $id = $param['id'];
                 TTransaction::open('bancodados');
                 $object = new Ferramentas($id);
 
@@ -126,10 +177,7 @@ class CadastroFerramentasForm extends TPage
                 $this->form->clear();
             }
         } catch (Exception $e) {
-            new TMessage('error', $e->getMessage()); // shows the exception error message
+            new TMessage('error', $e->getMessage());
         }
-    }
-    public function onClear($param)
-    {
     }
 }

@@ -1,5 +1,7 @@
 <?php
 
+use Adianti\Database\TTransaction;
+use Adianti\Registry\TSession;
 use Adianti\Widget\Datagrid\TDataGridColumn;
 use Adianti\Widget\Form\TDate;
 use Adianti\Widget\Form\TDateTime;
@@ -28,32 +30,45 @@ class EmprestimoList extends TStandardList
   // CONSTRUTOR DE PÁGINA
   public function __construct()
   {
+    TTransaction::open('bancodados');
+    $userSession = TSession::getValue('userid');
+    $isAdmin = SystemUserGroup::where('system_group_id', '=', 1)->load();
+
+    $crit = new TCriteria();
+    $crit->add(new TFilter('id_usuario', '=', $userSession));
+    TTransaction::close();
     parent::__construct();
 
     parent::setDatabase('bancodados');            // DEFINE O BANCO DE DADOS
     parent::setActiveRecord('Emprestimo');   // DEFINE O REGISTRO ATIVO
     parent::setDefaultOrder('id', 'desc');         //  DEFINE A ORDEM PADRÃO
+
     parent::addFilterField('id', '=', 'id'); // CAMPO DE FILTRO, OPERADOR, CAMPO DE FORMULÁRIO
     parent::addFilterField('id_emprestimo', '=', 'id_emprestimo'); // CAMPO DE FILTRO, OPERADOR, CAMPO DE FORMULÁRIO
-    parent::addFilterField('id_usuario', '=', 'id_usuario'); //  CAMPO DE FILTRO, OPERADOR, CAMPO DE FORMULÁRIO
+    if ($userSession == $isAdmin[0]->system_user_id) {
+      parent::addFilterField('id_usuario', '=', 'id_usuario'); //  CAMPO DE FILTRO, OPERADOR, CAMPO DE FORMULÁRIO
+    } else {
+      parent::setCriteria($crit);
+    }
     parent::addFilterField('status', '=', 'status'); //  CAMPO DE FILTRO, OPERADOR, CAMPO DE FORMULÁRIO
-    parent::addFilterField('created_at', '=', 'created_at'); //  CAMPO DE FILTRO, OPERADOR, CAMPO DE FORMULÁRIO
+    parent::addFilterField('created_at', '=', 'created_at');
 
     // CRIA O FORMULÁRIO
     $this->form = new BootstrapFormBuilder('form_search');
     $form = $this->form->setFormTitle('Emprestimo de ferramentas');
+
     // CRIE OS CAMPOS DO FORMULÁRIO
     $unique = new TDBUniqueSearch('FerramentaList', 'bancodados', 'emprestimo', 'id', 'id');
     $unique->setMinLength(1);
     $unique->setMask('{id}');
-    $unique->placeholder = 'Pesquise o emprestido pelo id, usuario ou status';
+    $unique->placeholder = 'Pesquise o emprestido pela númeração da solicitação';
     $data = new TDate('created_at');
     $data->placeholder = 'Pesquise pela data de criação';
     $data->setMask('dd/mm/yyyy');
 
     // ADICIONE OS CAMPOS
     $row = $this->form->addFields(
-      [new TLabel('Id')],
+      [new TLabel('Número da solicitação')],
       [$unique],
       [new Tlabel('Data')],
       [$data],
@@ -89,17 +104,26 @@ class EmprestimoList extends TStandardList
     $this->datagrid->addColumn($column_usuario);
     $this->datagrid->addColumn($column_status);
     $this->datagrid->addColumn($column_created);
+    $this->datagrid->disableDefaultClick();
 
-    
-    // CRIAR AÇÃO EDITAR
+    // Action edit
     $action_edit = new TDataGridAction(array('EmprestimoFerramentasForm', 'onEdit'));
     $action_edit->setField('id');
     $this->datagrid->addAction($action_edit, 'Editar solicitação', 'far:edit blue');
-    
-    // Criar visualização da solicitação para o admin aprovar ou não. 
+
+    // Visualização da solicitação para o admin. 
     $action1 = new TDataGridAction(['AprovacaoSolicitacaoForm', 'onEdit']);
     $action1->setField('id');
-    $this->datagrid->addAction($action1, 'Visualizar solicitação', 'fa:check-circle background-color:#218231');
+    if ($userSession == $isAdmin[0]->system_user_id)
+      $this->datagrid->addAction($action1, 'Visualizar solicitação', 'fa:check-circle background-color:#218231');
+
+    $delete = new TDataGridAction([$this, 'onDeleteSessionVar'],   ['id' => '{id}']);
+    if ($userSession == $isAdmin[0]->system_user_id)
+      $this->datagrid->addAction($delete, 'Apagar solicitação', 'fas:trash-alt red');
+
+    $pdf = new TDataGridAction(array('EmprestimoFerramentasForm', 'onGenerate'));
+    $pdf->setField('id');
+    $this->datagrid->addAction($pdf, 'Gerar PDF','fas:file-pdf red');
 
     // CRIAR O MODELO DE GRADE DE DADOS
     $this->datagrid->createModel();
@@ -123,5 +147,32 @@ class EmprestimoList extends TStandardList
 
     parent::add($container);
     TTransaction::close(); // fecha a transação.
+  }
+  /**
+   * Ask before deletion
+   */
+  public static function onDeleteSessionVar($param)
+  {
+    $action1 = new TAction(array(__CLASS__, 'deleteSessionVar'));
+    $action1->setParameters($param);
+    new TQuestion('Tem certeza que quer apagar ?', $action1);
+  }
+
+  /**
+   * Delete session var
+   */
+  public static function deleteSessionVar($param)
+  {
+    try {
+      TTransaction::open('bancodados');
+      $emprestimo = Emprestimo::find($param['id']);
+      $emprestimo->Delete();
+      AdiantiCoreApplication::gotoPage('EmprestimoList');
+      TTransaction::close();
+      new TMessage('info', TAdiantiCoreTranslator::translate('Record deleted')); // success message
+
+    } catch (Exception $e) {
+      new TMessage('error', $e->getMessage()); // shows the exception error message
+    }
   }
 }
