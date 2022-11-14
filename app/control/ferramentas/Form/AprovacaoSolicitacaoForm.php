@@ -200,6 +200,10 @@ class AprovacaoSolicitacaoForm extends TPage
                                 $result = ($tool[$i]+($param['quantidade'][$i] - $param['qtd_emprestada'][$i])); //valor subtraido.
                                 $this->updateQuantidade($pivot->id_ferramenta,$result);
                             }
+                            if($param['status'] == "DEVOLVIDO"){
+                                $result = $tool[$i] + $param['qtd_emprestada'][$i]; //Devolvendo valor para banco.
+                                $this->updateQuantidade($pivot->id_ferramenta,$result);
+                            }
                         }
                         $pivot->store();
                     }

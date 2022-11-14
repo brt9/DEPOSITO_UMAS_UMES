@@ -120,6 +120,7 @@ class EmprestimoFerramentasForm extends TPage
                     }
                     $this->fieldlist->addCloneAction();
                 }
+                $this->onChange(array($pivot[0]->id_ferramenta));
                 // add field list to the form
                 $this->form->addContent([$this->fieldlist]);
                 TTransaction::close();
@@ -155,11 +156,11 @@ class EmprestimoFerramentasForm extends TPage
                 if (isset($param["id"]) && !empty($param["id"])) {
                     $emprestimo = new Emprestimo($param["id"]);
                     $emprestimo->id_usuario = $usuarioLogado;
-                    $emprestimo->status = 'Pendente';
+                    $emprestimo->status = 'PENDENTE';
                 } else {
                     $emprestimo = new Emprestimo();
                     $emprestimo->id_usuario = $usuarioLogado;
-                    $emprestimo->status = 'Pendente';
+                    $emprestimo->status = 'PENDENTE';
                 }
                 $emprestimo->fromArray($param);
                 $emprestimo->store();
@@ -170,19 +171,21 @@ class EmprestimoFerramentasForm extends TPage
                 $ferramentas = array_map(function ($value) {
                     return (int)$value;
                 }, $param['ferramenta']);
-                $count = count($ferramentas);
 
                 //Salvando items na tela pivot. 
                 if (isset($ferramentas)) {
-                    for ($i = 0; $i < $count; $i++) {
+                    for ($i = 0; $i < count($ferramentas); $i++) {
 
                         if (empty($param['quantidade'][$i])) {
                             throw new Exception('A quantidade está vazia na linha ' . ($i + 1));
-                        } elseif (empty($ferramentas[$i])) {
+                        }
+                        if (empty($ferramentas[$i])) {
                             throw new Exception('A ferramenta está vazia na linha ' . ($i + 1));
-                        } elseif (!empty($duplicates[$i])) {
+                        }
+                        if (!empty($duplicates[$i])) {
                             throw new Exception('Ferramenta repetida na linha ' . ($i + 1) . '. Uma ferramentas nao poder ser solicitada mais de uma vez');
                         }
+
                         $pivot =  new PivotEmprestimoFerramentas();
                         $pivot->id_emprestimo = $emprestimo->id;
                         $pivot->id_ferramenta = $param['ferramenta'][$i];
@@ -192,20 +195,19 @@ class EmprestimoFerramentasForm extends TPage
                             $qtdTools[] = $key->quantidade;
                         }
                         //Verifica se a quantidade solicitada for maior que a do estoque 
-                        if ($param['quantidade'][$i] <= $qtdTools[$i]) {
-                            $pivot->quantidade = $param['quantidade'][$i];
-                            $result = $qtdTools[$i] - $param['quantidade'][$i]; //valor subtraido.
-                            $this->updateQuantidade($pivot->id_ferramenta, $result);
-                        } else {
+                        if ($param['quantidade'][$i] >= $qtdTools[$i]) {
                             throw new Exception(
                                 'A quantidade na ' . ($i + 1) . '° linha não pode ser maior que a disponível no estoque que é: ' . $qtdTools[$i]
                             );
+                        } else {
+                            $pivot->quantidade = $param['quantidade'][$i];
+                            $result = $qtdTools[$i] - $param['quantidade'][$i]; //valor subtraido.
+                            $this->updateQuantidade($pivot->id_ferramenta, $result);
                         }
                         $pivot->store();
                     }
                 }
             }
-
             TTransaction::close();
             $this->fireEvents($param);
             new TMessage('info', 'Salvo com sucesso');
@@ -354,9 +356,11 @@ class EmprestimoFerramentasForm extends TPage
             new TMessage('error', $e->getMessage());
         }
     }
-    public static function onChange($param){
+    public static function onChange($param)
+    {
         TTransaction::open('bancodados');
-        $ferramenta = Ferramentas::where('id','=',$param['ferramenta'])->load();
+        empty($param['ferramenta']) ? $ferramentaId = $param : $ferramentaId = $param['ferramenta'];
+        $ferramenta = Ferramentas::where('id', 'in', $ferramentaId)->load();
         $obj = new stdClass;
         $obj->quantidadeDisponivel = $ferramenta[0]->quantidade;
         TCombo::reload('form_Emprestimo', 'quantidadeDisponivel', $obj);
