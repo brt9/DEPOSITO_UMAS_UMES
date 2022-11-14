@@ -1,10 +1,12 @@
 <?php
 
 use Adianti\Base\TStandardForm;
+use Adianti\Control\TAction;
 use Adianti\Control\TPage;
 use Adianti\Database\TTransaction;
 use Adianti\Registry\TSession;
 use Adianti\Widget\Dialog\TMessage;
+use Adianti\Widget\Form\TCombo;
 use Adianti\Widget\Form\TDate;
 use Adianti\Widget\Form\TDateTime;
 use Adianti\Widget\Form\TEntry;
@@ -35,30 +37,35 @@ class EmprestimoFerramentasForm extends TPage
         parent::__construct();
 
         // create form and table container
-        $this->form = new BootstrapFormBuilder('form_SaleMultiValue');
+        $this->form = new BootstrapFormBuilder('form_Emprestimo');
         $this->form->setFormTitle("Solicitação de emprestimo");
 
         $id             = new TEntry('id');
         $created             = new TDateTime('created_at');
         $ferramenta = new TDBCombo('ferramenta[]', 'bancodados', 'Ferramentas', 'id', '{id} - {nome}', 'id');
         $quantidade = new TEntry('quantidade[]');
+        $quantidadeDisponivel = new TCombo('quantidadeDisponivel');
 
         $ferramenta->placeholder = 'Pesquise pela ferramenta desejada';
         $ferramenta->enableSearch();
         $ferramenta->setSize('100%');
         $quantidade->setSize('100%');
+        $quantidadeDisponivel->setSize('100%');
         $created->setEditable(FALSE);
         $id->setEditable(FALSE);
         $id->setSize('20%');
         $created->setSize('70%');
+        $quantidadeDisponivel->setEditable(FALSE);
+        $ferramenta->setChangeAction(new TAction(array($this, 'onChange')));
 
         //add field 
         $this->fieldlist = new TFieldList;
         $this->fieldlist->generateAria();
         $this->fieldlist->width = '100%';
         $this->fieldlist->name  = 'my_field_list';
-        $this->fieldlist->addField('<b>Ferramenta</b><font color="red">*</font>',  $ferramenta,  ['width' => '70%'], new TRequiredValidator);
-        $this->fieldlist->addField('<b>Quantidade</b><font color="red">*</font>',   $quantidade,   ['width' => '10%'], new TRequiredValidator);
+        $this->fieldlist->addField('<b>Ferramenta</b><font color="red">*</font>',  $ferramenta,  ['width' => '70%']);
+        $this->fieldlist->addField('<b>Quantidade</b><font color="red">*</font>',   $quantidade,   ['width' => '10%']);
+        $this->fieldlist->addField('<b>Quantidade disponível</b><font color="red">*</font>',   $quantidadeDisponivel,   ['width' => '10%']);
 
         $row = $this->form->addFields(
             [$labelInfo = new TLabel('Campos com asterisco (<font color="red">*</font>) são considerados campos obrigatórios')],
@@ -187,7 +194,7 @@ class EmprestimoFerramentasForm extends TPage
                         //Verifica se a quantidade solicitada for maior que a do estoque 
                         if ($param['quantidade'][$i] <= $qtdTools[$i]) {
                             $pivot->quantidade = $param['quantidade'][$i];
-                            $result = $qtdTools[$i] - $param['quantidade'][$i];//valor subtraido.
+                            $result = $qtdTools[$i] - $param['quantidade'][$i]; //valor subtraido.
                             $this->updateQuantidade($pivot->id_ferramenta, $result);
                         } else {
                             throw new Exception(
@@ -218,9 +225,9 @@ class EmprestimoFerramentasForm extends TPage
     {
         try {
             TTransaction::open('bancodados');
-            Ferramentas::where('id','=',$id)
-            ->set('quantidade', $value)
-            ->update();
+            Ferramentas::where('id', '=', $id)
+                ->set('quantidade', $value)
+                ->update();
             TTransaction::close();
         } catch (Exception $e) {
             new TMessage('error', $e->getMessage());
@@ -346,5 +353,13 @@ class EmprestimoFerramentasForm extends TPage
         } catch (Exception $e) {
             new TMessage('error', $e->getMessage());
         }
+    }
+    public static function onChange($param){
+        TTransaction::open('bancodados');
+        $ferramenta = Ferramentas::where('id','=',$param['ferramenta'])->load();
+        $obj = new stdClass;
+        $obj->quantidadeDisponivel = $ferramenta[0]->quantidade;
+        TCombo::reload('form_Emprestimo', 'quantidadeDisponivel', $obj);
+        TTransaction::close();
     }
 }
