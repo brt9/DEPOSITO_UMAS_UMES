@@ -50,12 +50,19 @@ class PedidoEditForm extends TPage
         $id_item = new TDBCombo('id_item[]', 'bancodados', 'lista', 'id_item', '{id_item} {descricao}');
         $quantidade = new TEntry('quantidade[]');
         $quantidade_fornecida = new TEntry('quantidade_fornecida[]');
+        $quantidadeDisponivel = new TCombo('quantidadeDisponivel');
+        $quantidadeDisponivel->class = '';
+        $quantidadeDisponivel->style =
+            'border-radius: 0.25rem;
+            border-width: 1px;
+            border-style: solid;';
         $status = new TEntry('status');
         TTransaction::open('bancodados');
         $pedido = pedido::find($param['id']);
         TTransaction::close();
 
-
+        $quantidadeDisponivel->setSize('100%');
+        $quantidadeDisponivel->setEditable(FALSE);
         //Config dos campos
         $id->setSize('20%');
         $id->setEditable(FALSE);
@@ -67,6 +74,7 @@ class PedidoEditForm extends TPage
         $id_item->enableSearch();
         $quantidade->setSize('100%');
         $status->setEditable(FALSE);
+
         //add field 
         $this->fieldlist = new TFieldList;
 
@@ -82,7 +90,7 @@ class PedidoEditForm extends TPage
         $this->fieldlist->name  = 'my_field_list';
         $this->fieldlist->addField('<b>ITEM</b><font color="red">*</font>',  $id_item,  ['width' => '90%'], new TRequiredValidator);
         $this->fieldlist->addField('<b>Qtd solicitada</b><font color="red">*</font>',   $quantidade,   ['width' => '100%'], new TRequiredValidator);
-
+        $this->fieldlist->addField('<b>Quantidade disponível</b><font color="red">*</font>',   $quantidadeDisponivel,   ['width' => '10%']);
         $row = $this->form->addFields(
             [$labelInfo = new TLabel('Campos com asterisco (<font color="red">*</font>) são considerados campos obrigatórios')],
         );
@@ -199,5 +207,15 @@ class PedidoEditForm extends TPage
             new TMessage('error', $e->getMessage());
             TTransaction::rollback();
         }
+    }
+    public static function onChange($param)
+    {
+        TTransaction::open('bancodados');
+        empty($param['id_item']) ? $id_item = $param : $id_item = $param['id_item'];
+        $id_item = lista::where('id_item', 'in', $id_item)->load();
+        $obj = new stdClass;
+        $obj->quantidade_estoque = $id_item[0]->quantidade_estoque;
+        TCombo::reload('form_SaleMultiValue', 'quantidadeDisponivel', $obj);
+        TTransaction::close();
     }
 }

@@ -115,10 +115,10 @@ class PedidoAprovacaoForm extends TPage
         $container = new TVBox;
         $container->style = 'width: 90%; margin:40px';
         $container->add($this->form);
-        
         parent::add($container);
-        $status->setValue('APROVADO');
-        $status->setDefaultOption(false);
+       
+      
+        
     }
 
     public function onEdit($param)
@@ -200,4 +200,5 @@ class PedidoAprovacaoForm extends TPage
             TTransaction::rollback();
         }
     }
+    
 }

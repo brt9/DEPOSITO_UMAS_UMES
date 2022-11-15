@@ -5,11 +5,9 @@ use Adianti\Control\TAction;
 use Adianti\Control\TPage;
 use Adianti\Database\TTransaction;
 use Adianti\Registry\TSession;
-
 use Adianti\Widget\Dialog\TMessage;
 use Adianti\Widget\Form\TCombo;
 use Adianti\Widget\Form\TDate;
-
 use Adianti\Widget\Form\TDateTime;
 use Adianti\Widget\Form\TEntry;
 use Adianti\Widget\Form\THidden;
@@ -35,9 +33,7 @@ class EmprestimoFerramentasForm extends TPage
     protected $subFormFirst;
     protected $subFormSecound;
     protected $fieldlist;
-
     protected $html;
-
 
     public function __construct()
     {
@@ -131,7 +127,6 @@ class EmprestimoFerramentasForm extends TPage
         parent::add($vbox);
     }
     /**
-
      * Metodo identifica se criando ou editando e colocar itens no formulário.
      * @var param request
      * @return View forms 
@@ -176,7 +171,6 @@ class EmprestimoFerramentasForm extends TPage
      * Metodo para salvar solicitação
      * @var param
      * @return void 
-
      */
     public function onSave($param)
     {
@@ -186,23 +180,19 @@ class EmprestimoFerramentasForm extends TPage
             TTransaction::open('bancodados');
 
             $usuarioLogado = TSession::getValue('userid');
-
             $duplicates = $this->getDuplicates($param['ferramenta']);
             if (($param['ferramenta'] == [""]) || ($param['quantidade'] == ['0'])) {
                 throw new Exception('Campo obrigatorio não pode ser vazio');
             } else {
-
                 //Verificando se é uma edição ou criação
                 if (isset($param["id"]) && !empty($param["id"])) {
                     $emprestimo = new Emprestimo($param["id"]);
                     $emprestimo->id_usuario = $usuarioLogado;
-
                     $emprestimo->status = 'PENDENTE';
                 } else {
                     $emprestimo = new Emprestimo();
                     $emprestimo->id_usuario = $usuarioLogado;
                     $emprestimo->status = 'PENDENTE';
-
                 }
                 $emprestimo->fromArray($param);
                 $emprestimo->store();
@@ -218,7 +208,6 @@ class EmprestimoFerramentasForm extends TPage
                 if (isset($ferramentas)) {
                     for ($i = 0; $i < count($ferramentas); $i++) {
 
-
                         if (empty($param['quantidade'][$i])) {
                             throw new Exception('A quantidade está vazia na linha ' . ($i + 1));
                         }
@@ -228,6 +217,7 @@ class EmprestimoFerramentasForm extends TPage
                         if (!empty($duplicates[$i])) {
                             throw new Exception('Ferramenta repetida na linha ' . ($i + 1) . '. Uma ferramentas nao poder ser solicitada mais de uma vez');
                         }
+
                         $pivot =  new PivotEmprestimoFerramentas();
                         $pivot->id_emprestimo = $emprestimo->id;
                         $pivot->id_ferramenta = $param['ferramenta'][$i];
@@ -237,14 +227,9 @@ class EmprestimoFerramentasForm extends TPage
                             $qtdTools[] = $key->quantidade;
                         }
                         //Verifica se a quantidade solicitada for maior que a do estoque 
-                        if ($param['quantidade'][$i] <= $qtdTools[$i]) {
-                            $pivot->quantidade = $param['quantidade'][$i];
-                            $result = $qtdTools[$i] - $param['quantidade'][$i];//valor subtraido.
-                            $this->updateQuantidade($pivot->id_ferramenta, $result);
-                        } else {
+                        if ($param['quantidade'][$i] >= $qtdTools[$i]) {
                             throw new Exception(
                                 'A quantidade na ' . ($i + 1) . '° linha não pode ser maior que a disponível no estoque que é: ' . $qtdTools[$i]
-
                             );
                         } else {
                             $pivot->quantidade = $param['quantidade'][$i];
@@ -255,16 +240,13 @@ class EmprestimoFerramentasForm extends TPage
                     }
                 }
             }
-
             TTransaction::close();
             $this->fireEvents($param);
-
             new TMessage('info', 'Salvo com sucesso');
         } catch (Exception $e) // in case of exception
         {
             new TMessage('error', $e->getMessage());
             TTransaction::rollback();
-
             $this->fireEvents($param);
         }
     }
@@ -405,7 +387,6 @@ class EmprestimoFerramentasForm extends TPage
         } catch (Exception $e) {
             new TMessage('error', $e->getMessage());
         }
-
     }
     public static function onChange($param)
     {
