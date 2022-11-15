@@ -30,6 +30,7 @@ use Sabberworm\CSS\Value\Value;
 class AprovacaoSolicitacaoForm extends TPage
 {
     protected $form;
+    protected $subFormFirst;
     protected $fieldlist;
     protected $datagrid;
     protected $pageNavigation;
@@ -40,28 +41,43 @@ class AprovacaoSolicitacaoForm extends TPage
      */
     function __construct($param = null)
     {
+        TPage::include_css('app/resources/styles.css');
         parent::__construct();
 
         // creates the form
         $this->form = new BootstrapFormBuilder('form_SaleMultiValue');
         $this->form->setFormTitle('Aprovar solicitação de material');
 
+        $this->subFormFirst = new BootstrapFormBuilder('subFormFirst');
         // create the form fields
         $id             = new TEntry('id');
+        $id->class = 'emprestimo';
+        $id->style =
+            'border-radius: 0.25rem;
+        border-width: 1px;
+        border-style: solid;';
         $created             = new TDateTime('created_at');
+        $created->class = 'emprestimo';
+
         $status             = new TCombo('status');
-        $status->addItems(['Pendente' => 'Pendente', 'Efetuado' => 'Efetuado', 'Devolvido' => 'Devolvido', 'Não devolvido' => 'Não devolvido']);
+        $status->class = 'emprestimo';
+        $status->addItems(['PENDENTE' => 'PENDENTE', 'EFETUADO' => 'EFETUADO', 'DEVOLVIDO' => 'DEVOLVIDO']);
 
-        $ferramenta = new TDBCombo('ferramenta[]', 'bancodados', 'Ferramentas', 'id', '{id} - {nome}', 'id');
+         $ferramenta = new TDBCombo('ferramenta[]', 'bancodados', 'Ferramentas', 'id', '{id} - {nome}', 'id');
+        $ferramenta->class = 'emprestimo';
 
-        $quantidade = new TEntry('quantidade[]');
-        $qtdEmprestada = new TEntry('qtd_emprestada[]');
+
+        $quantidade = new TEntry('quantidade[]'); //quantidade de ferramentas solicitadas
+        $quantidade->class = 'emprestimo';
+
+        $qtdEmprestada = new TEntry('qtd_emprestada[]'); //quantidade de ferramentas a serem emprestadas. 
+        $qtdEmprestada->class = 'emprestimo';
 
         //Config dos campos
         $id->setSize('20%');
         $id->setEditable(FALSE);
 
-        $created->setSize('60%');
+        $created->setSize('95%');
         $created->setEditable(FALSE);
 
         $status->setSize('100%');
@@ -86,7 +102,7 @@ class AprovacaoSolicitacaoForm extends TPage
             [$labelInfo = new TLabel('Campos com asterisco (<font color="red">*</font>) são considerados campos obrigatórios')],
         );
 
-        $row = $this->form->addFields(
+        $row = $this->subFormFirst->addFields(
             [new TLabel('Id da solicitação')],
             [$id],
             [new TLabel('Data da solicitação')],
@@ -95,7 +111,8 @@ class AprovacaoSolicitacaoForm extends TPage
             [$status],
         );
         $row->style = 'margin-top:3rem;';
-        //$status->setValue('Efetuado');
+        $this->form->addContent([$this->subFormFirst]);
+        //$status->setValue('EFETUADO');
 
         //add itens ao field list
         $this->form->addField($ferramenta);
@@ -150,14 +167,13 @@ class AprovacaoSolicitacaoForm extends TPage
     }
     public function onSave($param)
     {
-        //echo "<pre>";var_dump($param['status'] == 'Pendente');exit;
         try {
             $this->form->validate();
             // open a transaction with database 'samples'
             TTransaction::open('bancodados');
             $usuarioLogado = TSession::getValue('userid');
-            if ($param['status'] == "Pendente") {
-                throw new Exception('Não pode aprovar uma solicitação com status "pendente"');
+            if ($param['status'] == "PENDENTE") {
+                throw new Exception('Não pode aprovar uma solicitação com status "PENDENTE"');
             } else {
                 //Verificando se é uma edição ou criação
                 if (isset($param["id"]) && !empty($param["id"])) {
@@ -202,6 +218,15 @@ class AprovacaoSolicitacaoForm extends TPage
                             );
                         } else {
                             $pivot->qtd_emprestada = $param['qtd_emprestada'][$i];
+
+                            if ($param['quantidade'][$i] != $param['qtd_emprestada'][$i]) {
+                                $result = ($tool[$i] + ($param['quantidade'][$i] - $param['qtd_emprestada'][$i])); //valor subtraido.
+                                $this->updateQuantidade($pivot->id_ferramenta, $result);
+                            }
+                            if ($param['status'] == "DEVOLVIDO") {
+                                $result = $tool[$i] + $param['qtd_emprestada'][$i]; //Devolvendo valor para banco.
+                                $this->updateQuantidade($pivot->id_ferramenta, $result);
+                            }
                         }
                         $pivot->store();
                     }
@@ -212,6 +237,24 @@ class AprovacaoSolicitacaoForm extends TPage
         } catch (Exception $e) // in case of exception
         {
             new TMessage('error', $e->getMessage());
+            TTransaction::rollback();
+        }
+    }
+    /**
+     * Atualizar a quantidade de ferramentas
+     * @var id id da ferramenta
+     * @var value valor da ferramenta a ser atualizado
+     */
+    public function updateQuantidade($id, $value)
+    {
+        try {
+            TTransaction::open('bancodados');
+            Ferramentas::where('id', '=', $id)
+                ->set('quantidade', $value)
+                ->update();
+            TTransaction::close();
+        } catch (Exception $e) {
+            new TMessage('error', 'Erro ao atualizar valor do banco <br>' . $e->getMessage());
             TTransaction::rollback();
         }
     }

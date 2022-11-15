@@ -18,7 +18,7 @@ class WelcomeView extends TPage
     {
         parent::__construct();
         
-        $html1 = new THtmlRenderer('app/templates/theme4/welcome_page.html');
+        $html1 = new THtmlRenderer('app/templates/theme3/welcome_page.html');
 
         // replace the main section variables
         $html1->enableSection('main', array());
