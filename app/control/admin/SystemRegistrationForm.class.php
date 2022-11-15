@@ -1,4 +1,7 @@
 <?php
+
+use Adianti\Control\TPage;
+
 /**
  * SystemRegistrationForm
  *
@@ -21,6 +24,7 @@ class SystemRegistrationForm extends TPage
     function __construct()
     {
         parent::__construct();
+        TPage::include_css('app/resources/styles.css');
         
         // creates the form
         $this->form = new BootstrapFormBuilder('form_registration');

@@ -42,8 +42,8 @@ class EmprestimoFerramentasForm extends TPage
 
         // create form and table container
         $this->form = new BootstrapFormBuilder('form_Emprestimo');
-        $this->form->setFormTitle("Solicitação de emprestimo");
-
+        $this->form->setFormTitle("<b>Solicitação de emprestimo</b>");
+        
         $this->subFormFirst = new BootstrapFormBuilder('subFormFirst');
         $this->subFormSecound = new BootstrapFormBuilder('subFormSecound');
 
@@ -101,16 +101,13 @@ class EmprestimoFerramentasForm extends TPage
             [$labelInfo = new TLabel('Campos com asterisco (<font color="red">*</font>) são considerados campos obrigatórios')],
         );
 
-        $row = $this->subFormFirst->addFields(
-            [new TLabel('id')],
+        $row = $this->form->addFields(
+            [new TLabel('<b>id</b>')],
             [$id],
-            [new TLabel('Data')],
+            [new TLabel('<b>Data</b>')],
             [$created],
         );
-        $this->subFormFirst->class = 'Emprestimo';
-        
-        $this->form->addContent([$this->subFormFirst]);
-
+        $this->form->id = 'Emprestimo';       
 
         // form actions
         $btnBack = $this->form->addActionLink(_t('Back'), new TAction(array('EmprestimoList', 'onReload')), 'far:arrow-alt-circle-left white');

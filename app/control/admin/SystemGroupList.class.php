@@ -24,6 +24,7 @@ class SystemGroupList extends TStandardList
     public function __construct()
     {
         parent::__construct();
+        TStandardList::include_css('app/resources/styles.css');
         
         parent::setDatabase('permission');            // defines the database
         parent::setActiveRecord('SystemGroup');   // defines the active record

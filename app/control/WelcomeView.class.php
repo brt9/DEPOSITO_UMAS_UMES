@@ -16,6 +16,7 @@ class WelcomeView extends TPage
      */
     function __construct()
     {
+        TPage::include_css('app/resources/styles.css');
         parent::__construct();
         
         $html1 = new THtmlRenderer('app\templates\theme3\welcome_page.html');
@@ -27,7 +28,7 @@ class WelcomeView extends TPage
         $panel1->add($html1);
      
         $vbox = TVBox::pack($panel1);
-        $vbox->style = 'display:block; width: 100%';
+        $vbox->style = 'display:block; width: 100%; margin-bottom: 10rem';
         
         // add the template to the page
         parent::add( $vbox );

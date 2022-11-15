@@ -5,19 +5,19 @@
     <icon>fas:home fa-fw</icon>
   </menuitem>
   <menuitem label="ESTOQUE">
-    <icon>fas:water fa-fw #0138ff</icon>
+    <icon>fas:water fa-fw</icon>
     <menu>
       <menuitem label="ESTOQUE">
         <action>CadastroList</action>
-        <icon>fas:water fa-fw #0138ff</icon>
+        <icon>fas:water fa-fw</icon>
       </menuitem>
       <menuitem label="CADASTRO DE PRODUTO">
         <action>CadastroForm</action>
-        <icon>fas:water fa-fw #0138ff</icon>
+        <icon>fas:water fa-fw</icon>
       </menuitem>
       <menuitem label="PEDIDO MATERIAL">
         <action>PedidoMaterial</action>
-        <icon>fas:water fa-fw #0138ff</icon>
+        <icon>fas:water fa-fw</icon>
       </menuitem>
     </menu>
   </menuitem>
@@ -49,21 +49,9 @@
         <action>SystemGroupList</action>
         <icon>fas:users fa-fw</icon>
       </menuitem>
-      <menuitem label="_t{Units}">
-        <action>SystemUnitList</action>
-        <icon>fas:university fa-fw</icon>
-      </menuitem>
       <menuitem label="_t{Users}">
         <action>SystemUserList</action>
         <icon>fas:user fa-fw</icon>
-      </menuitem>
-      <menuitem label="_t{Database explorer}">
-        <action>SystemDatabaseExplorer</action>
-        <icon>fas:database fa-fw</icon>
-      </menuitem>
-      <menuitem label="_t{SQL Panel}">
-        <action>SystemSQLPanel</action>
-        <icon>fas:table fa-fw</icon>
       </menuitem>
       <menuitem label="_t{Menu editor}">
         <action>SystemMenuEditor</action>
@@ -73,10 +61,6 @@
         <action>SystemFilesDiff</action>
         <icon>fas:file-medical-alt fa-fw</icon>
       </menuitem>
-      <menuitem label="PHP Info">
-        <action>SystemPHPInfoView</action>
-        <icon>fas:info-circle fa-fw</icon>
-      </menuitem>
       <menuitem label="System Information">
         <action>SystemInformationView</action>
         <icon>fas:desktop fa-fw</icon>
@@ -84,27 +68,6 @@
       <menuitem label="_t{Preferences}">
         <action>SystemPreferenceForm#method=onEdit</action>
         <icon>fas:cog fa-fw</icon>
-      </menuitem>
-    </menu>
-  </menuitem>
-  <menuitem label="_t{Documents}">
-    <icon>far:file-alt fa-fw</icon>
-    <menu>
-      <menuitem label="_t{Send document}">
-        <action>SystemDocumentUploadForm</action>
-        <icon>fas:cloud-upload-alt fa-fw</icon>
-      </menuitem>
-      <menuitem label="_t{My documents}">
-        <action>SystemDocumentList</action>
-        <icon>fas:archive fa-fw</icon>
-      </menuitem>
-      <menuitem label="_t{Shared with me}">
-        <action>SystemSharedDocumentList</action>
-        <icon>fas:share-alt fa-fw</icon>
-      </menuitem>
-      <menuitem label="_t{Categories}">
-        <action>SystemDocumentCategoryFormList</action>
-        <icon>fas:th fa-fw</icon>
       </menuitem>
     </menu>
   </menuitem>

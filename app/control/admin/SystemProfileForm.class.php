@@ -1,4 +1,7 @@
 <?php
+
+use Adianti\Control\TPage;
+
 /**
  * SystemProfileForm
  *
@@ -16,6 +19,7 @@ class SystemProfileForm extends TPage
     public function __construct()
     {
         parent::__construct();
+        TPage::include_css('app/resources/styles.css');
         
         $this->form = new BootstrapFormBuilder;
         $this->form->setFormTitle(_t('Profile'));

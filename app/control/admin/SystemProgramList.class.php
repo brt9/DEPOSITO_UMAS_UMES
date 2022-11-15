@@ -1,4 +1,7 @@
 <?php
+
+use Adianti\Base\TStandardList;
+
 /**
  * SystemProgramList
  *
@@ -23,6 +26,7 @@ class SystemProgramList extends TStandardList
      */
     public function __construct()
     {
+        TStandardList::include_css('app/resources/styles.css');
         parent::__construct();
         
         parent::setDatabase('permission');            // defines the database

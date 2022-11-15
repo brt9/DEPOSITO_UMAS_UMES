@@ -98,7 +98,7 @@ class EmprestimoList extends TStandardList
 
     // CRIA AS COLUNAS DA GRADE DE DADOS
 
-    $column_id = new TDataGridColumn('id', 'Id', 'center', 50);
+    $column_id = new TDataGridColumn('id', 'Numeração', 'center', 50);
     $column_usuario = new TDataGridColumn('User->name', 'Usuário', 'center');
     $column_status = new TDataGridColumn('status', 'Status', 'center');
     $column_created = new TDataGridColumn('created_at', 'Data da solicitação', 'center');
@@ -109,6 +109,16 @@ class EmprestimoList extends TStandardList
     $this->datagrid->addColumn($column_status);
     $this->datagrid->addColumn($column_created);
     $this->datagrid->disableDefaultClick();
+
+/*     $column_status->setTransformer( function($value, $object, $row) {
+      $class = ($value=='PENDENTE') ? 'danger' : 'success';
+      $label = ($value=='PENDENTE') ? _t('No') : _t('Yes');
+      $div = new TElement('span');
+      $div->class="label label-{$class}";
+      $div->style="text-shadow:none; font-size:12px; font-weight:lighter";
+      $div->add($label);
+      return $div;
+  }); */
 
     // Action edit
     $action_edit = new TDataGridAction(array('EmprestimoFerramentasForm', 'onEdit'));

@@ -23,6 +23,7 @@ class FerramentasList extends TStandardList
 
   public function __construct()
   {
+    TStandardList::include_css('app/resources/styles.css');
     parent::__construct();
 
     parent::setDatabase('bancodados');            // Define o banco de dados
@@ -52,9 +53,9 @@ class FerramentasList extends TStandardList
 
     // Ações do fomulário
     $btn = $this->form->addAction('Buscar', new TAction(array($this, 'onSearch')), 'fa:search white');
-    $btn->style = 'background-color:#2c7097; color:white';
+    $btn->style = 'background-color:#2c7097; color:white; border-radius: 0.5rem;';
     $btn = $this->form->addAction("Cadastrar Ferramenta", new TAction(array('CadastroFerramentasForm', "onEdit")), "fa:plus-circle white");
-    $btn->style = 'background-color:#218231; color:white';
+    $btn->style = 'background-color:#218231; color:white; border-radius: 0.5rem;';
 
     //Datagrid
     $this->datagrid = new BootstrapDatagridWrapper(new TDataGrid);
