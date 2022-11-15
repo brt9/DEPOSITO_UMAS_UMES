@@ -14,6 +14,7 @@ use Adianti\Widget\Form\THidden;
 use Adianti\Widget\Form\TSpinner;
 use Adianti\Widget\Wrapper\TDBCombo;
 use Adianti\Widget\Wrapper\TDBUniqueSearch;
+use Adianti\Wrapper\BootstrapFormBuilder;
 use Sabberworm\CSS\Value\Value;
 
 /**
@@ -29,32 +30,59 @@ use Sabberworm\CSS\Value\Value;
 class EmprestimoFerramentasForm extends TPage
 {
     protected $form;
+    protected $subFormFirst;
+    protected $subFormSecound;
     protected $fieldlist;
     protected $html;
 
     public function __construct()
     {
+        TPage::include_css('app/resources/styles.css');
         parent::__construct();
 
         // create form and table container
         $this->form = new BootstrapFormBuilder('form_Emprestimo');
         $this->form->setFormTitle("Solicitação de emprestimo");
 
+        $this->subFormFirst = new BootstrapFormBuilder('subFormFirst');
+        $this->subFormSecound = new BootstrapFormBuilder('subFormSecound');
+
         $id             = new TEntry('id');
+        $id->class = 'emprestimo';
+        $id->setEditable(FALSE);
+        $id->setSize('20%');
+
         $created             = new TDateTime('created_at');
+        $created->class = 'emprestimo';
+
+        $created->setEditable(FALSE);
+        $created->setSize('40%');
+
         $ferramenta = new TDBCombo('ferramenta[]', 'bancodados', 'Ferramentas', 'id', '{id} - {nome}', 'id');
+        $ferramenta->class = 'emprestimo';
+        $ferramenta->style =
+            'border-radius: 0.25rem;
+            border-width: 1px;
+            border-style: solid;';
+
         $quantidade = new TEntry('quantidade[]');
+        $quantidade->style =
+            'border-radius: 0.25rem;
+            border-width: 1px;
+            border-style: solid;';
+
         $quantidadeDisponivel = new TCombo('quantidadeDisponivel');
+        $quantidadeDisponivel->class = 'emprestimo';
+        $quantidadeDisponivel->style =
+            'border-radius: 0.25rem;
+            border-width: 1px;
+            border-style: solid;';
 
         $ferramenta->placeholder = 'Pesquise pela ferramenta desejada';
         $ferramenta->enableSearch();
         $ferramenta->setSize('100%');
         $quantidade->setSize('100%');
         $quantidadeDisponivel->setSize('100%');
-        $created->setEditable(FALSE);
-        $id->setEditable(FALSE);
-        $id->setSize('20%');
-        $created->setSize('70%');
         $quantidadeDisponivel->setEditable(FALSE);
         $ferramenta->setChangeAction(new TAction(array($this, 'onChange')));
 
@@ -66,19 +94,23 @@ class EmprestimoFerramentasForm extends TPage
         $this->fieldlist->addField('<b>Ferramenta</b><font color="red">*</font>',  $ferramenta,  ['width' => '70%']);
         $this->fieldlist->addField('<b>Quantidade</b><font color="red">*</font>',   $quantidade,   ['width' => '10%']);
         $this->fieldlist->addField('<b>Quantidade disponível</b><font color="red">*</font>',   $quantidadeDisponivel,   ['width' => '10%']);
+        $this->subFormSecound->addField($ferramenta);
+        $this->subFormSecound->addField($quantidade);
 
         $row = $this->form->addFields(
             [$labelInfo = new TLabel('Campos com asterisco (<font color="red">*</font>) são considerados campos obrigatórios')],
         );
 
-        $this->form->addFields(
+        $row = $this->subFormFirst->addFields(
             [new TLabel('id')],
             [$id],
             [new TLabel('Data')],
             [$created],
         );
-        $this->form->addField($ferramenta);
-        $this->form->addField($quantidade);
+        $this->subFormFirst->class = 'Emprestimo';
+        
+        $this->form->addContent([$this->subFormFirst]);
+
 
         // form actions
         $btnBack = $this->form->addActionLink(_t('Back'), new TAction(array('EmprestimoList', 'onReload')), 'far:arrow-alt-circle-left white');
