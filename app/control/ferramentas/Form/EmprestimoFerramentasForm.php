@@ -122,7 +122,7 @@ class EmprestimoFerramentasForm extends TPage
 
         // wrap the page content using vertical box
         $vbox = new TVBox;
-        $vbox->style = 'width: 100%;';
+        $vbox->style = 'width: 100%; margin-top: 2rem';
         $vbox->add($this->form);
         parent::add($vbox);
     }
@@ -227,7 +227,7 @@ class EmprestimoFerramentasForm extends TPage
                             $qtdTools[] = $key->quantidade;
                         }
                         //Verifica se a quantidade solicitada for maior que a do estoque 
-                        if ($param['quantidade'][$i] >= $qtdTools[$i]) {
+                        if ($param['quantidade'][$i] >= $qtdTools[$i] or ($param['quantidade'][$i] < 0 )) {
                             throw new Exception(
                                 'A quantidade na ' . ($i + 1) . '° linha não pode ser maior que a disponível no estoque que é: ' . $qtdTools[$i]
                             );

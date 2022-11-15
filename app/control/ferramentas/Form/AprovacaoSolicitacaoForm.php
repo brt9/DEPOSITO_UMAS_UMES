@@ -73,7 +73,7 @@ class AprovacaoSolicitacaoForm extends TPage
         $qtdEmprestada->class = 'emprestimo';
 
         //Config dos campos
-        $id->setSize('20%');
+        $id->setSize('50%');
         $id->setEditable(FALSE);
 
         $created->setSize('95%');
