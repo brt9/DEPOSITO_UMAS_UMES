@@ -1221,3 +1221,37 @@ div[form=form_login] .fb-inline-field-container
         margin-left:15px;
     }
 }
+
+
+/* custom deposito */
+a#logo-header {
+    background: #15202B;
+}
+section.sidebar {
+    background: #15202B;
+}
+nav#navbar-custom {
+    background-color: #e2e2e2 !important;
+}
+li.header {
+    background-color: #15202b !important;
+    color: white !important;
+}
+aside.main-sidebar {
+    background: #15202B !important;
+}
+nav#navbar-custom {
+    background-color: #e2e2e2 !important;
+}
+a#sidebar-custom {
+    color: black !important;
+}
+.skin-blue .main-header .navbar .nav>li>a {
+    color: #000 !important;
+}
+.skin-blue .main-header .navbar .sidebar-toggle:hover {
+    background: rgba(0,0,0,0.1) !important;
+}
+section#adianti_content {
+    background-color: #e2e2e2e3;
+}
