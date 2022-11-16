@@ -248,9 +248,8 @@ class EmprestimoFerramentasForm extends TPage
                 }
             }
             TTransaction::close();
-            $this->fireEvents($param);
-
-            new TMessage('info', 'Salvo com sucesso');
+            $action = new TAction(array('EmprestimoList', 'onReload'));
+            new TMessage('info', 'Salvo com sucesso', $action);
         } catch (Exception $e) // in case of exception
         {
             new TMessage('error', $e->getMessage());
