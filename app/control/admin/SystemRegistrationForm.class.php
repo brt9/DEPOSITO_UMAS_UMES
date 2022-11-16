@@ -57,12 +57,12 @@ class SystemRegistrationForm extends TPage
         $email->setSize('100%');
         $matricula->setSize('100%');
         
-        $this->form->addFields( [new TLabel(_t('Login'), 'red')],    [$login] );
-        $this->form->addFields( [new TLabel(_t('Name'), 'red')],     [$name] );
-        $this->form->addFields( [new TLabel(_t('Email'), 'red')],    [$email] );
-        $this->form->addFields( [new TLabel(('Matricula'), 'red')],    [$matricula] );
-        $this->form->addFields( [new TLabel(_t('Password'), 'red')], [$password] );
-        $this->form->addFields( [new TLabel(_t('Password confirmation'), 'red')], [$repassword] );
+        $this->form->addFields( [new TLabel('Login <font color="red">*</font>')],    [$login] );
+        $this->form->addFields( [new TLabel('Nome <font color="red">*</font>')],     [$name] );
+        $this->form->addFields( [new TLabel('Email <font color="red">*</font>')],    [$email] );
+        $this->form->addFields( [new TLabel('Matricula <font color="red">*</font>')],    [$matricula] );
+        $this->form->addFields( [new TLabel('Senha <font color="red">*</font>')], [$password] );
+        $this->form->addFields( [new TLabel('Confirmar senha <font color="red">*</font>')], [$repassword] );
         
         // add the container to the page
         $wrapper = new TElement('div');

@@ -313,7 +313,7 @@ ul.navbar-top-links .open>a:focus {
 }
 
 .panel-footer {
-    background: initial;
+    background: #e2e2e2e3;
 }
 
 .panel-footer:last-child {
@@ -1283,4 +1283,8 @@ a#sidebar-custom {
 
 section#adianti_content {
     background-color: #e2e2e2e3;
+}
+
+footer.main-footer {
+    display: none !important;
 }
