@@ -1,4 +1,7 @@
 <?php
+
+use Adianti\Base\TStandardForm;
+
 /**
  * SystemGroupForm
  *
@@ -22,6 +25,7 @@ class SystemGroupForm extends TPage
     function __construct()
     {
         parent::__construct();
+        TStandardForm::include_css('app/resources/styles.css');
         
         // creates the form
         $this->form = new BootstrapFormBuilder('form_System_group');

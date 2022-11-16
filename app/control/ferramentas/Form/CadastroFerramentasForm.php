@@ -1,6 +1,7 @@
 <?php
 
 use Adianti\Base\TStandardForm;
+use Adianti\Control\TPage;
 use Adianti\Registry\TSession;
 use Adianti\Widget\Dialog\TMessage;
 use Adianti\Widget\Form\TDateTime;
@@ -30,6 +31,7 @@ class CadastroFerramentasForm extends TPage
      */
     public function __construct()
     {
+        TPage::include_css('app/resources/styles.css');
         parent::__construct();
 
         $this->form = new BootstrapFormBuilder;
@@ -38,15 +40,23 @@ class CadastroFerramentasForm extends TPage
 
         // create the form fields
         $id = new TEntry('id');
+        $id->class = 'emprestimo';
+        
         $created = new TEntry('created');
+        $created->class = 'emprestimo';
+        
         $nomeFerramenta = new TEntry('nome');
+        $nomeFerramenta->class = 'emprestimo';
+        
         $quantidade    = new TSpinner('quantidade');
+        $quantidade->class = 'emprestimo';
 
         // add the fields inside the form
         $row = $this->form->addFields(
             [$labelInfo = new TLabel('Campos com asterisco (<font color="red">*</font>) são considerados campos obrigatórios')],
         );
-
+        $row->style = 'text-align: center';
+        
         $row = $this->form->addFields(
 
             [new TLabel('Id')],
@@ -67,16 +77,8 @@ class CadastroFerramentasForm extends TPage
         );
         $row->style = 'align-items: center';
 
-        $row = $this->form->addFields(
-            [$labelInfo = new TLabel('<font color="red">ATENÇÃO</font> Ao cadastrar uma ferramenta, 
-            caso queira continuar cadastrando outras ferramentas, basta clicar no botão de "Limpar"
-            e continuar cadastrando')],
-        );
-        $row->style = 'margin-top: 3rem; text-align: center';
 
         //Style in form
-        $labelFerramenta->setTip('Campo obrigatório');
-        $labelQuantidade->setTip('Campo obrigatório');
         $labelFerramenta->style = 'left: -100%;';
         $id->setSize('20%');
         $created->setSize('60%');
@@ -87,15 +89,15 @@ class CadastroFerramentasForm extends TPage
 
         // define the form action 
         $btnBack = $this->form->addActionLink(_t('Back'), new TAction(array('FerramentasList', 'onReload')), 'far:arrow-alt-circle-left White');
-        $btnBack->style = 'background-color:gray; color:white';
+        $btnBack->style = 'background-color:gray; color:white; border-radius: 0.5rem;';
         $btnClear = $this->form->addAction(_t('Clear'), new TAction([$this, 'onClear']), 'fa:eraser White');
-        $btnClear->style = 'background-color:#c73927; color:white';
+        $btnClear->style = 'background-color:#c73927; color:white; border-radius: 0.5rem;';
         $btnSave = $this->form->addAction(_t('Save'), new TAction([$this, 'onSave']), 'fa:save White');
-        $btnSave->style = 'background-color:#218231; color:white';
+        $btnSave->style = 'background-color:#218231; color:white; border-radius: 0.5rem;';
 
         // wrap the page content using vertical box
         $vbox = new TVBox;
-        $vbox->style = 'width: 100%';
+        $vbox->style = 'width: 100%; margin-top:2rem';
         $vbox->add($this->form);
         parent::add($vbox);
     }

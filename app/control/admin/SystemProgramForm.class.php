@@ -1,4 +1,7 @@
 <?php
+
+use Adianti\Base\TStandardForm;
+
 /**
  * SystemProgramForm
  *
@@ -18,7 +21,8 @@ class SystemProgramForm extends TStandardForm
      * Creates the page and the registration form
      */
     function __construct($param)
-    {
+    {   
+        TStandardForm::include_css('app/resources/styles.css');
         parent::__construct();
                 
         // creates the form

@@ -1,4 +1,7 @@
 <?php
+
+use Adianti\Control\TPage;
+
 /**
  * SystemProfileView
  *
@@ -14,6 +17,7 @@ class SystemProfileView extends TPage
     public function __construct()
     {
         parent::__construct();
+        TPage::include_css('app/resources/styles.css');
         
         $html = new THtmlRenderer('app/resources/system_profile.html');
         $replaces = array();

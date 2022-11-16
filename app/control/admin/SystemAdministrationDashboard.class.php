@@ -1,4 +1,7 @@
 <?php
+
+use Adianti\Control\TPage;
+
 /**
  * SystemAdministrationDashboard
  *
@@ -18,6 +21,7 @@ class SystemAdministrationDashboard extends TPage
     function __construct()
     {
         parent::__construct();
+        TPage::include_css('app/resources/styles.css');
         
         try
         {

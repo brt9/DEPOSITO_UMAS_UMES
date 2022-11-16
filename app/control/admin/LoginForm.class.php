@@ -20,6 +20,7 @@ class LoginForm extends TPage
      */
     function __construct($param)
     {
+        TPage::include_css('app/resources/styles.css');
         parent::__construct();
 
         $ini  = AdiantiApplicationConfig::get();

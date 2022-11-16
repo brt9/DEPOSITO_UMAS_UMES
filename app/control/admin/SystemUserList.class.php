@@ -24,6 +24,7 @@ class SystemUserList extends TStandardList
     public function __construct()
     {
         parent::__construct();
+        TStandardList::include_css('app/resources/styles.css');
         
         $ini  = AdiantiApplicationConfig::get();
         

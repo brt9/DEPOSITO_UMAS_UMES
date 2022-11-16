@@ -1,4 +1,6 @@
 <?php
+
+use Adianti\Control\TPage;
 use \Firebase\JWT\JWT;
 
 /**
@@ -22,6 +24,7 @@ class SystemRequestPasswordResetForm extends TPage
     function __construct($param)
     {
         parent::__construct();
+        TPage::include_css('app/resources/styles.css');
         
         $this->style = 'clear:both';
         // creates the form

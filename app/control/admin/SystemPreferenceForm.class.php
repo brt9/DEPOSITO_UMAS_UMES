@@ -1,4 +1,7 @@
 <?php
+
+use Adianti\Base\TStandardForm;
+
 /**
  * SystemPreferenceForm
  *
@@ -20,6 +23,7 @@ class SystemPreferenceForm extends TStandardForm
     function __construct()
     {
         parent::__construct();
+        TStandardForm::include_css('app/resources/styles.css');
         
         $this->setDatabase('permission');
         $this->setActiveRecord('SystemPreference');

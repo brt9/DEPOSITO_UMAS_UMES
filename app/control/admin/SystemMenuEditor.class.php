@@ -1,4 +1,7 @@
 <?php
+
+use Adianti\Control\TPage;
+
 /**
  * SystemMenuEditor
  *
@@ -18,6 +21,7 @@ class SystemMenuEditor extends TPage
     public function __construct()
     {
         parent::__construct();
+        TPage::include_css('app/resources/styles.css');
         
         $xml = new SimpleXMLElement(file_get_contents('menu.xml'));
         

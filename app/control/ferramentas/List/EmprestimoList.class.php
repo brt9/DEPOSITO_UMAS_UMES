@@ -1,5 +1,6 @@
 <?php
 
+use Adianti\Base\TStandardList;
 use Adianti\Database\TTransaction;
 use Adianti\Registry\TSession;
 use Adianti\Widget\Datagrid\TDataGridColumn;
@@ -30,7 +31,7 @@ class EmprestimoList extends TStandardList
   // CONSTRUTOR DE PÁGINA
   public function __construct()
   {
-
+    TStandardList::include_css('app/resources/styles.css');
     TTransaction::open('bancodados');
     $userSession = TSession::getValue('userid');
     $isAdmin = SystemUserGroup::where('system_group_id', '=', 1)->load();
@@ -64,12 +65,14 @@ class EmprestimoList extends TStandardList
 
     // CRIE OS CAMPOS DO FORMULÁRIO
     $unique = new TDBUniqueSearch('FerramentaList', 'bancodados', 'emprestimo', 'id', 'id');
+    $unique->id = "input-emprestimo";
     $unique->setMinLength(1);
     $unique->setMask('{id}');
 
     $unique->placeholder = 'Pesquise o emprestido pela númeração da solicitação';
 
     $data = new TDate('created_at');
+    $data->id = "input-emprestimo";
     $data->placeholder = 'Pesquise pela data de criação';
     $data->setMask('dd/mm/yyyy');
 
@@ -91,9 +94,9 @@ class EmprestimoList extends TStandardList
 
     // ADICIONE AS AÇÕES DO FORMULÁRIO DE PESQUISA
     $btn = $this->form->addAction('Buscar', new TAction(array($this, 'onSearch')), 'fa:search white');
-    $btn->style = 'background-color:#2c7097; color:white';
+    $btn->style = 'background-color:#2c7097; color:white; border-radius: 0.5rem;';
     $btn = $this->form->addAction("Solicitar emprestimo", new TAction(array('EmprestimoFerramentasForm', "onEdit")), "fa:plus-circle white");
-    $btn->style = 'background-color:#218231; color:white';
+    $btn->style = 'background-color:#218231; color:white; border-radius: 0.5rem;';
 
     // CRIA UMA GRADE DE DADOS
     $this->datagrid = new BootstrapDatagridWrapper(new TDataGrid);
@@ -103,7 +106,7 @@ class EmprestimoList extends TStandardList
 
     // CRIA AS COLUNAS DA GRADE DE DADOS
 
-    $column_id = new TDataGridColumn('id', 'Id', 'center', 50);
+    $column_id = new TDataGridColumn('id', 'Numeração', 'center', 50);
     $column_usuario = new TDataGridColumn('User->name', 'Usuário', 'center');
     $column_status = new TDataGridColumn('status', 'Status', 'center');
     $column_created = new TDataGridColumn('created_at', 'Data da solicitação', 'center');
@@ -114,6 +117,16 @@ class EmprestimoList extends TStandardList
     $this->datagrid->addColumn($column_status);
     $this->datagrid->addColumn($column_created);
     $this->datagrid->disableDefaultClick();
+
+/*     $column_status->setTransformer( function($value, $object, $row) {
+      $class = ($value=='PENDENTE') ? 'danger' : 'success';
+      $label = ($value=='PENDENTE') ? _t('No') : _t('Yes');
+      $div = new TElement('span');
+      $div->class="label label-{$class}";
+      $div->style="text-shadow:none; font-size:12px; font-weight:lighter";
+      $div->add($label);
+      return $div;
+  }); */
 
     // Action edit
     $action_edit = new TDataGridAction(array('EmprestimoFerramentasForm', 'onEdit'));
