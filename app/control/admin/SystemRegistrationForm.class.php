@@ -60,12 +60,12 @@ class SystemRegistrationForm extends TPage
        
 
 
-        $this->form->addFields( [new TLabel(('Login<font color="red"> *</font>'), 'red')],    [$login] );
-        $this->form->addFields( [new TLabel(('Nome<font color="red"> *</font>'), 'red')],     [$name] );
-        $this->form->addFields( [new TLabel(('Email<font color="red"> *</font>'), 'red')],    [$email] );
-        $this->form->addFields( [new TLabel(('Matrícula<font color="red">*</font>'), 'red')],    [$matricula] );
-        $this->form->addFields( [new TLabel(('Senha<font color="red"> *</font>'), 'red')], [$password] );
-        $this->form->addFields( [new TLabel(('Confirma Senha<font color="red"> *</font>'), 'red')], [$repassword] );
+        $this->form->addFields( [new TLabel('Login<font color="red"> *</font>')],    [$login] );
+        $this->form->addFields( [new TLabel('Nome<font color="red"> *</font>')],     [$name] );
+        $this->form->addFields( [new TLabel('Email<font color="red"> *</font>')],    [$email] );
+        $this->form->addFields( [new TLabel('Matrícula<font color="red">*</font>')],    [$matricula] );
+        $this->form->addFields( [new TLabel('Senha<font color="red"> *</font>')], [$password] );
+        $this->form->addFields( [new TLabel('Confirma Senha<font color="red"> *</font>')], [$repassword] );
 
 
         $login->placeholder = 'Login';
