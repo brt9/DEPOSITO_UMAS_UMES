@@ -5,11 +5,9 @@ use Adianti\Control\TAction;
 use Adianti\Control\TPage;
 use Adianti\Database\TTransaction;
 use Adianti\Registry\TSession;
-
 use Adianti\Widget\Dialog\TMessage;
 use Adianti\Widget\Form\TCombo;
 use Adianti\Widget\Form\TDate;
-
 use Adianti\Widget\Form\TDateTime;
 use Adianti\Widget\Form\TEntry;
 use Adianti\Widget\Form\THidden;
@@ -35,9 +33,7 @@ class EmprestimoFerramentasForm extends TPage
     protected $subFormFirst;
     protected $subFormSecound;
     protected $fieldlist;
-
     protected $html;
-
 
     public function __construct()
     {
@@ -128,7 +124,6 @@ class EmprestimoFerramentasForm extends TPage
         parent::add($vbox);
     }
     /**
-
      * Metodo identifica se criando ou editando e colocar itens no formulário.
      * @var param request
      * @return View forms 
@@ -173,7 +168,6 @@ class EmprestimoFerramentasForm extends TPage
      * Metodo para salvar solicitação
      * @var param
      * @return void 
-
      */
     public function onSave($param)
     {
@@ -183,12 +177,10 @@ class EmprestimoFerramentasForm extends TPage
             TTransaction::open('bancodados');
 
             $usuarioLogado = TSession::getValue('userid');
-
             $duplicates = $this->getDuplicates($param['ferramenta']);
             if (($param['ferramenta'] == [""]) || ($param['quantidade'] == ['0'])) {
                 throw new Exception('Campo obrigatorio não pode ser vazio');
             } else {
-
                 //Verificando se é uma edição ou criação
                 if (isset($param["id"]) && !empty($param["id"])) {
                     $emprestimo = new Emprestimo($param["id"]);
@@ -213,7 +205,6 @@ class EmprestimoFerramentasForm extends TPage
                 if (isset($ferramentas)) {
                     for ($i = 0; $i < count($ferramentas); $i++) {
 
-
                         if (empty($param['quantidade'][$i])) {
                             throw new Exception('A quantidade está vazia na linha ' . ($i + 1));
                         }
@@ -236,7 +227,6 @@ class EmprestimoFerramentasForm extends TPage
                         if ($param['quantidade'][$i] >= $qtdTools[$i] or ($param['quantidade'][$i] < 0 )) {
                             throw new Exception(
                                 'A quantidade na ' . ($i + 1) . '° linha não pode ser maior que a disponível no estoque que é: ' . $qtdTools[$i]
-
                             );
                         } else {
                             $pivot->quantidade = $param['quantidade'][$i];
@@ -254,7 +244,6 @@ class EmprestimoFerramentasForm extends TPage
         {
             new TMessage('error', $e->getMessage());
             TTransaction::rollback();
-
             $this->fireEvents($param);
         }
     }
@@ -395,7 +384,6 @@ class EmprestimoFerramentasForm extends TPage
         } catch (Exception $e) {
             new TMessage('error', $e->getMessage());
         }
-
     }
     public static function onChange($param)
     {

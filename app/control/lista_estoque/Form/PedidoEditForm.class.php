@@ -49,13 +49,20 @@ class PedidoEditForm extends TPage
         $created             = new TDateTime('created_at');
         $id_item = new TDBCombo('id_item[]', 'bancodados', 'lista', 'id_item', '{id_item} {descricao}');
         $quantidade = new TEntry('quantidade[]');
-        $quantidade_fornecida = new TEntry('quantidade_fornecida[]');
+        $quantidadeDisponivel = new TCombo('quantidadeDisponivel');
+        $quantidadeDisponivel->class = '';
+        $quantidadeDisponivel->style =
+            'border-radius: 0.25rem;
+            border-width: 1px;
+            border-style: solid;';
         $status = new TEntry('status');
         TTransaction::open('bancodados');
         $pedido = pedido::find($param['id']);
+      
         TTransaction::close();
 
-
+        $quantidadeDisponivel->setSize('100%');
+        $quantidadeDisponivel->setEditable(FALSE);
         //Config dos campos
         $id->setSize('20%');
         $id->setEditable(FALSE);
@@ -63,10 +70,13 @@ class PedidoEditForm extends TPage
         $created->setSize('100%');
         $created->setEditable(FALSE);
 
+        $id_item->setChangeAction(new TAction(array($this, 'onChange')));
+      
         $id_item->setSize('100%');
         $id_item->enableSearch();
         $quantidade->setSize('100%');
         $status->setEditable(FALSE);
+
         //add field 
         $this->fieldlist = new TFieldList;
 
@@ -82,7 +92,7 @@ class PedidoEditForm extends TPage
         $this->fieldlist->name  = 'my_field_list';
         $this->fieldlist->addField('<b>ITEM</b><font color="red">*</font>',  $id_item,  ['width' => '90%'], new TRequiredValidator);
         $this->fieldlist->addField('<b>Qtd solicitada</b><font color="red">*</font>',   $quantidade,   ['width' => '100%'], new TRequiredValidator);
-
+        $this->fieldlist->addField('<b>Quantidade disponível</b><font color="red">*</font>',   $quantidadeDisponivel,   ['width' => '10%']);
         $row = $this->form->addFields(
             [$labelInfo = new TLabel('Campos com asterisco (<font color="red">*</font>) são considerados campos obrigatórios')],
         );
@@ -115,6 +125,8 @@ class PedidoEditForm extends TPage
         $container->add($this->form);
 
         parent::add($container);
+
+    
     }
 
     public function onEdit($param)
@@ -133,7 +145,6 @@ class PedidoEditForm extends TPage
                         $obj = new stdClass;
                         $obj->id_item = $value->id_item;
                         $obj->quantidade = $value->quantidade;
-
                         $this->fieldlist->addDetail($obj);
                     }
                     if ($pedido->status == "PENDENTE") {
@@ -141,6 +152,7 @@ class PedidoEditForm extends TPage
                     }
                 }
                 // add field list to the form
+                $this->onChange(array($pivot[0]->id_item));
                 $this->form->addContent([$this->fieldlist]);
                 TTransaction::close();
             } else {
@@ -199,5 +211,15 @@ class PedidoEditForm extends TPage
             new TMessage('error', $e->getMessage());
             TTransaction::rollback();
         }
+    }
+    public static function onChange($param)
+    {
+        TTransaction::open('bancodados');
+        empty($param['id_item']) ? $id_item = $param : $id_item = $param['id_item'];
+        $id_item = lista::where('id_item', 'in', $id_item)->load();
+        $obj = new stdClass;
+        $obj->quantidade_estoque = $id_item[0]->quantidade_estoque;
+        TCombo::reload('form_SaleMultiValue', 'quantidadeDisponivel', $obj);
+        TTransaction::close();
     }
 }

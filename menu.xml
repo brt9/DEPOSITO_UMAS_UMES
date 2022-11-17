@@ -15,6 +15,10 @@
         <action>CadastroForm</action>
         <icon>fas:water fa-fw</icon>
       </menuitem>
+      <menuitem label="CADASTRO DE PRODUTOS">
+        <action>CadastroForm</action>
+        <icon>fas:water fa-fw #0138ff</icon>
+      </menuitem>
       <menuitem label="PEDIDO MATERIAL">
         <action>PedidoMaterial</action>
         <icon>fas:water fa-fw</icon>

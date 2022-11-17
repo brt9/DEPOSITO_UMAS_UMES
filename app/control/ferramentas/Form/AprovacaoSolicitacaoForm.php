@@ -63,8 +63,9 @@ class AprovacaoSolicitacaoForm extends TPage
         $status->class = 'emprestimo';
         $status->addItems(['PENDENTE' => 'PENDENTE', 'EFETUADO' => 'EFETUADO', 'DEVOLVIDO' => 'DEVOLVIDO']);
 
-        $ferramenta = new TDBCombo('ferramenta[]', 'bancodados', 'Ferramentas', 'id', '{id} - {nome}', 'id');
+         $ferramenta = new TDBCombo('ferramenta[]', 'bancodados', 'Ferramentas', 'id', '{id} - {nome}', 'id');
         $ferramenta->class = 'emprestimo';
+
 
         $quantidade = new TEntry('quantidade[]'); //quantidade de ferramentas solicitadas
         $quantidade->class = 'emprestimo';
