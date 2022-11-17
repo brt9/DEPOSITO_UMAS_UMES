@@ -55,7 +55,7 @@ class PedidoMaterial extends TPage
             'border-radius: 0.25rem;
             border-width: 1px;
             border-style: solid;';
-        $id_item->setChangeAction(new TAction(array($this, 'onChange')));
+      
       
         $id->setEditable(FALSE);
         $this->descricao->setSize('100%');
@@ -104,7 +104,6 @@ class PedidoMaterial extends TPage
         $row =  $this->fieldlist->addDetail(new stdClass);
         $this->fieldlist->addHeader();
         $this->fieldlist->addCloneAction();
-
 
         //$id_status->setEditable(FALSE);
         //$id_usuario->setEditable(FALSE);
@@ -211,11 +210,9 @@ class PedidoMaterial extends TPage
                 }, $param['id_item']);
 
 
-
                 if (isset($id_item)) {
                     for ($i = 0; $i < count($id_item); $i++) {
 
-                        var_dump($id_item);
                         if (empty($param['quantidade'][$i])) {
                             throw new Exception('A quantidade está vazia na linha ' . ($i + 1));
                         }
@@ -229,19 +226,18 @@ class PedidoMaterial extends TPage
                         $pivot = new pivot();
                         $pivot->id_pedido_material = $object->id;
                         $pivot->id_item  = $id_item[$i];
-                        $pivot->quantidade  = $quantidade[$i];
+                        $pivot->quantidade  = $param['quantidade'][$i];
 
                         $tools = lista::where('id_item', 'in', $id_item)->load();
                         $qtdTools = [];
                         foreach ($tools as $key) {
-                            $qtdTools[] = $key->quantidade;
+                            $qtdTools[] = $key->quantidade_estoque;
                         }   
                         
                         //Verifica se a quantidade solicitada for maior que a do estoque 
-                        if ($param['quantidade'][$i] <= $qtdTools[$i]) {
-                            $pivot->quantidade_estoque = $param['quantidade'][$i];
-                            $result = $qtdTools[$i] - $param['quantidade'][$i];//valor subtraido.
-                            $this->updateQuantidade($pivot->id_item, $result);
+                        if ($param['quantidade'][$i] >= $qtdTools[$i] or $param['quantidade'][$i] < 0) {
+                            throw new Exception(
+                                'A quantidade na ' . ($i + 1) . '° linha não pode ser maior que a disponível no estoque que é: ' . $qtdTools[$i]);
                         } 
                         else {
                             $pivot->quantidade_estoque = $param['quantidade'][$i];
@@ -251,13 +247,12 @@ class PedidoMaterial extends TPage
                         $pivot->store();
                     }
                 }
-            //*/
             }
           
             TTransaction::close(); // close the transaction
-            $this->fireEvents($param);
-
-            new TMessage('info', TAdiantiCoreTranslator::translate('Record saved'));
+            $action = new TAction(array(PeididoList, 'onReload'));
+            
+            new TMessage('info', TAdiantiCoreTranslator::translate('Record saved'),$action);
         } catch (Exception $e) // in case of exception
         {
             new TMessage('error', $e->getMessage());
@@ -294,19 +289,20 @@ class PedidoMaterial extends TPage
     {
     }
     public function fireEvents($param)
-    {
-     /*   if (!empty($param['id'])) {
+    { 
+        var_dump($param);
+        if (!empty($param['id_item'])) {
             TTransaction::open('bancodados');
-            $emprestimo = Emprestimo::find($param['id']);
+            $emprestimo = pedido::where ('id', '=', $param['id']);
             $this->form->setData($emprestimo); //inserindo dados no formulario. 
 
-            $pivot = PivotEmprestimoFerramentas::where('id_emprestimo', '=', $emprestimo->id)->load();
+            $pivot = pivot::where('id_pedido_material', '=', $emprestimo->id)->load();
 
             if ($pivot) {
                 $this->fieldlist->addHeader();
                 foreach ($pivot as $itens => $value) {
                     $obj = new stdClass;
-                    $obj->ferramenta = $value->id_ferramenta;
+                    $obj->id_item = $value->id_item;
                     $obj->quantidade = $value->quantidade;
 
                     $this->fieldlist->addDetail($obj);
@@ -321,7 +317,7 @@ class PedidoMaterial extends TPage
             $this->fieldlist->addDetail(new stdClass);
             $this->fieldlist->addCloneAction();
             $this->form->addContent([$this->fieldlist]);
-        }*/
+        }
     }
     function getDuplicates($param)
     {

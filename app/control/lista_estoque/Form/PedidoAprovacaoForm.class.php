@@ -53,7 +53,7 @@ class PedidoAprovacaoForm extends TPage
         $quantidade_fornecida = new TEntry('quantidade_fornecida[]');
         $status = new TCombo('status');
         $status->addItems(array('PENDENTE' => 'PENDENTE', 'APROVADO' => 'APROVADO', 'REPROVADO' => 'REPROVADO'));
-
+       
         //Config dos campos
         $id->setSize('50%');
         $id->setEditable(FALSE);
@@ -78,8 +78,8 @@ class PedidoAprovacaoForm extends TPage
         $this->fieldlist->width = '100%';
         $this->fieldlist->name  = 'my_field_list';
         $this->fieldlist->addField('<b>ITEM</b><font color="red">*</font>',  $id_item,  ['width' => '90%'], new TRequiredValidator);
-        $this->fieldlist->addField('<b>Qtd solicitada</b><font color="red">*</font>',   $quantidade,   ['width' => '100%'], new TRequiredValidator);
-        $this->fieldlist->addField('<b>Qtd emprestada</b><font color="red">*</font>',   $quantidade_fornecida,   ['width' => '10%'], new TRequiredValidator);
+        $this->fieldlist->addField('<b>Qtd Solicitada</b><font color="red">*</font>',   $quantidade,   ['width' => '100%'], new TRequiredValidator);
+        $this->fieldlist->addField('<b>Qtd Fornecida</b><font color="red">*</font>',   $quantidade_fornecida,   ['width' => '10%'], new TRequiredValidator);
 
         $row = $this->form->addFields(
             [$labelInfo = new TLabel('Campos com asterisco (<font color="red">*</font>) são considerados campos obrigatórios')],
@@ -104,25 +104,35 @@ class PedidoAprovacaoForm extends TPage
         $this->form->addField($quantidade);
         $this->form->addField($quantidade_fornecida);
         $this->fieldlist->disableRemoveButton();
+        
+        TTransaction::open('bancodados');
+        $pedido = pedido::find($param['id']);
+      
+        TTransaction::close();
+        if ($pedido->status != "PENDENTE") {
+            $status->setEditable(FALSE);
+            $quantidade_fornecida->setEditable(FALSE);
+        }
+      
 
         // form actions
         $btnBack = $this->form->addActionLink(_t('Back'), new TAction(array('PeididoList', 'onReload')), 'far:arrow-alt-circle-left white');
         $btnBack->style = 'background-color:gray; color:white';
         $btnSave = $this->form->addAction(_t('Save'), new TAction([$this, 'onSave']), 'fa:save white');
         $btnSave->style = 'background-color:#218231; color:white';
-
+        
+        
         // vertical box container
         $container = new TVBox;
         $container->style = 'width: 90%; margin:40px';
         $container->add($this->form);
         parent::add($container);
-       
-      
-        
+
+         
     }
 
     public function onEdit($param)
-    {
+    {  
         try {
             if (isset($param['key'])) {
                 TTransaction::open('bancodados');
@@ -193,12 +203,16 @@ class PedidoAprovacaoForm extends TPage
                 }
             }
             TTransaction::close();
-            new TMessage('info', 'Salvo com sucesso');
+            $action = new TAction(array(PeididoList, 'onReload'));
+            new TMessage('info', 'Salvo com sucesso',$action);
+
+           
+
         } catch (Exception $e) // in case of exception
         {
             new TMessage('error', $e->getMessage());
             TTransaction::rollback();
         }
     }
-    
+
 }
