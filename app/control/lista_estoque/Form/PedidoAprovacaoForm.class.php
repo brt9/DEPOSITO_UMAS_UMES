@@ -53,7 +53,7 @@ class PedidoAprovacaoForm extends TPage
         $quantidade_fornecida = new TEntry('quantidade_fornecida[]');
         $status = new TCombo('status');
         $status->addItems(array('PENDENTE' => 'PENDENTE', 'APROVADO' => 'APROVADO', 'REPROVADO' => 'REPROVADO'));
-       
+
         //Config dos campos
         $id->setSize('50%');
         $id->setEditable(FALSE);
@@ -98,41 +98,39 @@ class PedidoAprovacaoForm extends TPage
             [$updated],
         );
         $row->style = 'margin-top:3rem;';
-       
+
         //add itens ao field list
         $this->form->addField($id_item);
         $this->form->addField($quantidade);
         $this->form->addField($quantidade_fornecida);
         $this->fieldlist->disableRemoveButton();
-        
+
         TTransaction::open('bancodados');
         $pedido = pedido::find($param['id']);
-      
+
         TTransaction::close();
         if ($pedido->status != "PENDENTE") {
             $status->setEditable(FALSE);
             $quantidade_fornecida->setEditable(FALSE);
         }
-      
+
 
         // form actions
         $btnBack = $this->form->addActionLink(_t('Back'), new TAction(array('PeididoList', 'onReload')), 'far:arrow-alt-circle-left white');
         $btnBack->style = 'background-color:gray; color:white';
         $btnSave = $this->form->addAction(_t('Save'), new TAction([$this, 'onSave']), 'fa:save white');
         $btnSave->style = 'background-color:#218231; color:white';
-        
-        
+
+
         // vertical box container
         $container = new TVBox;
         $container->style = 'width: 90%; margin:40px';
         $container->add($this->form);
         parent::add($container);
-
-         
     }
 
     public function onEdit($param)
-    {  
+    {
         try {
             if (isset($param['key'])) {
                 TTransaction::open('bancodados');
@@ -164,7 +162,7 @@ class PedidoAprovacaoForm extends TPage
         }
     }
     public function onSave($param)
-    { 
+    {
         try {
             $this->form->validate();
             // open a transaction with database 'samples'
@@ -186,33 +184,71 @@ class PedidoAprovacaoForm extends TPage
                 //Delete emprestimo se existe.
                 pivot::where('id_pedido_material', '=', $pedido->id)->delete();
 
-                $id_items = $param['id_item'];
-                $count = count($id_items);
+                $id_item = array_map(function ($value) {
+                    return (int)$value;
+                }, $param['id_item']);
+                //$id_item = $param['id_item'];
+                $count = count($id_item);
                 //Salvando items na tela pivot. 
-              
-                if (isset($id_items)) {
+
+                if (isset($id_item)) {
                     for ($i = 0; $i < $count; $i++) {
                         $pivot =  new pivot();
                         $pivot->id_pedido_material = $pedido->id;
                         $pivot->id_item = $param['id_item'][$i];
-                        $pivot->quantidade = $param['quantidade'][$i];   
+                        $pivot->quantidade = $param['quantidade'][$i];
                         $pivot->quantidade_fornecida = $param['quantidade_fornecida'][$i];
+
+                        $items = lista::where('id_item', 'in', $id_item)->load();
+                        $item = [];
+                        foreach ($items as $key) {
+                            $item[] = $key->quantidade_estoque;
+                        }
+                        if ($item[$i] < $param['quantidade_fornecida'][$i]) {
+                            throw new Exception(
+                                'A quantidade na linha ' . ($i + 1) . ' não pode ser maior que a disponível no estoque que é: ' . $item[$i]
+                            );
+                        } elseif ($param['quantidade'][$i] < $param['quantidade_fornecida'][$i]) {
+                            throw new Exception(
+                                'A quantidade emprestada na linha ' . ($i + 1) . ' não pode ser maior que a quantidade solicitada'
+
+                            );
+                        } else {
+                            $pivot->quantidade_fornecida = $param['quantidade_fornecida'][$i];
+
+                            if ($param['quantidade'][$i] != $param['quantidade_fornecida'][$i]) {
+                                $result = ($item[$i] + ($param['quantidade'][$i] - $param['quantidade_fornecida'][$i])); //valor subtraido.
+                                $this->updateQuantidade($pivot->id_item, $result);
+                            }
+                            if ($param['status'] == "DEVOLVIDO") {
+                                $result = $item[$i] + $param['quantidade_fornecida'][$i]; //Devolvendo valor para banco.
+                                $this->updateQuantidade($pivot->id_item, $result);
+                            }
+                        }
                         $pivot->store();
-                        
                     }
                 }
             }
             TTransaction::close();
-            $action = new TAction(array(PeididoList, 'onReload'));
-            new TMessage('info', 'Salvo com sucesso',$action);
-
-           
-
+            // $action = new TAction(array(PeididoList, 'onReload'));
+            //   new TMessage('info', 'Salvo com sucesso', $action);
         } catch (Exception $e) // in case of exception
         {
             new TMessage('error', $e->getMessage());
             TTransaction::rollback();
         }
     }
-
+    public function updateQuantidade($id, $value)
+    {
+        try {
+            TTransaction::open('bancodados');
+            lista::where('id_item', '=', $id)
+                ->set('quantidade_estoque', $value)
+                ->update();
+            TTransaction::close();
+        } catch (Exception $e) {
+            new TMessage('error', 'Erro ao atualizar valor do banco <br>' . $e->getMessage());
+            TTransaction::rollback();
+        }
+    }
 }
