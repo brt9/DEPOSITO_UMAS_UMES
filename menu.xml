@@ -27,6 +27,10 @@
         <action>PedidoHidrometro</action>
         <icon>fas:water fa-fw</icon>
       </menuitem>
+      <menuitem label="LISTA DE HIDROMETROS">
+        <action>PeididoHidrometroList</action>
+        <icon>fas:water fa-fw</icon>
+      </menuitem>
     </menu>
   </menuitem>
   <menuitem label="Ferramentas">

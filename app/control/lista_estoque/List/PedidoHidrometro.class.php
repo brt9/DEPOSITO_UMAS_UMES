@@ -277,5 +277,40 @@ class PedidoHidrometro extends TPage
         } catch (Exception $e) {
             new TMessage('error', $e->getMessage());
         }*/
+    } public function onEdit($param)
+    {
+    /*    try {
+            if (isset($param['key'])) {
+                TTransaction::open('bancodados');
+                $emprestimo = Emprestimo::find($param['key']);
+                $this->form->setData($emprestimo); //inserindo dados no formulario. 
+
+                $pivot = PivotEmprestimoFerramentas::where('id_emprestimo', '=', $emprestimo->id)->load();
+
+                if ($pivot) {
+                    $this->fieldlist->addHeader();
+                    foreach ($pivot as $itens => $value) {
+                        $obj = new stdClass;
+                        $obj->ferramenta = $value->id_ferramenta;
+                        $obj->quantidade = $value->quantidade;
+
+                        $this->fieldlist->addDetail($obj);
+                    }
+                    $this->fieldlist->addCloneAction();
+                }
+                $this->onChange(array($pivot[0]->id_ferramenta));
+                // add field list to the form
+                $this->form->addContent([$this->fieldlist]);
+                TTransaction::close();
+            } else {
+                $this->fieldlist->addHeader();
+                $this->fieldlist->addDetail(new stdClass);
+                $this->fieldlist->addCloneAction();
+                $this->form->addContent([$this->fieldlist]);
+            }
+        } catch (Exception $e) {
+            new TMessage('error', $e->getMessage()); // shows the exception error message
+            $this->fireEvents($param);
+        }*/
     }
 }

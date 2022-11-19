@@ -34,4 +34,13 @@ class pedidohd extends TRecord
         parent::addAttribute('created_at');
         parent::addAttribute('updated_at');
     }
+    public function get_User()
+    {
+        // loads the associated object
+        if (empty($this->idUser))
+            $this->idUser = new SystemUser($this->id_usuario);
+
+        // returns the associated object
+        return $this->idUser;
+    }
 }
