@@ -28,6 +28,7 @@ class WelcomeView extends TPage
         $panel1->add($html1);
      
         $vbox = TVBox::pack($panel1);
+        $vbox->class = "vbox";
         $vbox->style = 'display:block; width: 100%; margin-bottom: 10rem';
         
         // add the template to the page

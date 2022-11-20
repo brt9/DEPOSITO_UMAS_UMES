@@ -49,44 +49,56 @@ class AprovacaoSolicitacaoForm extends TPage
         $this->form->setFormTitle('Aprovar solicitação de material');
 
         $this->subFormFirst = new BootstrapFormBuilder('subFormFirst');
+
+        TTransaction::open('bancodados');
+        $emprestimo = new Emprestimo($param['id']);
+        TTransaction::close();
+        
         // create the form fields
         $id             = new TEntry('id');
+        $id->setSize('50%');
+        $id->setEditable(FALSE);
         $id->class = 'emprestimo';
         $id->style =
             'border-radius: 0.25rem;
         border-width: 1px;
         border-style: solid;';
+        
         $created             = new TDateTime('created_at');
         $created->class = 'emprestimo';
-
-        $status             = new TCombo('status');
-        $status->class = 'emprestimo';
-        $status->addItems(['PENDENTE' => 'PENDENTE', 'EFETUADO' => 'EFETUADO', 'DEVOLVIDO' => 'DEVOLVIDO']);
-
-        $ferramenta = new TDBCombo('ferramenta[]', 'bancodados', 'Ferramentas', 'id', '{id} - {nome}', 'id');
-        $ferramenta->class = 'emprestimo';
-
-        $quantidade = new TEntry('quantidade[]'); //quantidade de ferramentas solicitadas
-        $quantidade->class = 'emprestimo';
-
-        $qtdEmprestada = new TEntry('qtd_emprestada[]'); //quantidade de ferramentas a serem emprestadas. 
-        $qtdEmprestada->class = 'emprestimo';
-
-        //Config dos campos
-        $id->setSize('50%');
-        $id->setEditable(FALSE);
-
         $created->setSize('95%');
         $created->setEditable(FALSE);
 
+        $status             = new TCombo('status');
         $status->setSize('100%');
         $status->setDefaultOption(false);
+        $status->class = 'emprestimo';
+        $status->addItems(['PENDENTE' => 'PENDENTE', 'APROVADO' => 'APROVADO', 'DEVOLVIDO' => 'DEVOLVIDO']);
 
-        $ferramenta->setSize('90%');
+        $user             = new TEntry('id_usuario');
+        $user->setSize('100%');
+        $user->setEditable(false);
+        $user->class = 'emprestimo';
+
+        $ferramenta = new TDBCombo('ferramenta[]', 'bancodados', 'Ferramentas', 'id', '{id} - {nome}', 'id');
+        $ferramenta->setSize('100%');
         $ferramenta->setEditable(FALSE);
-
+        $ferramenta->class = 'emprestimo';
+        
+        $quantidade = new TEntry('quantidade[]'); //quantidade de ferramentas solicitadas
         $quantidade->setSize('100%');
         $quantidade->setEditable(FALSE);
+        $quantidade->class = 'emprestimo';
+        
+        $qtdEmprestada = new TEntry('qtd_emprestada[]'); //quantidade de ferramentas a serem emprestadas. 
+        $qtdEmprestada->class = 'emprestimo';
+        $qtdEmprestada->setSize('50%');
+        
+        if ($emprestimo->status == "DEVOLVIDO") {
+            $qtdEmprestada->class = 'emprestimo';
+            $status->setEditable(FALSE);
+            $qtdEmprestada->setEditable(FALSE);
+        }
 
         //add field 
         $this->fieldlist = new TFieldList;
@@ -102,12 +114,16 @@ class AprovacaoSolicitacaoForm extends TPage
         );
 
         $row = $this->subFormFirst->addFields(
-            [new TLabel('Id da solicitação')],
+            [$label = new TLabel('<b>id</b>')],
             [$id],
-            [new TLabel('Data da solicitação')],
-            [$created],
-            [new TLabel('Status da solicitação <font color="red">*</font>')],
+            [$label =  new TLabel('<b>Status</b>')],
             [$status],
+        );
+        $row = $this->subFormFirst->addFields(
+            [$label = new TLabel('<b>Usuário</b>')],
+            [$user],
+            [$label = new TLabel('<b>Data</b>')],
+            [$created],
         );
         $row->style = 'margin-top:3rem;';
         $this->form->addContent([$this->subFormFirst]);
@@ -121,9 +137,13 @@ class AprovacaoSolicitacaoForm extends TPage
 
         // form actions
         $btnBack = $this->form->addActionLink(_t('Back'), new TAction(array('EmprestimoList', 'onReload')), 'far:arrow-alt-circle-left white');
-        $btnBack->style = 'background-color:gray; color:white';
+        $btnBack->style = 'background-color:gray; color:white; border-radius: 0.5rem;';
         $btnSave = $this->form->addAction(_t('Save'), new TAction([$this, 'onSave']), 'fa:save white');
-        $btnSave->style = 'background-color:#218231; color:white';
+        $btnSave->style = 'background-color:#218231; color:white; border-radius: 0.5rem;';
+
+        if ($emprestimo->status == "DEVOLVIDO") {
+            $btnSave->style = 'display:none;';
+        }
 
         // vertical box container
         $container = new TVBox;

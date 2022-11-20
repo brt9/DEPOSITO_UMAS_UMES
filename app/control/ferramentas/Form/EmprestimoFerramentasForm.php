@@ -39,7 +39,7 @@ class EmprestimoFerramentasForm extends TPage
     protected $html;
 
 
-    public function __construct()
+    public function __construct($param = null)
     {
         TPage::include_css('app/resources/styles.css');
         parent::__construct();
@@ -47,57 +47,74 @@ class EmprestimoFerramentasForm extends TPage
         // create form and table container
         $this->form = new BootstrapFormBuilder('form_Emprestimo');
         $this->form->setFormTitle("<b>Solicitação de emprestimo</b>");
-        
+
         $this->subFormFirst = new BootstrapFormBuilder('subFormFirst');
         $this->subFormSecound = new BootstrapFormBuilder('subFormSecound');
+
 
         $id             = new TEntry('id');
         $id->class = 'emprestimo';
         $id->setEditable(FALSE);
-        $id->setSize('20%');
+        $id->setSize('50%');
 
         $created             = new TDateTime('created_at');
+        $created->setEditable(FALSE);
+        $created->setSize('50%');
         $created->class = 'emprestimo';
 
-        $created->setEditable(FALSE);
-        $created->setSize('40%');
+        $status             = new TEntry('status');
+        $status->setSize('50%');
+        $status->setEditable(false);
+        $status->class = 'emprestimo';
+
+        $user             = new TEntry('id_usuario');
+        $user->setSize('100%');
+        $user->setEditable(false);
+        $user->class = 'emprestimo';
 
         $ferramenta = new TDBCombo('ferramenta[]', 'bancodados', 'Ferramentas', 'id', '{id} - {nome}', 'id');
+        $ferramenta->placeholder = 'Pesquise pela ferramenta desejada';
+        $ferramenta->setChangeAction(new TAction(array($this, 'onChange')));
+        $ferramenta->setSize('100%');
+        $ferramenta->enableSearch();
         $ferramenta->class = 'emprestimo';
-        $ferramenta->style =
-            'border-radius: 0.25rem;
-            border-width: 1px;
-            border-style: solid;';
 
         $quantidade = new TEntry('quantidade[]');
+        $quantidade->setSize('100%');
         $quantidade->style =
             'border-radius: 0.25rem;
-            border-width: 1px;
+        border-width: 1px;
             border-style: solid;';
 
         $quantidadeDisponivel = new TCombo('quantidadeDisponivel');
+        $quantidadeDisponivel->setSize('100%');
+        $quantidadeDisponivel->setEditable(FALSE);
         $quantidadeDisponivel->class = 'emprestimo';
         $quantidadeDisponivel->style =
             'border-radius: 0.25rem;
-            border-width: 1px;
-            border-style: solid;';
+        border-width: 1px;
+        border-style: solid;';
 
-        $ferramenta->placeholder = 'Pesquise pela ferramenta desejada';
-        $ferramenta->enableSearch();
-        $ferramenta->setSize('100%');
-        $quantidade->setSize('100%');
-        $quantidadeDisponivel->setSize('100%');
-        $quantidadeDisponivel->setEditable(FALSE);
-        $ferramenta->setChangeAction(new TAction(array($this, 'onChange')));
-
+        TTransaction::open('bancodados');
+        if (isset($param['id'])) {
+            $emprestimo = new Emprestimo($param['id']);
+            TTransaction::close();
+            if ($emprestimo->status != "PENDENTE") {
+                $ferramenta = new TEntry('ferramenta[]');
+                $ferramenta->setSize('100%');
+                $ferramenta->class = 'emprestimo';
+                $ferramenta->setEditable(FALSE);
+                $quantidade->setEditable(FALSE);
+            }
+        }
         //add field 
         $this->fieldlist = new TFieldList;
         $this->fieldlist->generateAria();
         $this->fieldlist->width = '100%';
         $this->fieldlist->name  = 'my_field_list';
-        $this->fieldlist->addField('<b>Ferramenta</b><font color="red">*</font>',  $ferramenta,  ['width' => '70%']);
-        $this->fieldlist->addField('<b>Quantidade</b><font color="red">*</font>',   $quantidade,   ['width' => '10%']);
-        $this->fieldlist->addField('<b>Quantidade disponível</b><font color="red">*</font>',   $quantidadeDisponivel,   ['width' => '10%']);
+        $this->fieldlist->addField('<b>Ferramenta</b><font color="red">*</font>',  $ferramenta,  ['width' => '80%']);
+        $this->fieldlist->addField('<b>Quantidade</b><font color="red">*</font>',   $quantidade,   ['width' => '5%']);
+        $this->fieldlist->addField('<b>Quantidade disponível</b><font color="red">*</font>',   $quantidadeDisponivel,   ['width' => '5%']);
         $this->subFormSecound->addField($ferramenta);
         $this->subFormSecound->addField($quantidade);
 
@@ -106,12 +123,18 @@ class EmprestimoFerramentasForm extends TPage
         );
 
         $row = $this->form->addFields(
-            [new TLabel('<b>id</b>')],
+            [$label = new TLabel('<b>id</b>')],
             [$id],
-            [new TLabel('<b>Data</b>')],
+            [$label =  new TLabel('<b>Status</b>')],
+            [$status],
+        );
+        $row = $this->form->addFields(
+            [$label = new TLabel('<b>Usuário</b>')],
+            [$user],
+            [$label = new TLabel('<b>Data</b>')],
             [$created],
         );
-        $this->form->id = 'Emprestimo';       
+        $this->form->id = 'Emprestimo';
 
         // form actions
         $btnBack = $this->form->addActionLink(_t('Back'), new TAction(array('EmprestimoList', 'onReload')), 'far:arrow-alt-circle-left white');
@@ -121,6 +144,11 @@ class EmprestimoFerramentasForm extends TPage
         $btnSave = $this->form->addAction(_t('Save'), new TAction([$this, 'onSave']), 'fa:save white');
         $btnSave->style = 'background-color:#218231; color:white; border-radius: 0.5rem;';
 
+        if ($emprestimo->status != "PENDENTE") {
+            $btnSave->style = 'display:none;';
+            $btnClear->style = 'display:none;';
+        }
+        
         // wrap the page content using vertical box
         $vbox = new TVBox;
         $vbox->style = 'width: 100%; margin-top: 2rem';
@@ -152,7 +180,9 @@ class EmprestimoFerramentasForm extends TPage
 
                         $this->fieldlist->addDetail($obj);
                     }
-                    $this->fieldlist->addCloneAction();
+                    if ($emprestimo->status == "PENDENTE") {
+                        $this->fieldlist->addCloneAction();
+                    }
                 }
                 $this->onChange(array($pivot[0]->id_ferramenta));
                 // add field list to the form
@@ -199,7 +229,6 @@ class EmprestimoFerramentasForm extends TPage
                     $emprestimo->id_usuario = $usuarioLogado;
                     $emprestimo->status = 'PENDENTE';
                 }
-                $emprestimo->fromArray($param);
                 $emprestimo->store();
 
                 //Delete emprestimo se existe.
@@ -233,7 +262,7 @@ class EmprestimoFerramentasForm extends TPage
                             $qtdTools[] = $key->quantidade;
                         }
                         //Verifica se a quantidade solicitada for maior que a do estoque 
-                        if ($param['quantidade'][$i] >= $qtdTools[$i] or ($param['quantidade'][$i] < 0 )) {
+                        if ($param['quantidade'][$i] >= $qtdTools[$i] or ($param['quantidade'][$i] < 0)) {
                             throw new Exception(
                                 'A quantidade na ' . ($i + 1) . '° linha não pode ser maior que a disponível no estoque que é: ' . $qtdTools[$i]
 
@@ -395,7 +424,6 @@ class EmprestimoFerramentasForm extends TPage
         } catch (Exception $e) {
             new TMessage('error', $e->getMessage());
         }
-
     }
     public static function onChange($param)
     {
