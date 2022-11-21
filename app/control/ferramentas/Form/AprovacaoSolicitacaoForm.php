@@ -98,7 +98,7 @@ class AprovacaoSolicitacaoForm extends TPage
             $qtdEmprestada->class = 'emprestimo';
             $status->setEditable(FALSE);
             $qtdEmprestada->setEditable(FALSE);
-        }elseif($emprestimo->status == "APROVADO"){
+        } elseif ($emprestimo->status == "APROVADO") {
             $qtdEmprestada->class = 'emprestimo';
             $qtdEmprestada->setEditable(FALSE);
         }
@@ -172,9 +172,9 @@ class AprovacaoSolicitacaoForm extends TPage
                         $obj->ferramenta = intval($value->id_ferramenta);
                         $obj->quantidade = $value->quantidade;
 
-                        if(($value->qtd_emprestada == $value->quantidade) or ($value->qtd_emprestada == 0)){
+                        if (($value->qtd_emprestada == $value->quantidade) or ($value->qtd_emprestada == 0)) {
                             $obj->qtd_emprestada = $value->quantidade;
-                        }else{
+                        } else {
                             $obj->qtd_emprestada = $value->qtd_emprestada;
                         }
 
@@ -206,6 +206,10 @@ class AprovacaoSolicitacaoForm extends TPage
                     $emprestimo = new Emprestimo($param["id"]);
                     $emprestimo->id_usuario = $emprestimo->id_usuario;
                     $emprestimo->id_admin = $usuarioLogado;
+
+                    if(($emprestimo->status == "PENDENTE") and ($param['status'] == "DEVOLVIDO")){
+                        throw new Exception('Não pode aprovar uma solicitação com status "DEVOLVIDO" antes de ser "APROVADO"');
+                    }
                     $emprestimo->status = $param['status'];
                 }
                 $emprestimo->fromArray($param);
@@ -263,7 +267,8 @@ class AprovacaoSolicitacaoForm extends TPage
             new TMessage('info', 'Salvo com sucesso', $action);
         } catch (Exception $e) // in case of exception
         {
-            new TMessage('error', $e->getMessage());
+            $action = new TAction(array('EmprestimoList', 'onReload'));
+            new TMessage('error', $e->getMessage(), $action);
             TTransaction::rollback();
         }
     }
