@@ -24,7 +24,7 @@ use Adianti\Widget\Form\TForm;
  * @copyright  Copyright (c) 2021 Barata
  * @license    http://www.adianti.com.br/framework-license
  */
-class PedidoMaterial extends TPage
+class PedidoMaterialForm extends TPage
 {
     protected $form; //  FORMULÁRIO
     protected $descricao; //  FORMULÁRIO

@@ -13,30 +13,34 @@ use Adianti\Widget\Form\THidden;
  * @copyright  Copyright (c) 2021 Barata
  * @license    http://www.adianti.com.br/framework-license
  */
-class CadastroForm extends TStandardForm
+class CadastroMaterialForm extends TStandardForm
 {
   protected $form; //  FORMULÁRIO
+  protected $subform; //  FORMULÁRIO
 
   // CONSTRUTOR DE CLASSE
   // CRIA A PÁGINA E O FORMULÁRIO DE INSCRIÇÃO
 
   function __construct()
   {
+    TStandardForm::include_css('app/resources/styles.css');
     parent::__construct();
 
     $ini  = AdiantiApplicationConfig::get();
 
     $this->setDatabase('bancodados');              // DEFINE O BANCO DE DADOS
-    $this->setActiveRecord('lista');               // DEFINE O REGISTRO ATIVO
+    $this->setActiveRecord('Material');               // DEFINE O REGISTRO ATIVO
 
     // CRIA O FORMULÁRIO
-    $this->form = new BootstrapFormBuilder('form_cadastro');
+    $this->form = new BootstrapFormBuilder('form_material');
+    $this->subform = new BootstrapFormBuilder('subform_material');
     $this->form->setFormTitle('<b>CADASTRO ITENS DEPOSITO</b>');
 
     // CRIE OS CAMPOS DO FORMULÁRIO
-    $CODIGO = new TEntry('id_item');
-    $DESCRICAO = new TEntry('descricao');
-    $QUANTIDADE_ESTOQUE = new TEntry('quantidade_estoque');
+    $codigo = new TEntry('id_item');
+    $codigo->id = "input-form";
+    $descricao = new TEntry('descricao');
+    $quantidadeEstoque = new TEntry('quantidade_estoque');
     $colaborador_responsavel = new THidden('id_usuario');
 
     $row = $this->form->addFields(
@@ -44,49 +48,46 @@ class CadastroForm extends TStandardForm
     );
 
     // ADICIONE OS CAMPOS
-    $row = $this->form->addFields([new TLabel('CODIGO ITEM <font color="red">*</font>')], [$CODIGO]);
-    $this->form->addFields([new TLabel('DESCRIÇÃO <font color="red">*</font>')], [$DESCRICAO]);
-    $this->form->addFields([new TLabel('QUANTIDADE <font color="red">*</font>')], [$QUANTIDADE_ESTOQUE]);
-    $this->form->addFields([new TLabel('')], [$colaborador_responsavel]);
+    $row = $this->form->addFields([new TLabel('Codigo do item <font color="red">*</font>')], [$codigo]);
+    $this->form->addFields([new TLabel('Descrição <font color="red">*</font>')], [$descricao]);
+    $this->form->addFields([new TLabel('Quantidade <font color="red">*</font>')], [$quantidadeEstoque]);
+    $this->form->addFields([new TLabel('colaborador')], [$colaborador_responsavel]);
 
-    $CODIGO->addValidation('CODIGO ITEM <font color="red">*</font>', new TRequiredValidator);
-    $DESCRICAO->addValidation('DESCRIÇÃO <font color="red">*</font>', new TRequiredValidator);
-    $QUANTIDADE_ESTOQUE->addValidation('QUANTIDADE <font color="red">*</font>', new TRequiredValidator);
+    $codigo->addValidation('Codigo do item <font color="red">*</font>', new TRequiredValidator);
+    $descricao->addValidation('Descrição <font color="red">*</font>', new TRequiredValidator);
+    $quantidadeEstoque->addValidation('Quantidade <font color="red">*</font>', new TRequiredValidator);
     $colaborador_responsavel->addValidation('COLABORADOR RESPONSAVEL <font color="red">*</font>', new TRequiredValidator);
 
+    $codigo->setTip('Digite o codigo do item que deseja cadastrar');
+    $codigo->placeholder = '00000';
+    $codigo->setSize('25%');
+    $codigo->setMask('99999');
+    $codigo->maxlength = 5;
 
-    $CODIGO->setTip('Digite o codigo do item que deseja cadastrar');
-    $CODIGO->placeholder = '00000';
-    $CODIGO->setSize('25%');
-    $CODIGO->setMask('99999');
-    $CODIGO->maxlength = 5;
+    $descricao->setTip('Digite a descrição do item desejado');
+    $descricao->setSize('70%');
+    $descricao->placeholder = 'Descrição do Item';
 
-    $DESCRICAO->setTip('Digite a descrição do item desejado');
-    $DESCRICAO->setSize('70%');
-    $DESCRICAO->placeholder = 'Descrição do Item';
-
-    $QUANTIDADE_ESTOQUE->setTip('Digite a quantidade do item desejado');
-    $QUANTIDADE_ESTOQUE->setSize('70%');
-    $QUANTIDADE_ESTOQUE->placeholder = 'Descrição do Item';
-    $QUANTIDADE_ESTOQUE->setMask('99999');
-    $QUANTIDADE_ESTOQUE->placeholder = '00000';
+    $quantidadeEstoque->setTip('Digite a quantidade do item desejado');
+    $quantidadeEstoque->setSize('70%');
+    $quantidadeEstoque->placeholder = 'Descrição do Item';
+    $quantidadeEstoque->setMask('99999');
+    $quantidadeEstoque->placeholder = '00000';
 
     $colaborador_responsavel->setSize('70%');
     $colaborador_responsavel->setValue(TSession::getValue('userid'));
     $colaborador_responsavel->setEditable(FALSE);
 
-
-
     // CRIE AS AÇÕES DO FORMULÁRIO
     $btn = $this->form->addAction(_t('Save'), new TAction(array($this, 'onSave')), 'far:save');
     $btn->class = 'btn btn-sm btn-primary';
     $this->form->addActionLink(_t('Clear'),  new TAction(array($this, 'onEdit')), 'fa:eraser red');
-    $this->form->addActionLink(_t('Back'), new TAction(array('CadastroList', 'onReload')), 'far:arrow-alt-circle-left blue');
+    $this->form->addActionLink(_t('Back'), new TAction(array('MaterialList', 'onReload')), 'far:arrow-alt-circle-left blue');
 
     // RECIPIENTE DE CAIXA VERTICAL
     $container = new TVBox;
     $container->style = 'width: 100%';
-    $container->add(new TXMLBreadCrumb('menu.xml', 'CadastroList'));
+    $container->add(new TXMLBreadCrumb('menu.xml', 'MaterialList'));
     $container->add($this->form);
 
     parent::add($container);
@@ -115,8 +116,8 @@ class CadastroForm extends TStandardForm
 
         //$DATA->setDatabaseMask("Y-m-d H:i:s");
 
-        /*  $CODIGO->setSize('15%');
-        $CODIGO->setEditable(FALSE);
+        /*  $codigo->setSize('15%');
+        $codigo->setEditable(FALSE);
         $nome->setSize('70%');
         $data_cadastro->setSize('15%');
         $email->setSize('30%');

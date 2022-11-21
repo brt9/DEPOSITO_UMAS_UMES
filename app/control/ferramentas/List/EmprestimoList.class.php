@@ -65,7 +65,7 @@ class EmprestimoList extends TStandardList
 
     // CRIE OS CAMPOS DO FORMULÁRIO
     $unique = new TDBUniqueSearch('FerramentaList', 'bancodados', 'emprestimo', 'id', 'id');
-    $unique->id = "input-emprestimo";
+    $unique->id = "input-form";
     $unique->setMinLength(0);
     $unique->setMask('{id}');
 
@@ -73,10 +73,10 @@ class EmprestimoList extends TStandardList
 
     $status = new TCombo('status');
     $status->addItems(['PENDENTE' => 'PENDENTE', 'APROVADO' => 'APROVADO', 'DEVOLVIDO' => 'DEVOLVIDO']);
-    $status->id = "input-emprestimo";
+    $status->id = "input-form";
 
     $data = new TDate('created_at');
-    $data->id = "input-emprestimo";
+    $data->id = "input-form";
     $data->placeholder = 'Pesquise pela data de criação';
     $data->setMask('dd/mm/yyyy');
 

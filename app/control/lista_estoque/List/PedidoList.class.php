@@ -1,5 +1,6 @@
 <?php
 
+use Adianti\Base\TStandardList;
 use Adianti\Widget\Form\TDate;
 use Adianti\Widget\Form\TDateTime;
 
@@ -13,7 +14,7 @@ use Adianti\Widget\Form\TDateTime;
  * @copyright  Copyright (c) 2021 Barata
  * @license    http://www.adianti.com.br/framework-license
  */
-class PeididoList extends TStandardList
+class PedidoList extends TStandardList
 {
   protected $form;     // FORMULÁRIO DE REGISTRO
   protected $datagrid; //  LISTAGEM
@@ -25,6 +26,7 @@ class PeididoList extends TStandardList
   // CONSTRUTOR DE PÁGINA
   public function __construct()
   {
+    TStandardList::include_css('app/resources/styles.css');
     TTransaction::open('bancodados');
     $userSession = TSession::getValue('userid');
     $isAdmin = SystemUserGroup::where('system_group_id', '=', 1)->load();
@@ -40,7 +42,7 @@ class PeididoList extends TStandardList
     parent::addFilterField('id', '=', 'id'); //  CAMPO DE FILTRO, OPERADOR, CAMPO DE FORMULÁRIO
     parent::addFilterField('status', '=', 'status'); // CAMPO DE FILTRO, OPERADOR, CAMPO DE FORMULÁRIO
     parent::addFilterField('created_at', '=', 'created_at'); // CAMPO DE FILTRO, OPERADOR, CAMPO DE FORMULÁRIO
-    parent::addFilterField('cast(data_time as date)', '=', 'updated_at'); // CAMPO DE FILTRO, OPERADOR, CAMPO DE FORMULÁRIO
+    parent::addFilterField('update_at', '=', 'updated_at'); // CAMPO DE FILTRO, OPERADOR, CAMPO DE FORMULÁRIO
     parent::addFilterField('id_usuario', '=', 'id_usuario');
     if ($userSession == $isAdmin[0]->system_user_id) {
       parent::addFilterField('id_usuario', '=', 'userid'); // CAMPO DE FILTRO, OPERADOR, CAMPO DE FORMULÁRIO
@@ -67,7 +69,6 @@ class PeididoList extends TStandardList
     $data_pedido = new TDate('created_at');
     $data_aprovacao = new TDate('updated_at');
 
-
     // ADICIONE OS CAMPOS
 
     $this->form->addFields([new TLabel('CODIGO DO PEDIDO')], [$id]);
@@ -76,14 +77,13 @@ class PeididoList extends TStandardList
     $this->form->addFields([new TLabel('DATA DO PEDIDO')], [$data_pedido]);
     $this->form->addFields([new TLabel('DATA DA APROVAÇÃO')], [$data_aprovacao]);
 
-
     $id->setTip('Digite codigo do pedido que voce procura');
     $id_status->setTip('Selecione o tipo de status que voce procura');
     $id_usuario->setTip('Digite a matricula do usuario para efetuar a busca');
     $data_pedido->setTip('Selecione a data do pedido para efetuar a busca');
     $data_aprovacao->setTip('Selecione a data da aprovação do pedido para efetuar a busca');
 
-  
+
     $id->placeholder = '00000';
     $id->setMask('99999');
     $id->maxlength = 5;
@@ -98,16 +98,14 @@ class PeididoList extends TStandardList
 
     $data_pedido->setMask('dd/mm/yyyy');
     $data_aprovacao->setMask('dd/mm/yyyy');
-    
+
     // MANTENHA O FORMULÁRIO PREENCHIDO DURANTE A NAVEGAÇÃO COM OS DADOS DA SESSÃO
     $this->form->setData(TSession::getValue('cadastro_filter_data'));
 
     // ADICIONE AS AÇÕES DO FORMULÁRIO DE PESQUISA
     $btn = $this->form->addAction(_t('Find'), new TAction(array($this, 'onSearch')), 'fa:search');
-    $this->form->addAction("Novo Item", new TAction(["PedidoMaterial", "onEdit"]), "fa:plus-circle green");
+    $this->form->addAction("Novo Item", new TAction(["PedidoMaterialForm", "onEdit"]), "fa:plus-circle green");
     $this->form->addAction('Save as PDF', new TAction([$this, 'exportAsPDF'], ['register_state' => 'false']), 'far:file-pdf red');
-
-
 
     $btn->class = 'btn btn-sm btn-primary';
 
@@ -116,11 +114,6 @@ class PeididoList extends TStandardList
     $this->datagrid->datatable = 'true';
     $this->datagrid->style = 'width: 100%';
     $this->datagrid->setHeight(320);
-
-
-    
-  
-    
 
     // CRIA AS COLUNAS DA GRADE DE DADOS
     $column_id = new TDataGridColumn('id', 'CODIGO DO PEDIDO', 'center');
@@ -131,13 +124,11 @@ class PeididoList extends TStandardList
       $column_id_usuario = new TDataGridColumn('user->name', 'USUÁRIO', 'center');
     }
 
-    $column_data_pedido = new TDataGridColumn('created_at', 'DATA DO PEDIDO' , 'center');
+    $column_data_pedido = new TDataGridColumn('created_at', 'DATA DO PEDIDO', 'center');
     $column_data_aprovacao = new TDataGridColumn('updated_at', 'DATA DA APROVACAO', 'center');
-    
 
-    $column_data_pedido->setTransformer(array($this, 'formatDate'));
-   $column_data_aprovacao->setTransformer(array($this, 'formatDate1'));
-    
+    $column_data_pedido->setTransformer(array('helpers', 'formatDate'));
+    $column_data_aprovacao->setTransformer(array('helpers', 'formatDate'));
 
     // ADICIONE AS COLUNAS À GRADE DE DADOS
     $this->datagrid->addColumn($column_id);
@@ -145,8 +136,8 @@ class PeididoList extends TStandardList
     $this->datagrid->addColumn($column_id_usuario);
     $this->datagrid->addColumn($column_data_pedido);
     $this->datagrid->addColumn($column_data_aprovacao);
-    
-   
+
+
     // CRIA AS AÇÕES DA COLUNA DA GRADE DE DADOS
     $order_id = new TAction(array($this, 'onReload'));
     $order_id->setParameter('order', 'id');
@@ -155,8 +146,6 @@ class PeididoList extends TStandardList
     $order_id_status = new TAction(array($this, 'onReload'));
     $order_id_status->setParameter('order', 'status');
     $column_id_status->setAction($order_id_status);
-
-
 
     $order_id_usuario = new TAction(array($this, 'onReload'));
     $order_id_usuario->setParameter('order', 'id_usuario');
@@ -170,9 +159,8 @@ class PeididoList extends TStandardList
     $order_data_aprovacao->setParameter('updated_at', 'updated_at');
     $column_data_aprovacao->setAction($order_data_aprovacao);
 
-
     // CRIAR AÇÃO EDITAR
-    $action_edit = new TDataGridAction(array('PedidoEditForm', 'onEdit'));
+    $action_edit = new TDataGridAction(array('PedidoMaterialForm', 'onEdit'));
     $action_edit->setButtonClass('btn btn-default');
     $action_edit->setLabel('Editar Pedido');
     $action_edit->setImage('far:edit blue');
@@ -185,14 +173,11 @@ class PeididoList extends TStandardList
     if ($userSession == $isAdmin[0]->system_user_id)
       $this->datagrid->addAction($action1, 'Aprovar solicitação', 'fa:check-circle background-color:#218231');
 
-
     $delete = new TDataGridAction([$this, 'onDeleteSessionVar'],   ['id' => '{id}']);
     if ($userSession == $isAdmin[0]->system_user_id)
       $this->datagrid->addAction($delete, 'Apagar solicitação', 'fas:trash-alt red');
 
-
-
-    $action2 = new TDataGridAction(['PeididoList', 'exportAsPDF']);
+    $action2 = new TDataGridAction(['PedidoList', 'exportAsPDF']);
     $action2->setField('id');
     $this->datagrid->addAction($action2, 'Gerar Relatorio', 'fa:file-pdf red');
 
@@ -210,8 +195,8 @@ class PeididoList extends TStandardList
     $panel->addFooter($this->pageNavigation);
 
     $this->form->addHeaderActionLink('Filtros de busca', new TAction(array($this, 'toggleSearch')), 'fa:filter green fa-fw');
-    TScript::create('$(\'#' . self::$formName . '\').addClass(\'collapse\');');
-    
+    TScript::create('$(\'#' . self::$formName . '\').collapse(\'toggle\');');
+
     // recipiente de caixa vertical
     $container = new TVBox;
     $container->style = 'width: 100%';
@@ -220,8 +205,6 @@ class PeididoList extends TStandardList
     $container->add($panel);
     $this->datagrid->disableDefaultClick();
     parent::add($container);
-
-    
   }
   public static function onDeleteSessionVar($param)
   {
@@ -239,7 +222,7 @@ class PeididoList extends TStandardList
       TTransaction::open('bancodados');
       $pedido = pedido::find($param['id']);
       $pedido->Delete();
-      AdiantiCoreApplication::gotoPage('PeididoList');
+      AdiantiCoreApplication::gotoPage('PedidoList');
       TTransaction::close();
       new TMessage('info', TAdiantiCoreTranslator::translate('Record deleted')); // success message
 
@@ -278,33 +261,21 @@ class PeididoList extends TStandardList
       new TMessage('error', $e->getMessage());
     }
   }
-  public function formatDate($date, $object)
+  /**
+   * Funçao para ocultar o campo de busca
+   */
+  static function toggleSearch()
   {
-      $dt = new DateTime($date);
-      return $dt->format('d/m/Y - H:i');
-  }
-  public function formatDate1($date, $object)
-{
-  if($date == null){
-    return '00/00/0000 - 00:00';
-    }
-    $dt = new DateTime($date);
-    return $dt->format('d/m/Y - H:i');
-}
-static function toggleSearch()
-{
     // também pode apagar esses blocos if/else se não quiser usar a "memória" de estado do form
-    if (TSession::getValue('toggleSearch_'.self::$formName) == 1) {
-        TSession::setValue('toggleSearch_'.self::$formName,0);
+    if (TSession::getValue('toggleSearch_' . self::$formName) == 1) {
+      TSession::setValue('toggleSearch_' . self::$formName, 0);
     } else {
-        TSession::setValue('toggleSearch_'.self::$formName,1);
+      TSession::setValue('toggleSearch_' . self::$formName, 1);
     }
 
     // esta linha é a responsável por abrir/fechar o form
     TScript::create('$(\'#' . self::$formName . '\').collapse(\'toggle\');');
     // caso retire a função de "memória", copie a linha acima para dentro do onSearch,
     // para que o form "permaneça aberto" (reabra automaticamente) ao realizar buscas
+  }
 }
-}
-
-

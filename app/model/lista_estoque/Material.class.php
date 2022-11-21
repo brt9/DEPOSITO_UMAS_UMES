@@ -12,11 +12,15 @@ use Adianti\Database\TRecord;
  * @copyright  Copyright (c) 2021 Barata
  * @license    http://www.adianti.com.br/framework-license
  */
-class estoque extends TRecord
+class Material extends TRecord
 {
     const TABLENAME = 'estoque_gms';
     const PRIMARYKEY = 'id_item';
-    const IDPOLICY =  'max'; // {max, serial}
+    const IDPOLICY = 'max'; // {max, serial}
+    
+    CONST CREATEDAT = 'created_at';
+    CONST UPDATEDAT = 'updated_at';
+    CONST DELETEDAT = 'deleted_at';
 
     /**
      * Constructor method
@@ -26,5 +30,10 @@ class estoque extends TRecord
         parent::__construct($id, $callObjectLoad);
         parent::addAttribute('id_item');
         parent::addAttribute('descricao');
+        parent::addAttribute('quantidade_estoque');
+        parent::addAttribute('id_usuario');
+        parent::addAttribute('id_admin');
+        parent::addAttribute('created_at');
     }
+    
 }

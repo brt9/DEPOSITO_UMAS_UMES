@@ -4,30 +4,18 @@
     <action>WelcomeView</action>
     <icon>fas:home fa-fw</icon>
   </menuitem>
-  <menuitem label="ESTOQUE">
+  <menuitem label="Material ">
     <icon>fas:water fa-fw</icon>
     <menu>
-      <menuitem label="ESTOQUE">
-        <action>CadastroList</action>
+      <menuitem label="Lista de materiais">
+        <action>MaterialList</action>
         <icon>fas:water fa-fw</icon>
       </menuitem>
-      <menuitem label="CADASTRO DE PRODUTO">
-        <action>CadastroForm</action>
+      <menuitem label="Pedido de material">
+        <action>PedidoList</action>
         <icon>fas:water fa-fw</icon>
       </menuitem>
-      <menuitem label="PEDIDO MATERIAL">
-        <action>PedidoMaterial</action>
-        <icon>fas:water fa-fw</icon>
-      </menuitem>
-      <menuitem label="LISTA DE PEDIDOS">
-        <action>PeididoList</action>
-        <icon>fas:water fa-fw</icon>
-      </menuitem>
-      <menuitem label="PEDIDO HIDROMETRO">
-        <action>PedidoHidrometro</action>
-        <icon>fas:water fa-fw</icon>
-      </menuitem>
-      <menuitem label="LISTA DE HIDROMETROS">
+      <menuitem label="Lista de hidrometros">
         <action>PeididoHidrometroList</action>
         <icon>fas:water fa-fw</icon>
       </menuitem>
