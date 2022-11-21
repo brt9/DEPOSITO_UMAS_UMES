@@ -193,9 +193,9 @@ class EmprestimoList extends TStandardList
       TTransaction::open('bancodados');
       $emprestimo = Emprestimo::find($param['id']);
       $emprestimo->Delete();
-      AdiantiCoreApplication::gotoPage('EmprestimoList');
+      $action = new TAction(array('EmprestimoList', 'onReload'));
       TTransaction::close();
-      new TMessage('info', TAdiantiCoreTranslator::translate('Record deleted')); // success message
+      new TMessage('info', TAdiantiCoreTranslator::translate('Record deleted'), $action); // success message
 
     } catch (Exception $e) {
       new TMessage('error', $e->getMessage()); // shows the exception error message

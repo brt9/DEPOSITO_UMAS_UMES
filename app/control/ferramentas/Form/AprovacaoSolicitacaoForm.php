@@ -98,6 +98,9 @@ class AprovacaoSolicitacaoForm extends TPage
             $qtdEmprestada->class = 'emprestimo';
             $status->setEditable(FALSE);
             $qtdEmprestada->setEditable(FALSE);
+        }elseif($emprestimo->status == "APROVADO"){
+            $qtdEmprestada->class = 'emprestimo';
+            $qtdEmprestada->setEditable(FALSE);
         }
 
         //add field 
