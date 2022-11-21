@@ -27,6 +27,7 @@ class EmprestimoList extends TStandardList
   protected $formgrid;
   protected $deleteButton;
   protected $transformCallback;
+  private static $formName = 'form_search';
 
   // CONSTRUTOR DE PÁGINA
   public function __construct()
@@ -48,7 +49,6 @@ class EmprestimoList extends TStandardList
 
 
     parent::addFilterField('id', '=', 'id'); // CAMPO DE FILTRO, OPERADOR, CAMPO DE FORMULÁRIO
-    parent::addFilterField('id_emprestimo', '=', 'id_emprestimo'); // CAMPO DE FILTRO, OPERADOR, CAMPO DE FORMULÁRIO
     if ($userSession == $isAdmin[0]->system_user_id) {
       parent::addFilterField('id_usuario', '=', 'id_usuario'); //  CAMPO DE FILTRO, OPERADOR, CAMPO DE FORMULÁRIO
     } else {
@@ -66,10 +66,14 @@ class EmprestimoList extends TStandardList
     // CRIE OS CAMPOS DO FORMULÁRIO
     $unique = new TDBUniqueSearch('FerramentaList', 'bancodados', 'emprestimo', 'id', 'id');
     $unique->id = "input-emprestimo";
-    $unique->setMinLength(1);
+    $unique->setMinLength(0);
     $unique->setMask('{id}');
 
     $unique->placeholder = 'Pesquise o emprestido pela númeração da solicitação';
+
+    $status = new TCombo('status');
+    $status->addItems(['PENDENTE' => 'PENDENTE', 'APROVADO' => 'APROVADO', 'DEVOLVIDO' => 'DEVOLVIDO']);
+    $status->id = "input-emprestimo";
 
     $data = new TDate('created_at');
     $data->id = "input-emprestimo";
@@ -82,6 +86,8 @@ class EmprestimoList extends TStandardList
       [new TLabel('Número da solicitação')],
 
       [$unique],
+      [new Tlabel('Data')],
+      [$status],
       [new Tlabel('Data')],
       [$data],
     );
@@ -111,22 +117,14 @@ class EmprestimoList extends TStandardList
     $column_status = new TDataGridColumn('status', 'Status', 'center');
     $column_created = new TDataGridColumn('created_at', 'Data da solicitação', 'center');
 
+    $column_created->setTransformer(array('helpers', 'formatDate'));
+
     // ADICIONE AS COLUNAS À GRADE DE DADOS
     $this->datagrid->addColumn($column_id);
     $this->datagrid->addColumn($column_usuario);
     $this->datagrid->addColumn($column_status);
     $this->datagrid->addColumn($column_created);
     $this->datagrid->disableDefaultClick();
-
-/*     $column_status->setTransformer( function($value, $object, $row) {
-      $class = ($value=='PENDENTE') ? 'danger' : 'success';
-      $label = ($value=='PENDENTE') ? _t('No') : _t('Yes');
-      $div = new TElement('span');
-      $div->class="label label-{$class}";
-      $div->style="text-shadow:none; font-size:12px; font-weight:lighter";
-      $div->add($label);
-      return $div;
-  }); */
 
     // Action edit
     $action_edit = new TDataGridAction(array('EmprestimoFerramentasForm', 'onEdit'));
@@ -144,9 +142,9 @@ class EmprestimoList extends TStandardList
     if ($userSession == $isAdmin[0]->system_user_id)
       $this->datagrid->addAction($delete, 'Apagar solicitação', 'fas:trash-alt red');
 
-    $pdf = new TDataGridAction(array('EmprestimoFerramentasForm', 'onGenerate'));
+    /*     $pdf = new TDataGridAction(array('EmprestimoFerramentasForm', 'onGenerate'));
     $pdf->setField('id');
-    $this->datagrid->addAction($pdf, 'Gerar PDF','fas:file-pdf red');
+    $this->datagrid->addAction($pdf, 'Gerar PDF','fas:file-pdf red'); */
 
 
     // CRIAR O MODELO DE GRADE DE DADOS
@@ -161,6 +159,9 @@ class EmprestimoList extends TStandardList
     $panel = new TPanelGroup;
     $panel->add($this->datagrid);
     $panel->addFooter($this->pageNavigation);
+
+    $this->form->addHeaderActionLink('Filtros de busca', new TAction(array($this, 'toggleSearch')), 'fa:filter green fa-fw');
+    TScript::create('$(\'#' . self::$formName . '\').collapse(\'toggle\');');//aberto
 
     // recipiente de caixa vertical
     $container = new TVBox;
@@ -200,5 +201,19 @@ class EmprestimoList extends TStandardList
       new TMessage('error', $e->getMessage()); // shows the exception error message
     }
   }
+  static function toggleSearch()
+  {
+    // também pode apagar esses blocos if/else se não quiser usar a "memória" de estado do form
+    if (TSession::getValue('toggleSearch_' . self::$formName) == 1) {
+      TSession::setValue('toggleSearch_' . self::$formName, 0);
+    } else {
+      TSession::setValue('toggleSearch_' . self::$formName, 1);
+    }
 
+    // esta linha é a responsável por abrir/fechar o form
+    TScript::create('$(\'#' . self::$formName . '\').collapse(\'toggle\');');//aberto
+    //TScript::create('$(\'#' . self::$formName . '\').addClass(\'collapse\');');//fechado
+    // caso retire a função de "memória", copie a linha acima para dentro do onSearch,
+    // para que o form "permaneça aberto" (reabra automaticamente) ao realizar buscas
+  }
 }
