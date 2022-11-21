@@ -140,11 +140,6 @@ class EmprestimoFerramentasForm extends TPage
         $btnClear->style = 'background-color:#c73927; color:white; border-radius: 0.5rem;';
         $btnSave = $this->form->addAction(_t('Save'), new TAction([$this, 'onSave']), 'fa:save white');
         $btnSave->style = 'background-color:#218231; color:white; border-radius: 0.5rem;';
-
-        if ($emprestimo->status != "PENDENTE") {
-            $btnSave->style = 'display:none;';
-            $btnClear->style = 'display:none;';
-        }
         
         // wrap the page content using vertical box
         $vbox = new TVBox;

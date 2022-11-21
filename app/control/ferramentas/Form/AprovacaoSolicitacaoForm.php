@@ -53,7 +53,7 @@ class AprovacaoSolicitacaoForm extends TPage
         TTransaction::open('bancodados');
         $emprestimo = new Emprestimo($param['id']);
         TTransaction::close();
-        
+
         // create the form fields
         $id             = new TEntry('id');
         $id->setSize('50%');
@@ -63,7 +63,7 @@ class AprovacaoSolicitacaoForm extends TPage
             'border-radius: 0.25rem;
         border-width: 1px;
         border-style: solid;';
-        
+
         $created             = new TDateTime('created_at');
         $created->class = 'emprestimo';
         $created->setSize('95%');
@@ -84,16 +84,16 @@ class AprovacaoSolicitacaoForm extends TPage
         $ferramenta->setSize('100%');
         $ferramenta->setEditable(FALSE);
         $ferramenta->class = 'emprestimo';
-        
+
         $quantidade = new TEntry('quantidade[]'); //quantidade de ferramentas solicitadas
         $quantidade->setSize('100%');
         $quantidade->setEditable(FALSE);
         $quantidade->class = 'emprestimo';
-        
+
         $qtdEmprestada = new TEntry('qtd_emprestada[]'); //quantidade de ferramentas a serem emprestadas. 
         $qtdEmprestada->class = 'emprestimo';
         $qtdEmprestada->setSize('50%');
-        
+
         if ($emprestimo->status == "DEVOLVIDO") {
             $qtdEmprestada->class = 'emprestimo';
             $status->setEditable(FALSE);
@@ -162,14 +162,18 @@ class AprovacaoSolicitacaoForm extends TPage
                 $this->form->setData($emprestimo); //inserindo dados no formulario. 
 
                 $pivot = PivotEmprestimoFerramentas::where('id_emprestimo', '=', $emprestimo->id)->load();
-
                 if ($pivot) {
                     $this->fieldlist->addHeader();
                     foreach ($pivot as $itens => $value) {
                         $obj = new stdClass;
                         $obj->ferramenta = intval($value->id_ferramenta);
                         $obj->quantidade = $value->quantidade;
-                        $obj->qtd_emprestada = $value->quantidade;
+
+                        if(($value->qtd_emprestada == $value->quantidade) or ($value->qtd_emprestada == 0)){
+                            $obj->qtd_emprestada = $value->quantidade;
+                        }else{
+                            $obj->qtd_emprestada = $value->qtd_emprestada;
+                        }
 
                         $this->fieldlist->addDetail($obj);
                     }
@@ -252,7 +256,8 @@ class AprovacaoSolicitacaoForm extends TPage
                 }
             }
             TTransaction::close();
-            new TMessage('info', 'Salvo com sucesso');
+            $action = new TAction(array('EmprestimoList', 'onReload'));
+            new TMessage('info', 'Salvo com sucesso', $action);
         } catch (Exception $e) // in case of exception
         {
             new TMessage('error', $e->getMessage());
