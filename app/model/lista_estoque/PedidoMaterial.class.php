@@ -33,7 +33,6 @@ class PedidoMaterial extends TRecord
         parent::addAttribute('id_usuario');
         parent::addAttribute('created_at');
         parent::addAttribute('updated_at');
-        parent::addAttribute('deleted_at');
     }
     public function get_User()
     {

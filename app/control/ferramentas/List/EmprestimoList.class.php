@@ -86,7 +86,7 @@ class EmprestimoList extends TStandardList
       [new TLabel('Número da solicitação')],
 
       [$unique],
-      [new Tlabel('Data')],
+      [new Tlabel('Status')],
       [$status],
       [new Tlabel('Data')],
       [$data],

@@ -40,7 +40,9 @@ class CadastroMaterialForm extends TStandardForm
     $codigo = new TEntry('id_item');
     $codigo->id = "input-form";
     $descricao = new TEntry('descricao');
+    $descricao->id = "input-form";
     $quantidadeEstoque = new TEntry('quantidade_estoque');
+    $quantidadeEstoque->id = "input-form";
     $colaborador_responsavel = new THidden('id_usuario');
 
     $row = $this->form->addFields(
@@ -48,10 +50,18 @@ class CadastroMaterialForm extends TStandardForm
     );
 
     // ADICIONE OS CAMPOS
-    $row = $this->form->addFields([new TLabel('Codigo do item <font color="red">*</font>')], [$codigo]);
-    $this->form->addFields([new TLabel('Descrição <font color="red">*</font>')], [$descricao]);
-    $this->form->addFields([new TLabel('Quantidade <font color="red">*</font>')], [$quantidadeEstoque]);
-    $this->form->addFields([new TLabel('colaborador')], [$colaborador_responsavel]);
+    $row = $this->form->addFields(
+      [new TLabel('Codigo do item <font color="red">*</font>')],
+      [$codigo],
+      [new TLabel('colaborador')],
+      [$colaborador_responsavel]
+    );
+    $this->form->addFields(
+      [new TLabel('Descrição <font color="red">*</font>')],
+      [$descricao],
+      [new TLabel('Quantidade <font color="red">*</font>')],
+      [$quantidadeEstoque],
+    );
 
     $codigo->addValidation('Codigo do item <font color="red">*</font>', new TRequiredValidator);
     $descricao->addValidation('Descrição <font color="red">*</font>', new TRequiredValidator);
@@ -79,10 +89,12 @@ class CadastroMaterialForm extends TStandardForm
     $colaborador_responsavel->setEditable(FALSE);
 
     // CRIE AS AÇÕES DO FORMULÁRIO
-    $btn = $this->form->addAction(_t('Save'), new TAction(array($this, 'onSave')), 'far:save');
-    $btn->class = 'btn btn-sm btn-primary';
-    $this->form->addActionLink(_t('Clear'),  new TAction(array($this, 'onEdit')), 'fa:eraser red');
-    $this->form->addActionLink(_t('Back'), new TAction(array('MaterialList', 'onReload')), 'far:arrow-alt-circle-left blue');
+    $btnBack = $this->form->addActionLink(_t('Back'), new TAction(array('MaterialList', 'onReload')), 'far:arrow-alt-circle-left white');
+    $btnBack->style = 'background-color:gray; color:white; border-radius: 0.5rem;';
+    $btnClear = $this->form->addActionLink(_t('Clear'),  new TAction(array($this, 'onEdit')), 'fa:eraser white');
+    $btnClear->style = 'background-color:#c73927; color:white; border-radius: 0.5rem;';
+    $btnSave = $this->form->addAction(_t('Save'), new TAction(array($this, 'onSave')), 'far:save');
+    $btnSave->style = 'background-color:#218231; color:white; border-radius: 0.5rem;';
 
     // RECIPIENTE DE CAIXA VERTICAL
     $container = new TVBox;
@@ -93,44 +105,3 @@ class CadastroMaterialForm extends TStandardForm
     parent::add($container);
   }
 }
-   /* $data_cadastro->setEditable(FALSE);
-        $nome->setSize('70%');
-        $nome->addValidation(('NOME'), new TRequiredValidator);
-        $nome->forceUpperCase();
-        $telefone->setSize('30%');
-        $telefone->setMask('+(99) 99999-9999');*/
-
-        /*
-        $numero->setSize('25%');
-        $complemento->setSize('50%');
-        $cep->setMask('99.999-999');
-  */
-     /*$this->form->addFields([new TLabel('DATA CADASTRO')], [$data_cadastro]);
-        $this->form->addFields([new TLabel('NOME')], [$nome]);
-        $this->form->addFields([new TLabel('SEXO')], [$sexo]);
-        $this->form->addFields([new TLabel('EMAIL')], [$email]);
-        $this->form->addFields([new TLabel('TELEFONE')], [$telefone]);
-        $this->form->addFields([new TLabel('CANAL')], [$canal]);
-        $this->form->addFields([new TLabel('DATA RECEBIMENTO')], [$data_recebimento]);
-        $this->form->addFields([$fase_atual]);*/
-
-        //$DATA->setDatabaseMask("Y-m-d H:i:s");
-
-        /*  $codigo->setSize('15%');
-        $codigo->setEditable(FALSE);
-        $nome->setSize('70%');
-        $data_cadastro->setSize('15%');
-        $email->setSize('30%');
-        $canal->setSize('30%');
-        $data_recebimento->setSize('15%');
-        $sexo->setSize('15%');*/
-          /*$data_cadastro = new TEntry('data_cadastro');
-        $nome = new TEntry('nome_cliente');
-        $sexo = new TDBCombo('sexo', 'bancodados', 'sexo', 'nome_sexo', 'nome_sexo');
-        $telefone = new TEntry('telefone');
-        $email = new TEntry('email');
-        $canal = new TEntry('canal');
-        $data_recebimento = new TDate('data_recebimento');
-        $data_cadastro->setValue(date("Y-m-d H:i:s"));
-        $fase_atual = new THidden('fase_atual');
-        $fase_atual->setValue('QUALIFICACAO');*/

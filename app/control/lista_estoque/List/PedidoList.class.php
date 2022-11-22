@@ -37,13 +37,13 @@ class PedidoList extends TStandardList
     parent::__construct();
 
     parent::setDatabase('bancodados');            // DEFINE O BANCO DE DADOS
-    parent::setActiveRecord('ListaPedido');   // DEFINE O REGISTRO ATIVO
+    parent::setActiveRecord('PedidoMaterial');   // DEFINE O REGISTRO ATIVO
     parent::setDefaultOrder('id', 'desc');         //  DEFINE A ORDEM PADRÃO
     parent::addFilterField('id', '=', 'id'); //  CAMPO DE FILTRO, OPERADOR, CAMPO DE FORMULÁRIO
     parent::addFilterField('status', '=', 'status'); // CAMPO DE FILTRO, OPERADOR, CAMPO DE FORMULÁRIO
     parent::addFilterField('created_at', '=', 'created_at'); // CAMPO DE FILTRO, OPERADOR, CAMPO DE FORMULÁRIO
-    parent::addFilterField('update_at', '=', 'updated_at'); // CAMPO DE FILTRO, OPERADOR, CAMPO DE FORMULÁRIO
-    parent::addFilterField('id_usuario', '=', 'id_usuario');
+    //parent::addFilterField('update_at', '=', 'updated_at'); // CAMPO DE FILTRO, OPERADOR, CAMPO DE FORMULÁRIO
+    //parent::addFilterField('id_usuario', '=', 'id_usuario');
     if ($userSession == $isAdmin[0]->system_user_id) {
       parent::addFilterField('id_usuario', '=', 'userid'); // CAMPO DE FILTRO, OPERADOR, CAMPO DE FORMULÁRIO
     } else {
@@ -63,51 +63,64 @@ class PedidoList extends TStandardList
     // CRIE OS CAMPOS DO FORMULÁRIO
 
     $id = new TEntry('id');
-    $id_status = new TCombo('status');
-    $id_status->addItems(array('PENDENTE' => 'PENDENTE', 'APROVADO' => 'APROVADO', 'REPROVADO' => 'REPROVADO'));
-    $id_usuario = new TDBCombo('id_usuario', 'bancodados', 'SystemUser', 'id', 'matricula');
-    $data_pedido = new TDate('created_at');
-    $data_aprovacao = new TDate('updated_at');
-
-    // ADICIONE OS CAMPOS
-
-    $this->form->addFields([new TLabel('CODIGO DO PEDIDO')], [$id]);
-    $this->form->addFields([new TLabel('CODIGO DO STATUS')], [$id_status]);
-    $this->form->addFields([new TLabel('MATRICULA')], [$id_usuario]);
-    $this->form->addFields([new TLabel('DATA DO PEDIDO')], [$data_pedido]);
-    $this->form->addFields([new TLabel('DATA DA APROVAÇÃO')], [$data_aprovacao]);
-
-    $id->setTip('Digite codigo do pedido que voce procura');
-    $id_status->setTip('Selecione o tipo de status que voce procura');
-    $id_usuario->setTip('Digite a matricula do usuario para efetuar a busca');
-    $data_pedido->setTip('Selecione a data do pedido para efetuar a busca');
-    $data_aprovacao->setTip('Selecione a data da aprovação do pedido para efetuar a busca');
-
-
+    $id->id = "input-form";
     $id->placeholder = '00000';
     $id->setMask('99999');
     $id->maxlength = 5;
     $id->setSize('35%');
-    $id_status->setDefaultOption('Selecionar');
 
-    $id_status->setSize('35%');
+    $status = new TCombo('status');
+    $status->id = "input-form";
+    $status->addItems(array('PENDENTE' => 'PENDENTE', 'APROVADO' => 'APROVADO', 'REPROVADO' => 'REPROVADO'));
+    $status->setDefaultOption('Selecionar');
+    $status->setSize('35%');
+
+    $id_usuario = new TDBCombo('id_usuario', 'bancodados', 'SystemUser', 'id', 'matricula');
+    $id_usuario->id = "input-form";
     $id_usuario->setSize('35%');
-    $data_pedido->setSize('35%');
-    $data_aprovacao->setSize('35%');
     $id_usuario->enableSearch();
 
+    $data_pedido = new TDate('created_at');
+    $data_pedido->id = "input-form";
+    $data_pedido->setSize('35%');
     $data_pedido->setMask('dd/mm/yyyy');
+
+    $data_aprovacao = new TDate('updated_at');
+    $data_aprovacao->id = "input-form";
+    $data_aprovacao->setSize('35%');
     $data_aprovacao->setMask('dd/mm/yyyy');
+
+    // ADICIONE OS CAMPOS
+
+    $this->form->addFields(
+      [new TLabel('Codigo do pedido')],
+      [$id],
+      [new TLabel('Status')],
+      [$status],
+      [new TLabel('Matricula')],
+      [$id_usuario]
+    );
+    $this->form->addFields(
+      [new TLabel('Data do pedido')],
+      [$data_pedido],
+      [new TLabel('Data da aprovação')],
+      [$data_aprovacao]
+    );
+
+    $id->setTip('Digite codigo do pedido que voce procura');
+    $status->setTip('Selecione o tipo de status que voce procura');
+    $id_usuario->setTip('Digite a matricula do usuario para efetuar a busca');
+    $data_pedido->setTip('Selecione a data do pedido para efetuar a busca');
+    $data_aprovacao->setTip('Selecione a data da aprovação do pedido para efetuar a busca');
 
     // MANTENHA O FORMULÁRIO PREENCHIDO DURANTE A NAVEGAÇÃO COM OS DADOS DA SESSÃO
     $this->form->setData(TSession::getValue('cadastro_filter_data'));
 
     // ADICIONE AS AÇÕES DO FORMULÁRIO DE PESQUISA
-    $btn = $this->form->addAction(_t('Find'), new TAction(array($this, 'onSearch')), 'fa:search');
-    $this->form->addAction("Novo Item", new TAction(["PedidoMaterialForm", "onEdit"]), "fa:plus-circle green");
-    $this->form->addAction('Save as PDF', new TAction([$this, 'exportAsPDF'], ['register_state' => 'false']), 'far:file-pdf red');
-
-    $btn->class = 'btn btn-sm btn-primary';
+    $btnFind = $this->form->addAction(_t('Find'), new TAction(array($this, 'onSearch')), 'fa:search');
+    $btnFind->style = 'background-color:#2c7097; color:white; border-radius: 0.5rem;';
+    $btn = $this->form->addAction("Solicitar material", new TAction(["PedidoMaterialForm", "onEdit"]), "fa:plus-circle white");
+    $btn->style = 'background-color:#218231; color:white; border-radius: 0.5rem;';
 
     // CRIA UMA GRADE DE DADOS
     $this->datagrid = new BootstrapDatagridWrapper(new TDataGrid);
@@ -116,27 +129,26 @@ class PedidoList extends TStandardList
     $this->datagrid->setHeight(320);
 
     // CRIA AS COLUNAS DA GRADE DE DADOS
-    $column_id = new TDataGridColumn('id', 'CODIGO DO PEDIDO', 'center');
-    $column_id_status = new TDataGridColumn('status', 'CODIGO DO STATUS', 'center');
+    $column_id = new TDataGridColumn('id', 'Codigo do pedido', 'center');
+    $column_status = new TDataGridColumn('status', 'Status', 'center');
     if ($userSession == $isAdmin[0]->system_user_id) {
-      $column_id_usuario = new TDataGridColumn('user->name', 'USUÁRIO', 'center');
+      $column_id_usuario = new TDataGridColumn('user->name', 'Usuário', 'center');
     } else {
-      $column_id_usuario = new TDataGridColumn('user->name', 'USUÁRIO', 'center');
+      $column_id_usuario = new TDataGridColumn('user->name', 'Usuário', 'center');
     }
 
-    $column_data_pedido = new TDataGridColumn('created_at', 'DATA DO PEDIDO', 'center');
-    $column_data_aprovacao = new TDataGridColumn('updated_at', 'DATA DA APROVACAO', 'center');
+    $column_data_pedido = new TDataGridColumn('created_at', 'Data do pedido', 'center');
+    $column_data_aprovacao = new TDataGridColumn('updated_at', 'Data da aprovacao', 'center');
 
     $column_data_pedido->setTransformer(array('helpers', 'formatDate'));
     $column_data_aprovacao->setTransformer(array('helpers', 'formatDate'));
 
     // ADICIONE AS COLUNAS À GRADE DE DADOS
     $this->datagrid->addColumn($column_id);
-    $this->datagrid->addColumn($column_id_status);
+    $this->datagrid->addColumn($column_status);
     $this->datagrid->addColumn($column_id_usuario);
     $this->datagrid->addColumn($column_data_pedido);
     $this->datagrid->addColumn($column_data_aprovacao);
-
 
     // CRIA AS AÇÕES DA COLUNA DA GRADE DE DADOS
     $order_id = new TAction(array($this, 'onReload'));
@@ -145,7 +157,7 @@ class PedidoList extends TStandardList
 
     $order_id_status = new TAction(array($this, 'onReload'));
     $order_id_status->setParameter('order', 'status');
-    $column_id_status->setAction($order_id_status);
+    $column_status->setAction($order_id_status);
 
     $order_id_usuario = new TAction(array($this, 'onReload'));
     $order_id_usuario->setParameter('order', 'id_usuario');
@@ -176,10 +188,6 @@ class PedidoList extends TStandardList
     $delete = new TDataGridAction([$this, 'onDeleteSessionVar'],   ['id' => '{id}']);
     if ($userSession == $isAdmin[0]->system_user_id)
       $this->datagrid->addAction($delete, 'Apagar solicitação', 'fas:trash-alt red');
-
-    $action2 = new TDataGridAction(['PedidoList', 'exportAsPDF']);
-    $action2->setField('id');
-    $this->datagrid->addAction($action2, 'Gerar Relatorio', 'fa:file-pdf red');
 
     // CRIAR O MODELO DE GRADE DE DADOS
     $this->datagrid->createModel();
@@ -228,37 +236,6 @@ class PedidoList extends TStandardList
 
     } catch (Exception $e) {
       new TMessage('error', $e->getMessage()); // shows the exception error message
-    }
-  }
-  public function exportAsPDF($param)
-  {
-    try {
-      // string with HTML contents
-      $html = clone $this->datagrid;
-      $contents = file_get_contents('app/resources/styles-print.html') . $html->getContents();
-
-      // converts the HTML template into PDF
-      $dompdf = new \Dompdf\Dompdf();
-      $dompdf->loadHtml($contents);
-      $dompdf->setPaper('A4', 'landscape');
-      $dompdf->render();
-
-      $file = 'app/output/cash-register.pdf';
-
-      // write and open file
-      file_put_contents($file, $dompdf->output());
-
-      $window = TWindow::create('Invoice', 0.8, 0.8);
-      $object = new TElement('object');
-      $object->data  = $file;
-      $object->type  = 'application/pdf';
-      $object->style = "width: 100%; height:calc(100% - 10px)";
-      $object->add('O navegador não suporta a exibição deste conteúdo, <a style="color:#007bff;" target=_newwindow href="' . $object->data . '"> clique aqui para baixar</a>...');
-
-      $window->add($object);
-      $window->show();
-    } catch (Exception $e) {
-      new TMessage('error', $e->getMessage());
     }
   }
   /**

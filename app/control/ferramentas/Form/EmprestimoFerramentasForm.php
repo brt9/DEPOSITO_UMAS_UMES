@@ -48,7 +48,6 @@ class EmprestimoFerramentasForm extends TPage
         $this->subFormFirst = new BootstrapFormBuilder('subFormFirst');
         $this->subFormSecound = new BootstrapFormBuilder('subFormSecound');
 
-
         $id             = new TEntry('id');
         $id->class = 'emprestimo';
         $id->setEditable(FALSE);
