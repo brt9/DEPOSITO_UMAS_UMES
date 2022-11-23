@@ -1,6 +1,7 @@
 <?php
 
 use Adianti\Widget\Form\TDateTime;
+use Adianti\Widget\Form\TEntry;
 use Adianti\Widget\Form\THidden;
 
 /**
@@ -43,7 +44,8 @@ class CadastroMaterialForm extends TStandardForm
     $descricao->id = "input-form";
     $quantidadeEstoque = new TEntry('quantidade_estoque');
     $quantidadeEstoque->id = "input-form";
-    $colaborador_responsavel = new THidden('id_usuario');
+    $colaborador_responsavel = new TEntry('id_usuario');
+    $colaborador_responsavel->id = "input-form";
 
     $row = $this->form->addFields(
       [$labelInfo = new TLabel('<b>Campos com asterisco (<font color="red">*</font>) são considerados campos obrigatórios</b>')],
@@ -53,7 +55,7 @@ class CadastroMaterialForm extends TStandardForm
     $row = $this->form->addFields(
       [new TLabel('Codigo do item <font color="red">*</font>')],
       [$codigo],
-      [new TLabel('colaborador')],
+      [new TLabel('Colaborador responsável')],
       [$colaborador_responsavel]
     );
     $this->form->addFields(
@@ -66,7 +68,7 @@ class CadastroMaterialForm extends TStandardForm
     $codigo->addValidation('Codigo do item <font color="red">*</font>', new TRequiredValidator);
     $descricao->addValidation('Descrição <font color="red">*</font>', new TRequiredValidator);
     $quantidadeEstoque->addValidation('Quantidade <font color="red">*</font>', new TRequiredValidator);
-    $colaborador_responsavel->addValidation('COLABORADOR RESPONSAVEL <font color="red">*</font>', new TRequiredValidator);
+    $colaborador_responsavel->addValidation('Colaborador responsável <font color="red">*</font>', new TRequiredValidator);
 
     $codigo->setTip('Digite o codigo do item que deseja cadastrar');
     $codigo->placeholder = '00000';

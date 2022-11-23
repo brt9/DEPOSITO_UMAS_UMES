@@ -92,10 +92,19 @@ class EmprestimoFerramentasForm extends TPage
         border-style: solid;';
 
         TTransaction::open('bancodados');
+        $userSession = TSession::getValue('userid');
+        $isAdmin = SystemUserGroup::where('system_group_id', '=', 1)->load();
+
+        $crit = new TCriteria();
+        $crit->add(new TFilter('id_usuario', '=', $userSession));
+
+        if ($userSession != $isAdmin[0]->system_user_id) {
+        }
+
         if (isset($param['id'])) {
             $emprestimo = new Emprestimo($param['id']);
             TTransaction::close();
-            if ($emprestimo->status != "PENDENTE") {
+            if (($emprestimo->status != "PENDENTE") or ($userSession != $isAdmin[0]->system_user_id)) {
                 $ferramenta = new TEntry('ferramenta[]');
                 $ferramenta->setSize('100%');
                 $ferramenta->class = 'emprestimo';
@@ -139,7 +148,7 @@ class EmprestimoFerramentasForm extends TPage
         $btnClear->style = 'background-color:#c73927; color:white; border-radius: 0.5rem;';
         $btnSave = $this->form->addAction(_t('Save'), new TAction([$this, 'onSave']), 'fa:save white');
         $btnSave->style = 'background-color:#218231; color:white; border-radius: 0.5rem;';
-        
+
         // wrap the page content using vertical box
         $vbox = new TVBox;
         $vbox->style = 'width: 100%; margin-top: 2rem';
@@ -236,7 +245,8 @@ class EmprestimoFerramentasForm extends TPage
                             throw new Exception('A ferramenta está vazia na linha ' . ($i + 1));
                         }
                         if (!empty($duplicates[$i])) {
-                            throw new Exception('Ferramenta repetida na linha ' . ($i + 1) . '. Uma ferramentas nao poder ser solicitada mais de uma vez');
+                            throw new Exception('Ferramenta repetida na linha ' . ($i + 1) .
+                                '. Uma ferramentas nao poder ser solicitada mais de uma vez');
                         }
 
                         $pivot =  new PivotEmprestimoFerramentas();
@@ -248,9 +258,13 @@ class EmprestimoFerramentasForm extends TPage
                             $qtdTools[] = $key->quantidade;
                         }
                         //Verifica se a quantidade solicitada for maior que a do estoque 
-                        if ($param['quantidade'][$i] >= $qtdTools[$i] or ($param['quantidade'][$i] < 0)) {
+                        if (($param['quantidade'][$i] >= $qtdTools[$i])
+                            or ($param['quantidade'][$i] < 0)
+                        ) {
                             throw new Exception(
-                                'A quantidade na ' . ($i + 1) . '° linha não pode ser maior que a disponível no estoque que é: ' . $qtdTools[$i]
+                                'A quantidade na ' . ($i + 1) .
+                                    '° linha não pode ser maior que a disponível no estoque que é: ' 
+                                    . $qtdTools[$i]
                             );
                         } else {
                             $pivot->quantidade = $param['quantidade'][$i];

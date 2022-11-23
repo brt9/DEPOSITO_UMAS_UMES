@@ -7,9 +7,9 @@ use Adianti\Database\TRecord;
  *
  * @version    1.0
  * @package    model
- * @subpackage Atletas Olimpicos
+ * @subpackage pivot pedido material
  * @author     PEDRO FELIPE FREIRE DE MEDEIROS
- * @copyright  Copyright (c) 2021 Barata
+ * @copyright  Copyright (c) 2022 Barata
  * @license    http://www.adianti.com.br/framework-license
  */
 class PivotPedidoMaterial extends TRecord

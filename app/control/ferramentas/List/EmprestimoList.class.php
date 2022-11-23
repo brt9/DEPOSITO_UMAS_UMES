@@ -55,36 +55,34 @@ class EmprestimoList extends TStandardList
       parent::setCriteria($crit);
     }
     parent::addFilterField('status', '=', 'status'); //  CAMPO DE FILTRO, OPERADOR, CAMPO DE FORMULÁRIO
-    parent::addFilterField('created_at', '=', 'created_at');
+    parent::addFilterField('created_at', 'like', 'created_at');
 
 
     // CRIA O FORMULÁRIO
     $this->form = new BootstrapFormBuilder('form_search');
     $form = $this->form->setFormTitle('Emprestimo de ferramentas');
 
-
     // CRIE OS CAMPOS DO FORMULÁRIO
     $unique = new TDBUniqueSearch('FerramentaList', 'bancodados', 'emprestimo', 'id', 'id');
     $unique->id = "input-form";
     $unique->setMinLength(0);
     $unique->setMask('{id}');
-
-    $unique->placeholder = 'Pesquise o emprestido pela númeração da solicitação';
-
+    $unique->setSize('150%');
+    $unique->placeholder = 'Númeração da solicitação';
+    
     $status = new TCombo('status');
     $status->addItems(['PENDENTE' => 'PENDENTE', 'APROVADO' => 'APROVADO', 'DEVOLVIDO' => 'DEVOLVIDO']);
     $status->id = "input-form";
-
+    
     $data = new TDate('created_at');
     $data->id = "input-form";
-    $data->placeholder = 'Pesquise pela data de criação';
+    $data->placeholder = 'Data de criação';
     $data->setMask('dd/mm/yyyy');
+    $data->setSize('100%');
 
     // ADICIONE OS CAMPOS
     $row = $this->form->addFields(
-
       [new TLabel('Número da solicitação')],
-
       [$unique],
       [new Tlabel('Status')],
       [$status],
@@ -93,7 +91,6 @@ class EmprestimoList extends TStandardList
     );
 
     $row = $this->form->addFields();
-    $data->setSize('70%');
 
     // MANTENHA O FORMULÁRIO PREENCHIDO DURANTE A NAVEGAÇÃO COM OS DADOS DA SESSÃO
     $this->form->setData(TSession::getValue('cadastro_filter_data'));
@@ -129,7 +126,7 @@ class EmprestimoList extends TStandardList
     // Action edit
     $action_edit = new TDataGridAction(array('EmprestimoFerramentasForm', 'onEdit'));
     $action_edit->setField('id');
-    $this->datagrid->addAction($action_edit, 'Editar solicitação', 'far:edit blue');
+    $this->datagrid->addAction($action_edit, 'Visualizar solicitação', 'far:edit blue');
 
     // Visualização da solicitação para o admin. 
     $action1 = new TDataGridAction(['AprovacaoSolicitacaoForm', 'onEdit']);
