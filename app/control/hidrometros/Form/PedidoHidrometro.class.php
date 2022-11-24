@@ -2,6 +2,7 @@
 
 use Adianti\Base\TStandardForm;
 use Adianti\Control\TPage;
+use Adianti\Core\AdiantiApplicationConfig;
 use Adianti\Database\TTransaction;
 use Adianti\Registry\TSession;
 use Adianti\Widget\Form\TDateTime;
@@ -12,8 +13,12 @@ use Adianti\Widget\Wrapper\TDBCombo;
 use Adianti\Widget\Wrapper\TDBUniqueSearch;
 use Sabberworm\CSS\Value\Value;
 use Adianti\Util\AdiantiUIBuilder;
+use Adianti\Widget\Container\TVBox;
+use Adianti\Widget\Form\TBarCodeInputReader;
+use Adianti\Widget\Form\TFieldList;
 use Adianti\Widget\Form\TForm;
 use Adianti\Widget\Form\TLabel;
+use Adianti\Wrapper\BootstrapFormBuilder;
 
 /**
  * FORMULÁRIO DE CADASTRO DE MATERIAL
@@ -28,6 +33,7 @@ use Adianti\Widget\Form\TLabel;
 class PedidoHidrometro extends TPage
 {
     protected $form; //  FORMULÁRIO
+    protected $fieldlist; //  FORMULÁRIO
     //  FORMULÁRIO
     // CONSTRUTOR DE CLASSE
     // CRIA A PÁGINA E O FORMULÁRIO DE INSCRIÇÃO
@@ -38,86 +44,49 @@ class PedidoHidrometro extends TPage
 
         $ini  = AdiantiApplicationConfig::get();
 
-        //  $this->setDatabase('bancodados');              // DEFINE O BANCO DE DADOS
-        //  $this->setActiveRecord('pedido');               // DEFINE O REGISTRO ATIVO
-
         // CRIA O FORMULÁRIO
         $this->form = new BootstrapFormBuilder('my_form');
         $this->form->setFormTitle('<b>FORMULARIO DE PEDIDO DE HIDROMETROS</b>');
 
-
         $id = new TEntry('id');
-        $hidrometro = new TBarCodeInputReader('hidrometro[]');
-
-      
-
         $id->setEditable(FALSE);
-
         $id->setSize('100%');
+
+        $hidrometro = new TBarCodeInputReader('hidrometro[]');
         $hidrometro->setSize('100%');
         $hidrometro->setTip('Digite o codigo do Hidrometro');
         $hidrometro->placeholder = 'Y22ZZZZZZ';
         $hidrometro->maxlength = 10;
-
-
-
+    
         $this->fieldlist = new TFieldList;
         $this->fieldlist->generateAria();
         $this->fieldlist->width = '100%';
         $this->fieldlist->name  = 'my_field_list';
-        $this->form->addFields([$id]);
-        var_dump(($param['id'] == null));
-        if ($param['id'] == null) {
-            $this->fieldlist->addField('<b>HIDROMETRO</b><font color="red"> *</font>',  $hidrometro,  ['width' => '100%']);
-
-
-            $row = $this->form->addFields(
-                [$labelInfo = new TLabel('<b>Campos com asterisco (<font color="red">*</font>) são considerados campos obrigatórios</b>')],
-            );
-    
-            $row =  $this->fieldlist->addDetail(new stdClass);
-            $this->fieldlist->addHeader();
-    
-    
-            $this->form->addField($hidrometro);
-            $this->fieldlist->addCloneAction();
-            $btnSave = $this->form->addAction('SALVAR', new TAction([$this, 'onSave']), 'fa:save white');
-            $btnSave->style = 'background-color:#218231; color:white';
-            $btnClear = $this->form->addAction('LIMPAR', new TAction([$this, 'onClear']), 'fa:eraser white');
-            $btnClear->style = 'background-color:#c73927; color:white';
-        } else { $this->fieldlist->addField('<b>HIDROMETRO</b><font color="red"> *</font>',  $hidrometro,  ['width' => '100%']);
-             $this->fieldlist->addHeader();
-    
+        $this->fieldlist->addField('<b>HIDROMETRO</b><font color="red"> *</font>',  $hidrometro,  ['width' => '100%']);
+        $this->form->addField($hidrometro);
+        if($param['id'] != null){
             $hidrometro->setEditable(FALSE);
             $this->fieldlist->disableRemoveButton();
-        }
-
-
-   
-
-
-        $this->form->addContent([$this->fieldlist]);
-
-
-
-
-        //////////////////
-
-
-
-        //$id_status->setValue('1');
-        // form actions
-     
+            
+        }else{  $btnSave = $this->form->addAction('SALVAR', new TAction([$this, 'onSave']), 'fa:save white');
+            $btnSave->style = 'background-color:#218231; color:white; border-radius: 0.5rem;';
+            $btnClear = $this->form->addAction('LIMPAR', new TAction([$this, 'onClear']), 'fa:eraser white');
+            $btnClear->style = 'background-color:#c73927; color:white; border-radius: 0.5rem;';}
+        
+        $this->form->addFields(
+            [new TLabel('<b>Codigo Pedido Hidrometro</b>')],
+            [$id]
+        );
+      
+        $btnBack = $this->form->addActionLink(_t('Back'), new TAction(array('PedidoHidrometroList', 'onReload')), 'far:arrow-alt-circle-left white');
+        $btnBack->style = 'background-color:gray; color:white; border-radius: 0.5rem;';
         // wrap the page content using vertical box
         $vbox = new TVBox;
         $vbox->style = 'width: 100%';
-        //$vbox->add(new TXMLBreadCrumb('menu.xml', __CLASS__));
         $vbox->add($this->form);
-
 
         parent::add($vbox);
     }
-
 
     public function onSave($param)
     {
@@ -173,8 +142,6 @@ class PedidoHidrometro extends TPage
                         $pivot->id_pedido_hidrometro = $object->id;
                         $pivot->hidrometro  = $hidrometro[$i];
 
-
-
                         //Verifica se a quantidade solicitada for maior que a do estoque 
 
                         $pivot->store();
@@ -192,118 +159,38 @@ class PedidoHidrometro extends TPage
             TTransaction::rollback();
         }
     }
-    public function validate()
-    {
-        // assign post data before validation
-        // validation exception would prevent
-        // the user code to execute setData()
-        $this->setData($this->getData());
-
-        foreach ($this->fields as $fieldObject) {
-            $fieldObject->validate();
-        }
-    }
-    public function updateQuantidade($id, $value)
-    {
-    }
     public function onClear($param)
     {
-    }
-    public function fireEvents($param)
-    { /*
-        if (!empty($param['id_item'])) {
-            TTransaction::open('bancodados');
-            $emprestimo = pedido::where ('id', '=', $param['id']);
-            $this->form->setData($emprestimo); //inserindo dados no formulario. 
-
-            $pivot = pivot::where('id_pedido_material', '=', $emprestimo->id)->load();
-
-            if ($pivot) {
-                $this->fieldlist->addHeader();
-                foreach ($pivot as $itens => $value) {
-                    $obj = new stdClass;
-                    $obj->id_item = $value->id_item;
-                    $obj->quantidade = $value->quantidade;
-
-                    $this->fieldlist->addDetail($obj);
-                }
-                $this->fieldlist->addCloneAction();
-            }
-            // add field list to the form
-            $this->form->addContent([$this->fieldlist]);
-            TTransaction::close();
-        } else {
-            $this->fieldlist->addHeader();
-            $this->fieldlist->addDetail(new stdClass);
-            $this->fieldlist->addCloneAction();
-            $this->form->addContent([$this->fieldlist]);
-        }*/
     }
     function getDuplicates($param)
     {
         return array_unique(array_diff_assoc($param, array_unique($param)));
     }
-    public function onChange($param)
-    {
-        /*
-        TTransaction::open('bancodados');
-        empty($param['id_item']) ? $hidrometro = $param : $hidrometro = $param['id_item'];
-        $hidrometro = lista::where('id_item', 'in', $hidrometro)->load();
-        $obj = new stdClass;
-        $obj->quantidade_estoque = $hidrometro[0]->quantidade_estoque;
-        TCombo::reload('my_form', 'quantidadeDisponivel', $obj);
-        TTransaction::close();
-
-        /////////////// PRENCHER CAMPO ID COM VALOR DA DESCRICAO
-        /*try {
-            TTransaction::open('bancodados'); // abre uma transação
-            $list = lista::where('id_item', '=', $param['id_item'])->load();
-            var_dump($list[0]->descricao);
-
-            TTransaction::close(); // fecha a transação.
-            $obj = new stdClass();
-            $obj->descricao = $list[0]->descricao;
-
-            $this->descricao = $list[0]->descricao;
-            TForm::sendData('my_form', $this->descricao);
-        } catch (Exception $e) {
-            new TMessage('error', $e->getMessage());
-         }*/
-    }
     public function onEdit($param)
     {
-        try {
-            if (isset($param['key'])) {
-                TTransaction::open('bancodados');
-                $emprestimo = pedidohd::find($param['key']);
-                $this->form->setData($emprestimo); //inserindo dados no formulario. 
-
-                $pivot = pivothd::where('id_pedido_hidrometro', '=', $emprestimo->id)->load();
-
-                if ($pivot) {
-                    // $this->fieldlist->addHeader();
-                    foreach ($pivot as $itens => $value) {
-                        $obj = new stdClass;
-                        //$obj->id_pedido_hidrometro = $value->id_pedido_hidrometro;
-                        $obj->hidrometro = $value->hidrometro;
-
-                        $this->fieldlist->addDetail($obj);
-                        $this->fieldlist->disableRemoveButton();
-                    }
-                }
-                // $this->onChange(array($pivot[0]->id_pedido_hidrometro));
-                // add field list to the form
-                //  $this->form->addContent([$this->fieldlist]);
-                TTransaction::close();
-            } else {
-                //  $this->fieldlist->addHeader();
-                //   $this->fieldlist->addDetail(new stdClass);
-                // $this->fieldlist->addCloneAction();
-                // $this->form->addContent([$this->fieldlist]);
-            }
-        } catch (Exception $e) {
-            new TMessage('error', $e->getMessage()); // shows the exception error message
-            $this->fireEvents($param);
+       if(isset($param['key'])){
+        TTransaction::open('bancodados');
+        $object = new pedidohd($param["key"]);
+        $this->form->setData($object);
+        $pivot = pivothd::where('id_pedido_hidrometro', '=', $object->id)->load();
+        if ($pivot){
+            $this->fieldlist->addHeader();
+            foreach($pivot as $key){
+                $obj = new stdClass;
+                $obj->hidrometro = $key->hidrometro;
+                $this->fieldlist->addDetail($obj);
+            }         
         }
+        $this->form->addContent([$this->fieldlist]);
+        TTransaction::close();
+      
+       }else {
+        $this->fieldlist->addHeader();
+        $this->fieldlist->addDetail(new stdClass);
+        $this->fieldlist->addCloneAction();
+        $this->form->addContent([$this->fieldlist]);
+       }
+      
+      
     }
 }
