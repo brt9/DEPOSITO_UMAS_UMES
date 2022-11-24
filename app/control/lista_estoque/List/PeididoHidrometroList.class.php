@@ -100,7 +100,7 @@ class PeididoHidrometroList extends TStandardList
 
     // ADICIONE AS AÇÕES DO FORMULÁRIO DE PESQUISA
     $btn = $this->form->addAction(_t('Find'), new TAction(array($this, 'onSearch')), 'fa:search');
-    $this->form->addAction("Novo Item", new TAction(["PedidoMaterial", "onEdit"]), "fa:plus-circle green");
+    $this->form->addAction("Novo Item", new TAction(["PedidoHidrometro", "onEdit"]), "fa:plus-circle green");
     $this->form->addAction('Save as PDF', new TAction([$this, 'exportAsPDF'], ['register_state' => 'false']), 'far:file-pdf red');
 
 
@@ -167,7 +167,7 @@ class PeididoHidrometroList extends TStandardList
    
 
 
-    $action1 = new TDataGridAction(['PedidoAprovacaoForm', 'onEdit']);
+    $action1 = new TDataGridAction(['PedidoHidrometro', 'onEdit']);
     $action1->setField('id');
     if ($userSession == $isAdmin[0]->system_user_id)
       $this->datagrid->addAction($action1, 'Visualizar solicitação', 'fa:check-circle background-color:#218231');
@@ -218,7 +218,7 @@ class PeididoHidrometroList extends TStandardList
       TTransaction::open('bancodados');
       $pedido = pedido::find($param['id']);
       $pedido->Delete();
-      AdiantiCoreApplication::gotoPage('PeididoList');
+      AdiantiCoreApplication::gotoPage('PedidoList');
       TTransaction::close();
       new TMessage('info', TAdiantiCoreTranslator::translate('Record deleted')); // success message
 
