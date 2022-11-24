@@ -74,7 +74,7 @@ class PedidoMaterialForm extends TPage
         $quantidade = new TSpinner('quantidade[]');
         $quantidade->setTip('Digite a quantidade do item desejado');
         $quantidade->setSize('100%');
-
+        $quantidade->setRange(0, 1000, 1);
         $quantidadeDisponivel = new TEntry('quantidadeDisponivel');
         $quantidadeDisponivel->setEditable(FALSE);
         $quantidadeDisponivel->setSize('100%');
@@ -171,8 +171,8 @@ class PedidoMaterialForm extends TPage
             if ($param['descricao'] == [""]) {
                 throw new Exception('Campo "Descrição" é obrigatorio não pode ser vazio');
             }
-            if ($param['quantidade'] == ['0']) {
-                throw new Exception('Campo "Quantidade" não pode ser vazio');
+            if ($param['quantidade'] <= ['0']) {
+                throw new Exception('Campo "Quantidade" não pode ser vazio ou negativo');
             } else {
                 if (isset($param["id"]) && !empty($param["id"])) {
                     $object = new PedidoMaterial($param["id"]);
