@@ -49,7 +49,7 @@ class PedidoHidrometro extends TPage
         $id = new TEntry('id');
         $hidrometro = new TBarCodeInputReader('hidrometro[]');
 
-
+      
 
         $id->setEditable(FALSE);
 
@@ -58,10 +58,6 @@ class PedidoHidrometro extends TPage
         $hidrometro->setTip('Digite o codigo do Hidrometro');
         $hidrometro->placeholder = 'Y22ZZZZZZ';
         $hidrometro->maxlength = 10;
-
-
-
-
 
 
 
@@ -85,6 +81,10 @@ class PedidoHidrometro extends TPage
     
             $this->form->addField($hidrometro);
             $this->fieldlist->addCloneAction();
+            $btnSave = $this->form->addAction('SALVAR', new TAction([$this, 'onSave']), 'fa:save white');
+            $btnSave->style = 'background-color:#218231; color:white';
+            $btnClear = $this->form->addAction('LIMPAR', new TAction([$this, 'onClear']), 'fa:eraser white');
+            $btnClear->style = 'background-color:#c73927; color:white';
         } else { $this->fieldlist->addField('<b>HIDROMETRO</b><font color="red"> *</font>',  $hidrometro,  ['width' => '100%']);
              $this->fieldlist->addHeader();
     
@@ -107,10 +107,7 @@ class PedidoHidrometro extends TPage
 
         //$id_status->setValue('1');
         // form actions
-        $btnSave = $this->form->addAction('SALVAR', new TAction([$this, 'onSave']), 'fa:save white');
-        $btnSave->style = 'background-color:#218231; color:white';
-        $btnClear = $this->form->addAction('LIMPAR', new TAction([$this, 'onClear']), 'fa:eraser white');
-        $btnClear->style = 'background-color:#c73927; color:white';
+     
         // wrap the page content using vertical box
         $vbox = new TVBox;
         $vbox->style = 'width: 100%';

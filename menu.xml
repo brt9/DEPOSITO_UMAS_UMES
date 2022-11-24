@@ -16,7 +16,7 @@
         <icon>fas:water fa-fw</icon>
       </menuitem>
       <menuitem label="Lista de hidrometros">
-        <action>PeididoHidrometroList</action>
+        <action>PedidoHidrometroList</action>
         <icon>fas:water fa-fw</icon>
       </menuitem>
     </menu>
