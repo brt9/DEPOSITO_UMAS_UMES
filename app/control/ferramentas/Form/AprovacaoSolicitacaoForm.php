@@ -172,7 +172,10 @@ class AprovacaoSolicitacaoForm extends TPage
                         $obj->ferramenta = intval($value->id_ferramenta);
                         $obj->quantidade = $value->quantidade;
 
-                        if (($value->qtd_emprestada == $value->quantidade) or ($value->qtd_emprestada == 0)) {
+                        if (
+                            ($value->qtd_emprestada == $value->quantidade)
+                            or ($value->qtd_emprestada == 0)
+                        ) {
                             $obj->qtd_emprestada = $value->quantidade;
                         } else {
                             $obj->qtd_emprestada = $value->qtd_emprestada;
@@ -207,7 +210,7 @@ class AprovacaoSolicitacaoForm extends TPage
                     $emprestimo->id_usuario = $emprestimo->id_usuario;
                     $emprestimo->id_admin = $usuarioLogado;
 
-                    if(($emprestimo->status == "PENDENTE") and ($param['status'] == "DEVOLVIDO")){
+                    if (($emprestimo->status == "PENDENTE") and ($param['status'] == "DEVOLVIDO")) {
                         throw new Exception('Não pode aprovar uma solicitação com status "DEVOLVIDO" antes de ser "APROVADO"');
                     }
                     $emprestimo->status = $param['status'];
@@ -239,12 +242,14 @@ class AprovacaoSolicitacaoForm extends TPage
                         }
                         if ($tool[$i] < $param['qtd_emprestada'][$i]) {
                             throw new Exception(
-                                'A quantidade na linha ' . ($i + 1) . ' não pode ser maior que a disponível no estoque que é: ' . $tool[$i]
+                                'A quantidade na linha ' . ($i + 1) .
+                                    ' não pode ser maior que a disponível no estoque que é: '
+                                    . $tool[$i]
                             );
                         } elseif ($param['quantidade'][$i] < $param['qtd_emprestada'][$i]) {
                             throw new Exception(
-                                'A quantidade emprestada na linha ' . ($i + 1) . ' não pode ser maior que a quantidade solicitada'
-
+                                'A quantidade emprestada na linha ' . ($i + 1) .
+                                    ' não pode ser maior que a quantidade solicitada'
                             );
                         } else {
                             $pivot->qtd_emprestada = $param['qtd_emprestada'][$i];

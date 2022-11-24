@@ -3,6 +3,7 @@
 use Adianti\Base\TStandardList;
 use Adianti\Widget\Form\TDate;
 use Adianti\Widget\Form\TDateTime;
+use Adianti\Widget\Form\THidden;
 
 /**
  * LISTA DE MATERIAS EM ESTOQUE
@@ -41,14 +42,15 @@ class PedidoList extends TStandardList
     parent::setDefaultOrder('id', 'desc');         //  DEFINE A ORDEM PADRÃO
     parent::addFilterField('id', '=', 'id'); //  CAMPO DE FILTRO, OPERADOR, CAMPO DE FORMULÁRIO
     parent::addFilterField('status', '=', 'status'); // CAMPO DE FILTRO, OPERADOR, CAMPO DE FORMULÁRIO
-    parent::addFilterField('created_at', '=', 'created_at'); // CAMPO DE FILTRO, OPERADOR, CAMPO DE FORMULÁRIO
+    parent::addFilterField('created_at', 'like', 'created_at'); // CAMPO DE FILTRO, OPERADOR, CAMPO DE FORMULÁRIO
     //parent::addFilterField('update_at', '=', 'updated_at'); // CAMPO DE FILTRO, OPERADOR, CAMPO DE FORMULÁRIO
-    //parent::addFilterField('id_usuario', '=', 'id_usuario');
+    parent::addFilterField('id_usuario', '=', 'id_usuario');
     if ($userSession == $isAdmin[0]->system_user_id) {
       parent::addFilterField('id_usuario', '=', 'userid'); // CAMPO DE FILTRO, OPERADOR, CAMPO DE FORMULÁRIO
     } else {
       parent::setCriteria($crit);
     }
+    parent::addFilterField('update_at', 'like', 'update_at'); // CAMPO DE FILTRO, OPERADOR, CAMPO DE FORMULÁRIO
 
     // CRIA O FORMULÁRIO
 
@@ -64,41 +66,48 @@ class PedidoList extends TStandardList
 
     $id = new TEntry('id');
     $id->id = "input-form";
-    $id->placeholder = '00000';
     $id->setMask('99999');
     $id->maxlength = 5;
-    $id->setSize('35%');
+    $id->setSize('50%');
 
     $status = new TCombo('status');
     $status->id = "input-form";
     $status->addItems(array('PENDENTE' => 'PENDENTE', 'APROVADO' => 'APROVADO', 'REPROVADO' => 'REPROVADO'));
     $status->setDefaultOption('Selecionar');
-    $status->setSize('35%');
+    $status->setSize('50%');
 
-    $id_usuario = new TDBCombo('id_usuario', 'bancodados', 'SystemUser', 'id', 'matricula');
+    if ($userSession == $isAdmin[0]->system_user_id) {
+      $id_usuario = new TDBCombo('id_usuario', 'bancodados', 'SystemUser', 'id', 'matricula');
+      $id_usuario->enableSearch();
+    } else {
+      $id_usuario = new THidden('id_usuario');
+    }
     $id_usuario->id = "input-form";
-    $id_usuario->setSize('35%');
-    $id_usuario->enableSearch();
+    $id_usuario->setSize('100%');
 
     $data_pedido = new TDate('created_at');
     $data_pedido->id = "input-form";
-    $data_pedido->setSize('35%');
+    $data_pedido->setSize('50%');
     $data_pedido->setMask('dd/mm/yyyy');
 
     $data_aprovacao = new TDate('updated_at');
     $data_aprovacao->id = "input-form";
-    $data_aprovacao->setSize('35%');
+    $data_aprovacao->setSize('50%');
     $data_aprovacao->setMask('dd/mm/yyyy');
 
     // ADICIONE OS CAMPOS
-
+    if ($userSession == $isAdmin[0]->system_user_id) {
+      $this->form->addFields(
+        [new TLabel('Matricula')],
+        [$id_usuario]
+      );
+    }
     $this->form->addFields(
       [new TLabel('Codigo do pedido')],
       [$id],
       [new TLabel('Status')],
       [$status],
-      [new TLabel('Matricula')],
-      [$id_usuario]
+
     );
     $this->form->addFields(
       [new TLabel('Data do pedido')],
@@ -106,12 +115,6 @@ class PedidoList extends TStandardList
       [new TLabel('Data da aprovação')],
       [$data_aprovacao]
     );
-
-    $id->setTip('Digite codigo do pedido que voce procura');
-    $status->setTip('Selecione o tipo de status que voce procura');
-    $id_usuario->setTip('Digite a matricula do usuario para efetuar a busca');
-    $data_pedido->setTip('Selecione a data do pedido para efetuar a busca');
-    $data_aprovacao->setTip('Selecione a data da aprovação do pedido para efetuar a busca');
 
     // MANTENHA O FORMULÁRIO PREENCHIDO DURANTE A NAVEGAÇÃO COM OS DADOS DA SESSÃO
     $this->form->setData(TSession::getValue('cadastro_filter_data'));

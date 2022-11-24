@@ -31,6 +31,7 @@ class PedidoMaterial extends TRecord
         parent::addAttribute('id');
         parent::addAttribute('status');
         parent::addAttribute('id_usuario');
+        parent::addAttribute('id_admin');
         parent::addAttribute('created_at');
         parent::addAttribute('updated_at');
     }
