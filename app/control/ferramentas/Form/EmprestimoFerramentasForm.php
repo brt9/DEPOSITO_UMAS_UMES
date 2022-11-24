@@ -10,6 +10,8 @@ use Adianti\Widget\Form\TCombo;
 use Adianti\Widget\Form\TDate;
 use Adianti\Widget\Form\TDateTime;
 use Adianti\Widget\Form\TEntry;
+use Adianti\Widget\Form\TForm;
+use Adianti\Widget\Form\TFormSeparator;
 use Adianti\Widget\Form\THidden;
 use Adianti\Widget\Form\TSpinner;
 use Adianti\Widget\Wrapper\TDBCombo;
@@ -46,7 +48,7 @@ class EmprestimoFerramentasForm extends TPage
         $this->form->setFormTitle("<b>Solicitação de emprestimo</b>");
 
         $this->subFormFirst = new BootstrapFormBuilder('subFormFirst');
-        $this->subFormSecound = new BootstrapFormBuilder('subFormSecound');
+        $this->subFormSecound = new BootstrapFormBuilder('subFormSecound2');
 
         $id             = new TEntry('id');
         $id->class = 'emprestimo';
@@ -263,7 +265,7 @@ class EmprestimoFerramentasForm extends TPage
                         ) {
                             throw new Exception(
                                 'A quantidade na ' . ($i + 1) .
-                                    '° linha não pode ser maior que a disponível no estoque que é: ' 
+                                    '° linha não pode ser maior que a disponível no estoque que é: '
                                     . $qtdTools[$i]
                             );
                         } else {
@@ -425,12 +427,24 @@ class EmprestimoFerramentasForm extends TPage
     }
     public static function onChange($param)
     {
-        TTransaction::open('bancodados');
-        empty($param['ferramenta']) ? $ferramentaId = $param : $ferramentaId = $param['ferramenta'];
-        $ferramenta = Ferramentas::where('id', 'in', $ferramentaId)->load();
-        $obj = new stdClass;
-        $obj->quantidadeDisponivel = $ferramenta[0]->quantidade;
-        TCombo::reload('form_Emprestimo', 'quantidadeDisponivel', $obj);
-        TTransaction::close();
+        $input_id = $param['_field_id']; //Pega o campo e o id (campo_id)
+        $id_item = $param['_field_value']; //pegar o valor do campo
+        $nomeField = explode('_', $input_id); //Nome do campo 
+        $uniqueIdField = end($nomeField); //Pega apenas o valor id do campo
+
+        if ($id_item) {
+            $obj = new stdClass;
+
+            try {
+                TTransaction::open('bancodados');
+                $ferramenta = Ferramentas::find($id_item);
+                $obj->{'quantidade_' . $uniqueIdField} = number_format($ferramenta->quantidade);
+
+                TForm::sendData('subFormSecound2', $obj);
+                TTransaction::close();
+            } catch (Exception $e) {
+                TTransaction::rollback();
+            }
+        }
     }
 }
