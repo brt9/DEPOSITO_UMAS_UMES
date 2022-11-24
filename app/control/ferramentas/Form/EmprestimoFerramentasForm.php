@@ -10,6 +10,8 @@ use Adianti\Widget\Form\TCombo;
 use Adianti\Widget\Form\TDate;
 use Adianti\Widget\Form\TDateTime;
 use Adianti\Widget\Form\TEntry;
+use Adianti\Widget\Form\TForm;
+use Adianti\Widget\Form\TFormSeparator;
 use Adianti\Widget\Form\THidden;
 use Adianti\Widget\Form\TSpinner;
 use Adianti\Widget\Wrapper\TDBCombo;
@@ -35,7 +37,8 @@ class EmprestimoFerramentasForm extends TPage
     protected $fieldlist;
     protected $html;
 
-    public function __construct()
+
+    public function __construct($param = null)
     {
         TPage::include_css('app/resources/styles.css');
         parent::__construct();
@@ -43,57 +46,82 @@ class EmprestimoFerramentasForm extends TPage
         // create form and table container
         $this->form = new BootstrapFormBuilder('form_Emprestimo');
         $this->form->setFormTitle("<b>Solicitação de emprestimo</b>");
-        
+
         $this->subFormFirst = new BootstrapFormBuilder('subFormFirst');
-        $this->subFormSecound = new BootstrapFormBuilder('subFormSecound');
+        $this->subFormSecound = new BootstrapFormBuilder('subFormSecound2');
 
         $id             = new TEntry('id');
         $id->class = 'emprestimo';
         $id->setEditable(FALSE);
-        $id->setSize('20%');
+        $id->setSize('50%');
 
         $created             = new TDateTime('created_at');
+        $created->setEditable(FALSE);
+        $created->setSize('50%');
         $created->class = 'emprestimo';
 
-        $created->setEditable(FALSE);
-        $created->setSize('40%');
+        $status             = new TEntry('status');
+        $status->setSize('50%');
+        $status->setEditable(false);
+        $status->class = 'emprestimo';
+
+        $user             = new TEntry('id_usuario');
+        $user->setSize('100%');
+        $user->setEditable(false);
+        $user->class = 'emprestimo';
 
         $ferramenta = new TDBCombo('ferramenta[]', 'bancodados', 'Ferramentas', 'id', '{id} - {nome}', 'id');
+        $ferramenta->placeholder = 'Pesquise pela ferramenta desejada';
+        $ferramenta->setChangeAction(new TAction(array($this, 'onChange')));
+        $ferramenta->setSize('100%');
+        $ferramenta->enableSearch();
         $ferramenta->class = 'emprestimo';
-        $ferramenta->style =
-            'border-radius: 0.25rem;
-            border-width: 1px;
-            border-style: solid;';
 
         $quantidade = new TEntry('quantidade[]');
+        $quantidade->setSize('100%');
         $quantidade->style =
             'border-radius: 0.25rem;
-            border-width: 1px;
+        border-width: 1px;
             border-style: solid;';
 
         $quantidadeDisponivel = new TCombo('quantidadeDisponivel');
+        $quantidadeDisponivel->setSize('100%');
+        $quantidadeDisponivel->setEditable(FALSE);
         $quantidadeDisponivel->class = 'emprestimo';
         $quantidadeDisponivel->style =
             'border-radius: 0.25rem;
-            border-width: 1px;
-            border-style: solid;';
+        border-width: 1px;
+        border-style: solid;';
 
-        $ferramenta->placeholder = 'Pesquise pela ferramenta desejada';
-        $ferramenta->enableSearch();
-        $ferramenta->setSize('100%');
-        $quantidade->setSize('100%');
-        $quantidadeDisponivel->setSize('100%');
-        $quantidadeDisponivel->setEditable(FALSE);
-        $ferramenta->setChangeAction(new TAction(array($this, 'onChange')));
+        TTransaction::open('bancodados');
+        $userSession = TSession::getValue('userid');
+        $isAdmin = SystemUserGroup::where('system_group_id', '=', 1)->load();
 
+        $crit = new TCriteria();
+        $crit->add(new TFilter('id_usuario', '=', $userSession));
+
+        if ($userSession != $isAdmin[0]->system_user_id) {
+        }
+
+        if (isset($param['id'])) {
+            $emprestimo = new Emprestimo($param['id']);
+            TTransaction::close();
+            if (($emprestimo->status != "PENDENTE") or ($userSession != $isAdmin[0]->system_user_id)) {
+                $ferramenta = new TEntry('ferramenta[]');
+                $ferramenta->setSize('100%');
+                $ferramenta->class = 'emprestimo';
+                $ferramenta->setEditable(FALSE);
+                $quantidade->setEditable(FALSE);
+            }
+        }
         //add field 
         $this->fieldlist = new TFieldList;
         $this->fieldlist->generateAria();
         $this->fieldlist->width = '100%';
         $this->fieldlist->name  = 'my_field_list';
-        $this->fieldlist->addField('<b>Ferramenta</b><font color="red">*</font>',  $ferramenta,  ['width' => '70%']);
-        $this->fieldlist->addField('<b>Quantidade</b><font color="red">*</font>',   $quantidade,   ['width' => '10%']);
-        $this->fieldlist->addField('<b>Quantidade disponível</b><font color="red">*</font>',   $quantidadeDisponivel,   ['width' => '10%']);
+        $this->fieldlist->addField('<b>Ferramenta</b><font color="red">*</font>',  $ferramenta,  ['width' => '80%']);
+        $this->fieldlist->addField('<b>Quantidade</b><font color="red">*</font>',   $quantidade,   ['width' => '5%']);
+        $this->fieldlist->addField('<b>Quantidade disponível</b><font color="red">*</font>',   $quantidadeDisponivel,   ['width' => '5%']);
         $this->subFormSecound->addField($ferramenta);
         $this->subFormSecound->addField($quantidade);
 
@@ -102,12 +130,18 @@ class EmprestimoFerramentasForm extends TPage
         );
 
         $row = $this->form->addFields(
-            [new TLabel('<b>id</b>')],
+            [$label = new TLabel('<b>id</b>')],
             [$id],
-            [new TLabel('<b>Data</b>')],
+            [$label =  new TLabel('<b>Status</b>')],
+            [$status],
+        );
+        $row = $this->form->addFields(
+            [$label = new TLabel('<b>Usuário</b>')],
+            [$user],
+            [$label = new TLabel('<b>Data</b>')],
             [$created],
         );
-        $this->form->id = 'Emprestimo';       
+        $this->form->id = 'Emprestimo';
 
         // form actions
         $btnBack = $this->form->addActionLink(_t('Back'), new TAction(array('EmprestimoList', 'onReload')), 'far:arrow-alt-circle-left white');
@@ -147,7 +181,9 @@ class EmprestimoFerramentasForm extends TPage
 
                         $this->fieldlist->addDetail($obj);
                     }
-                    $this->fieldlist->addCloneAction();
+                    if ($emprestimo->status == "PENDENTE") {
+                        $this->fieldlist->addCloneAction();
+                    }
                 }
                 $this->onChange(array($pivot[0]->id_ferramenta));
                 // add field list to the form
@@ -191,7 +227,6 @@ class EmprestimoFerramentasForm extends TPage
                     $emprestimo->id_usuario = $usuarioLogado;
                     $emprestimo->status = 'PENDENTE';
                 }
-                $emprestimo->fromArray($param);
                 $emprestimo->store();
 
                 //Delete emprestimo se existe.
@@ -212,7 +247,8 @@ class EmprestimoFerramentasForm extends TPage
                             throw new Exception('A ferramenta está vazia na linha ' . ($i + 1));
                         }
                         if (!empty($duplicates[$i])) {
-                            throw new Exception('Ferramenta repetida na linha ' . ($i + 1) . '. Uma ferramentas nao poder ser solicitada mais de uma vez');
+                            throw new Exception('Ferramenta repetida na linha ' . ($i + 1) .
+                                '. Uma ferramentas nao poder ser solicitada mais de uma vez');
                         }
 
                         $pivot =  new PivotEmprestimoFerramentas();
@@ -224,9 +260,13 @@ class EmprestimoFerramentasForm extends TPage
                             $qtdTools[] = $key->quantidade;
                         }
                         //Verifica se a quantidade solicitada for maior que a do estoque 
-                        if ($param['quantidade'][$i] >= $qtdTools[$i] or ($param['quantidade'][$i] < 0 )) {
+                        if (($param['quantidade'][$i] >= $qtdTools[$i])
+                            or ($param['quantidade'][$i] < 0)
+                        ) {
                             throw new Exception(
-                                'A quantidade na ' . ($i + 1) . '° linha não pode ser maior que a disponível no estoque que é: ' . $qtdTools[$i]
+                                'A quantidade na ' . ($i + 1) .
+                                    '° linha não pode ser maior que a disponível no estoque que é: '
+                                    . $qtdTools[$i]
                             );
                         } else {
                             $pivot->quantidade = $param['quantidade'][$i];
@@ -387,12 +427,24 @@ class EmprestimoFerramentasForm extends TPage
     }
     public static function onChange($param)
     {
-        TTransaction::open('bancodados');
-        empty($param['ferramenta']) ? $ferramentaId = $param : $ferramentaId = $param['ferramenta'];
-        $ferramenta = Ferramentas::where('id', 'in', $ferramentaId)->load();
-        $obj = new stdClass;
-        $obj->quantidadeDisponivel = $ferramenta[0]->quantidade;
-        TCombo::reload('form_Emprestimo', 'quantidadeDisponivel', $obj);
-        TTransaction::close();
+        $input_id = $param['_field_id']; //Pega o campo e o id (campo_id)
+        $id_item = $param['_field_value']; //pegar o valor do campo
+        $nomeField = explode('_', $input_id); //Nome do campo 
+        $uniqueIdField = end($nomeField); //Pega apenas o valor id do campo
+
+        if ($id_item) {
+            $obj = new stdClass;
+
+            try {
+                TTransaction::open('bancodados');
+                $ferramenta = Ferramentas::find($id_item);
+                $obj->{'quantidade_' . $uniqueIdField} = number_format($ferramenta->quantidade);
+
+                TForm::sendData('subFormSecound2', $obj);
+                TTransaction::close();
+            } catch (Exception $e) {
+                TTransaction::rollback();
+            }
+        }
     }
 }

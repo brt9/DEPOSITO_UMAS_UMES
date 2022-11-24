@@ -87,6 +87,7 @@ main.cards section.card.blue {
 
 
 @media screen and (max-width: 720px) {
+
     main.cards {
         flex-direction: column;
     }
@@ -103,5 +104,14 @@ main.cards section.card.blue {
     main.cards section.card button {
         font-size: 70%;
     }
+}
 
+@media screen and (max-width: 540px) {
+    .vbox {
+        margin-top: 50%;
+    }
+    main.cards {
+        display: flex;
+        padding: 0 2.5rem 0 2.5rem;
+    }
 }

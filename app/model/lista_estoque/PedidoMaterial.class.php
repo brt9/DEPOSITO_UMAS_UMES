@@ -12,7 +12,7 @@ use Adianti\Database\TRecord;
  * @copyright  Copyright (c) 2021 Barata
  * @license    http://www.adianti.com.br/framework-license
  */
-class pedido extends TRecord
+class PedidoMaterial extends TRecord
 {
     const TABLENAME = 'pedido_material';
     const PRIMARYKEY = 'id';
@@ -29,10 +29,20 @@ class pedido extends TRecord
     {
         parent::__construct($id, $callObjectLoad);
         parent::addAttribute('id');
+        parent::addAttribute('status');
         parent::addAttribute('id_usuario');
         parent::addAttribute('id_admin');
-        parent::addAttribute('status');
         parent::addAttribute('created_at');
         parent::addAttribute('updated_at');
     }
-}
+    public function get_User()
+    {
+        // loads the associated object
+        if (empty($this->idUser))
+            $this->idUser = new SystemUser($this->id_usuario);
+
+        // returns the associated object
+        return $this->idUser;
+    }
+
+ }

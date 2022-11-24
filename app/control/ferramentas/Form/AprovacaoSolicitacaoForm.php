@@ -49,45 +49,59 @@ class AprovacaoSolicitacaoForm extends TPage
         $this->form->setFormTitle('Aprovar solicitação de material');
 
         $this->subFormFirst = new BootstrapFormBuilder('subFormFirst');
+
+        TTransaction::open('bancodados');
+        $emprestimo = new Emprestimo($param['id']);
+        TTransaction::close();
+
         // create the form fields
         $id             = new TEntry('id');
+        $id->setSize('50%');
+        $id->setEditable(FALSE);
         $id->class = 'emprestimo';
         $id->style =
             'border-radius: 0.25rem;
         border-width: 1px;
         border-style: solid;';
+
         $created             = new TDateTime('created_at');
         $created->class = 'emprestimo';
+        $created->setSize('95%');
+        $created->setEditable(FALSE);
 
         $status             = new TCombo('status');
+        $status->setSize('100%');
+        $status->setDefaultOption(false);
         $status->class = 'emprestimo';
-        $status->addItems(['PENDENTE' => 'PENDENTE', 'EFETUADO' => 'EFETUADO', 'DEVOLVIDO' => 'DEVOLVIDO']);
+        $status->addItems(['PENDENTE' => 'PENDENTE', 'APROVADO' => 'APROVADO', 'DEVOLVIDO' => 'DEVOLVIDO']);
 
-         $ferramenta = new TDBCombo('ferramenta[]', 'bancodados', 'Ferramentas', 'id', '{id} - {nome}', 'id');
+        $user             = new TEntry('id_usuario');
+        $user->setSize('100%');
+        $user->setEditable(false);
+        $user->class = 'emprestimo';
+
+        $ferramenta = new TDBCombo('ferramenta[]', 'bancodados', 'Ferramentas', 'id', '{id} - {nome}', 'id');
+        $ferramenta->setSize('100%');
+        $ferramenta->setEditable(FALSE);
         $ferramenta->class = 'emprestimo';
 
-
         $quantidade = new TEntry('quantidade[]'); //quantidade de ferramentas solicitadas
+        $quantidade->setSize('100%');
+        $quantidade->setEditable(FALSE);
         $quantidade->class = 'emprestimo';
 
         $qtdEmprestada = new TEntry('qtd_emprestada[]'); //quantidade de ferramentas a serem emprestadas. 
         $qtdEmprestada->class = 'emprestimo';
+        $qtdEmprestada->setSize('50%');
 
-        //Config dos campos
-        $id->setSize('50%');
-        $id->setEditable(FALSE);
-
-        $created->setSize('95%');
-        $created->setEditable(FALSE);
-
-        $status->setSize('100%');
-        $status->setDefaultOption(false);
-
-        $ferramenta->setSize('90%');
-        $ferramenta->setEditable(FALSE);
-
-        $quantidade->setSize('100%');
-        $quantidade->setEditable(FALSE);
+        if ($emprestimo->status == "DEVOLVIDO") {
+            $qtdEmprestada->class = 'emprestimo';
+            $status->setEditable(FALSE);
+            $qtdEmprestada->setEditable(FALSE);
+        } elseif ($emprestimo->status == "APROVADO") {
+            $qtdEmprestada->class = 'emprestimo';
+            $qtdEmprestada->setEditable(FALSE);
+        }
 
         //add field 
         $this->fieldlist = new TFieldList;
@@ -103,12 +117,16 @@ class AprovacaoSolicitacaoForm extends TPage
         );
 
         $row = $this->subFormFirst->addFields(
-            [new TLabel('Id da solicitação')],
+            [$label = new TLabel('<b>id</b>')],
             [$id],
-            [new TLabel('Data da solicitação')],
-            [$created],
-            [new TLabel('Status da solicitação <font color="red">*</font>')],
+            [$label =  new TLabel('<b>Status</b>')],
             [$status],
+        );
+        $row = $this->subFormFirst->addFields(
+            [$label = new TLabel('<b>Usuário</b>')],
+            [$user],
+            [$label = new TLabel('<b>Data</b>')],
+            [$created],
         );
         $row->style = 'margin-top:3rem;';
         $this->form->addContent([$this->subFormFirst]);
@@ -122,9 +140,13 @@ class AprovacaoSolicitacaoForm extends TPage
 
         // form actions
         $btnBack = $this->form->addActionLink(_t('Back'), new TAction(array('EmprestimoList', 'onReload')), 'far:arrow-alt-circle-left white');
-        $btnBack->style = 'background-color:gray; color:white';
+        $btnBack->style = 'background-color:gray; color:white; border-radius: 0.5rem;';
         $btnSave = $this->form->addAction(_t('Save'), new TAction([$this, 'onSave']), 'fa:save white');
-        $btnSave->style = 'background-color:#218231; color:white';
+        $btnSave->style = 'background-color:#218231; color:white; border-radius: 0.5rem;';
+
+        if ($emprestimo->status == "DEVOLVIDO") {
+            $btnSave->style = 'display:none;';
+        }
 
         // vertical box container
         $container = new TVBox;
@@ -143,14 +165,21 @@ class AprovacaoSolicitacaoForm extends TPage
                 $this->form->setData($emprestimo); //inserindo dados no formulario. 
 
                 $pivot = PivotEmprestimoFerramentas::where('id_emprestimo', '=', $emprestimo->id)->load();
-
                 if ($pivot) {
                     $this->fieldlist->addHeader();
                     foreach ($pivot as $itens => $value) {
                         $obj = new stdClass;
                         $obj->ferramenta = intval($value->id_ferramenta);
                         $obj->quantidade = $value->quantidade;
-                        $obj->qtd_emprestada = $value->quantidade;
+
+                        if (
+                            ($value->qtd_emprestada == $value->quantidade)
+                            or ($value->qtd_emprestada == 0)
+                        ) {
+                            $obj->qtd_emprestada = $value->quantidade;
+                        } else {
+                            $obj->qtd_emprestada = $value->qtd_emprestada;
+                        }
 
                         $this->fieldlist->addDetail($obj);
                     }
@@ -180,6 +209,10 @@ class AprovacaoSolicitacaoForm extends TPage
                     $emprestimo = new Emprestimo($param["id"]);
                     $emprestimo->id_usuario = $emprestimo->id_usuario;
                     $emprestimo->id_admin = $usuarioLogado;
+
+                    if (($emprestimo->status == "PENDENTE") and ($param['status'] == "DEVOLVIDO")) {
+                        throw new Exception('Não pode aprovar uma solicitação com status "DEVOLVIDO" antes de ser "APROVADO"');
+                    }
                     $emprestimo->status = $param['status'];
                 }
                 $emprestimo->fromArray($param);
@@ -209,12 +242,14 @@ class AprovacaoSolicitacaoForm extends TPage
                         }
                         if ($tool[$i] < $param['qtd_emprestada'][$i]) {
                             throw new Exception(
-                                'A quantidade na linha ' . ($i + 1) . ' não pode ser maior que a disponível no estoque que é: ' . $tool[$i]
+                                'A quantidade na linha ' . ($i + 1) .
+                                    ' não pode ser maior que a disponível no estoque que é: '
+                                    . $tool[$i]
                             );
                         } elseif ($param['quantidade'][$i] < $param['qtd_emprestada'][$i]) {
                             throw new Exception(
-                                'A quantidade emprestada na linha ' . ($i + 1) . ' não pode ser maior que a quantidade solicitada'
-
+                                'A quantidade emprestada na linha ' . ($i + 1) .
+                                    ' não pode ser maior que a quantidade solicitada'
                             );
                         } else {
                             $pivot->qtd_emprestada = $param['qtd_emprestada'][$i];
@@ -233,10 +268,12 @@ class AprovacaoSolicitacaoForm extends TPage
                 }
             }
             TTransaction::close();
-            new TMessage('info', 'Salvo com sucesso');
+            $action = new TAction(array('EmprestimoList', 'onReload'));
+            new TMessage('info', 'Salvo com sucesso', $action);
         } catch (Exception $e) // in case of exception
         {
-            new TMessage('error', $e->getMessage());
+            $action = new TAction(array('EmprestimoList', 'onReload'));
+            new TMessage('error', $e->getMessage(), $action);
             TTransaction::rollback();
         }
     }

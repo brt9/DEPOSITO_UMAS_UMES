@@ -7,16 +7,16 @@ use Adianti\Database\TRecord;
  *
  * @version    1.0
  * @package    model
- * @subpackage Atletas Olimpicos
+ * @subpackage pivot pedido material
  * @author     PEDRO FELIPE FREIRE DE MEDEIROS
- * @copyright  Copyright (c) 2021 Barata
+ * @copyright  Copyright (c) 2022 Barata
  * @license    http://www.adianti.com.br/framework-license
  */
-class estoque extends TRecord
+class PivotPedidoMaterial extends TRecord
 {
-    const TABLENAME = 'estoque_gms';
-    const PRIMARYKEY = 'id_item';
-    const IDPOLICY =  'max'; // {max, serial}
+    const TABLENAME = 'pivot_pedido_material';
+    const PRIMARYKEY = 'id';
+    const IDPOLICY = 'max'; // {max, serial}
 
     /**
      * Constructor method
@@ -24,7 +24,10 @@ class estoque extends TRecord
     public function __construct($id = NULL, $callObjectLoad = TRUE)
     {
         parent::__construct($id, $callObjectLoad);
+        parent::addAttribute('id');
+        parent::addAttribute('id_pedido_material');
         parent::addAttribute('id_item');
-        parent::addAttribute('descricao');
+        parent::addAttribute('quantidade');
+        parent::addAttribute('quantidade_fornecida');
     }
 }

@@ -12,12 +12,11 @@ use Adianti\Database\TRecord;
  * @copyright  Copyright (c) 2021 Barata
  * @license    http://www.adianti.com.br/framework-license
  */
-class tdbcombo extends TRecord
+class pivothd extends TRecord
 {
-    const TABLENAME = 'status';
-    const PRIMARYKEY = 'id_status';
+    const TABLENAME = 'pivot_pedido_hidrometro';
+    const PRIMARYKEY = 'id';
     const IDPOLICY = 'max'; // {max, serial}
-
 
     /**
      * Constructor method
@@ -25,7 +24,8 @@ class tdbcombo extends TRecord
     public function __construct($id = NULL, $callObjectLoad = TRUE)
     {
         parent::__construct($id, $callObjectLoad);
-        parent::addAttribute('id_status');
-        parent::addAttribute('nome');
+        parent::addAttribute('id');
+        parent::addAttribute('id_pedido_hidrometro');
+        parent::addAttribute('hidrometro');
     }
 }

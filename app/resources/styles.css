@@ -39,6 +39,9 @@ span.select2.select2-container.select2-container--default.select2-container--abo
 span.select2-selection.select2-selection--single {
     border-radius: 0.5rem !important;
 }
-input#input-emprestimo{
+input#input-form{
+    border-radius: 0.5rem !important;
+}
+select#input-form {
     border-radius: 0.5rem !important;
 }

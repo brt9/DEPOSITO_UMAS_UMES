@@ -12,9 +12,9 @@ use Adianti\Database\TRecord;
  * @copyright  Copyright (c) 2021 Barata
  * @license    http://www.adianti.com.br/framework-license
  */
-class ListaPedido extends TRecord
+class pedidohd extends TRecord
 {
-    const TABLENAME = 'pedido_material';
+    const TABLENAME = 'pedido_hidrometro';
     const PRIMARYKEY = 'id';
     const IDPOLICY = 'max'; // {max, serial}
 
@@ -29,11 +29,10 @@ class ListaPedido extends TRecord
     {
         parent::__construct($id, $callObjectLoad);
         parent::addAttribute('id');
-        parent::addAttribute('status');
         parent::addAttribute('id_usuario');
+        parent::addAttribute('id_admin');
         parent::addAttribute('created_at');
         parent::addAttribute('updated_at');
-        parent::addAttribute('deleted_at');
     }
     public function get_User()
     {
@@ -44,5 +43,4 @@ class ListaPedido extends TRecord
         // returns the associated object
         return $this->idUser;
     }
-
- }
+}
