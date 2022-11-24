@@ -40,11 +40,12 @@ class PedidoMaterialForm extends TPage
         parent::__construct();
 
         // cria o formulário
-        $this->form = new BootstrapFormBuilder('pedidoMaterial');
+        $this->form = new BootstrapFormBuilder();
         $this->form->setFormTitle('<b>FORMULARIO DE PEDIDO DE MATERIAL</b>');
-
+        
         $this->subFormFirst = new BootstrapFormBuilder('subFormFirst');
         $this->subFormSecound = new BootstrapFormBuilder('subFormSecound');
+        $this->subFormSecound->setName('pedidoMaterial');
 
         $id = new TEntry('id');
         $id->setEditable(FALSE);
@@ -74,7 +75,7 @@ class PedidoMaterialForm extends TPage
         $quantidade->setTip('Digite a quantidade do item desejado');
         $quantidade->setSize('100%');
 
-        $quantidadeDisponivel = new TCombo('quantidadeDisponivel');
+        $quantidadeDisponivel = new TEntry('quantidadeDisponivel');
         $quantidadeDisponivel->setEditable(FALSE);
         $quantidadeDisponivel->setSize('100%');
         $quantidadeDisponivel->class = 'emprestimo';
@@ -91,6 +92,7 @@ class PedidoMaterialForm extends TPage
         $this->fieldlist->addField('<b>Descrição</b><font color="red"> *</font>',  $descricao,  ['width' => '80%']);
         $this->fieldlist->addField('<b>Quantidade</b><font color="red"> *</font>',   $quantidade,   ['width' => '5%']);
         $this->fieldlist->addField('<b>Quantidade disponível</b><font color="red">*</font>',   $quantidadeDisponivel,   ['width' => '5%']);
+        $this->fieldlist->enableSorting();
         $this->subFormSecound->addField($id_item);
         $this->subFormSecound->addField($descricao);
         $this->subFormSecound->addField($quantidade);
@@ -195,9 +197,10 @@ class PedidoMaterialForm extends TPage
                             throw new Exception('A quantidade está vazia na linha ' . ($i + 1));
                         }
                         if (!empty($duplicates[$i])) {
-                            throw new Exception('Item e repetido na linha ' . ($i + 1) . 
-                            '. Um material nao poder ser solicitada mais de uma vez'
-                        );
+                            throw new Exception(
+                                'Item e repetido na linha ' . ($i + 1) .
+                                    '. Um material nao poder ser solicitada mais de uma vez'
+                            );
                         }
                         $pivot = new PivotPedidoMaterial();
                         $pivot->id_pedido_material = $object->id;
@@ -213,9 +216,9 @@ class PedidoMaterialForm extends TPage
                         //Verifica se a quantidade solicitada for maior que a do estoque 
                         if ($param['quantidade'][$i] >= $qtdTools[$i] or $param['quantidade'][$i] < 0) {
                             throw new Exception(
-                                'A quantidade na ' . ($i + 1) . 
-                                '° linha não pode ser maior que a disponível no estoque que é: ' 
-                                . $qtdTools[$i]
+                                'A quantidade na ' . ($i + 1) .
+                                    '° linha não pode ser maior que a disponível no estoque que é: '
+                                    . $qtdTools[$i]
                             );
                         } else {
                             $pivot->quantidade = $param['quantidade'][$i];
@@ -302,24 +305,46 @@ class PedidoMaterialForm extends TPage
     }
     public function onChangeDescricao($param)
     {
-        TTransaction::open('bancodados');
-        if (!empty($param['key'])) {
-            $criteria = TCriteria::create(['id_item' => $param['key']]);
-            TDBCombo::reloadFromModel('pedidoMaterial', 'descricao[]', 'bancodados', 'Material', 'id_item', '{id_item} - {descricao}', 'id_item', $criteria, false);
-        } else {
-            TDBCombo::clearField('pedidoMaterial', 'descricao[]');
+        $input_id = $param['_field_id']; //Pega o campo e o id (campo_id)
+        $id_item = $param['_field_value']; //pegar o valor do campo
+        $nomeField = explode('_', $input_id); //Nome do campo 
+        $uniqueIdField = end($nomeField); //Pega apenas o valor id do campo
+
+        if ($id_item) {
+            $obj = new stdClass;
+
+            try {
+                TTransaction::open('bancodados');
+                $material = Material::find($id_item);
+                $obj->{'descricao_' . $uniqueIdField} = $material->id_item;
+                //$obj->{'quantidadeDisponivel_' .$uniqueIdField} = $material->quantidade_estoque;
+                TForm::sendData('subFormSecound', $obj);
+
+                TTransaction::close();
+            } catch (Exception $e) {
+                TTransaction::rollback();
+            }
         }
-        TTransaction::close();
     }
     public static function onChangeQuantidade($param)
     {
-        TTransaction::open('bancodados');
-        if (!empty($param['key'])) {
-            $criteria = TCriteria::create(['id_item' => $param['key']]);
-            TCombo::reload('pedidoMaterial', 'quantidadeDisponivel', $criteria, false);
-        } else {
-            TCombo::clearField('pedidoMaterial', 'quantidadeDisponivel');
+        $input_id = $param['_field_id']; //Pega o campo e o id (campo_id)
+        $id_item = $param['_field_value']; //pegar o valor do campo
+        $nomeField = explode('_', $input_id); //Nome do campo 
+        $uniqueIdField = end($nomeField); //Pega apenas o valor id do campo
+
+        if ($id_item) {
+            $obj = new stdClass;
+
+            try {
+                TTransaction::open('bancodados');
+                $material = Material::find($id_item);
+                $obj->{'quantidadeDisponivel_' . $uniqueIdField} = number_format($material->quantidade_estoque);
+                TForm::sendData('subFormSecound', $obj);
+                TTransaction::close();
+            } catch (Exception $e) {
+                TTransaction::rollback();
+            }
         }
-        TTransaction::close();
     }
 }
