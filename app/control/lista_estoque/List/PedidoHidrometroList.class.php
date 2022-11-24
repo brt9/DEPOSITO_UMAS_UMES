@@ -13,7 +13,7 @@ use Adianti\Widget\Form\TDateTime;
  * @copyright  Copyright (c) 2021 Barata
  * @license    http://www.adianti.com.br/framework-license
  */
-class PeididoHidrometroList extends TStandardList
+class PedidoHidrometroList extends TStandardList
 {
   protected $form;     // FORMULÁRIO DE REGISTRO
   protected $datagrid; //  LISTAGEM
