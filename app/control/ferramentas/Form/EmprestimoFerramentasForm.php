@@ -99,13 +99,13 @@ class EmprestimoFerramentasForm extends TPage
 
         $crit = new TCriteria();
         $crit->add(new TFilter('id_usuario', '=', $userSession));
+        TTransaction::close();
 
         if ($userSession != $isAdmin[0]->system_user_id) {
         }
 
         if (isset($param['id'])) {
             $emprestimo = new Emprestimo($param['id']);
-            TTransaction::close();
             if (($emprestimo->status != "PENDENTE") or ($userSession != $isAdmin[0]->system_user_id)) {
                 $ferramenta = new TEntry('ferramenta[]');
                 $ferramenta->setSize('100%');

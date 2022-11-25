@@ -53,19 +53,18 @@ class PedidoMaterialForm extends TPage
         parent::__construct();
 
         // cria o formulário
-        $this->form = new BootstrapFormBuilder('pedidoMaterial');
+        $this->form = new BootstrapFormBuilder('pedido_Material');
         $this->form->setFormTitle('<b>FORMULARIO DE PEDIDO DE MATERIAL</b>');
 
         $this->subFormFirst = new BootstrapFormBuilder('subFormFirst');
         $this->subFormSecound = new BootstrapFormBuilder('subFormSecound');
-        $this->subFormSecound->setName('pedidoMaterial');
 
         $id = new TEntry('id');
         $id->setEditable(FALSE);
         $id->setSize('20%');
 
         $id_item = new TQRCodeInputReader('id_item');
-        $id_item->setChangeAction(new TAction(array($this, 'onChangeDescricao')));
+        $id_item->setChangeAction(new TAction(array($this, 'onDecricaoChange')));
         $id_item->setTip('Digite o codigo do item desejado');
         $id_item->placeholder = '00000';
         $id_item->setSize('100%');
@@ -79,7 +78,7 @@ class PedidoMaterialForm extends TPage
         $status->class = 'form';
 
         $descricao = new TDBCombo('descricao', 'bancodados', 'Material', 'id_item', '{id_item} - {descricao}', 'id_item');
-        $descricao->setChangeAction(new TAction(array($this, 'onChangeQuantidade')));
+        $descricao->setChangeAction(new TAction(array($this, 'onQuantidadeChange')));
         $descricao->setTip('Digite a descrição do item desejado');
         $descricao->setSize('100%');
         $descricao->enableSearch();
@@ -89,7 +88,7 @@ class PedidoMaterialForm extends TPage
         $quantidade->setSize('50%');
         $quantidade->setRange(0, 1000, 1);
 
-        $quantidadeDisponivel = new TCombo('quantidadeDisponivel');
+        $quantidadeDisponivel = new TEntry('quantidadeDisponivel');
         $quantidadeDisponivel->setEditable(FALSE);
         $quantidadeDisponivel->setSize('50%');
         $quantidadeDisponivel->class = 'emprestimo';
@@ -98,11 +97,10 @@ class PedidoMaterialForm extends TPage
             border-width: 1px;
             border-style: solid;';
 
-        $descricao->addValidation('descricao', new TRequiredValidator);
-        $quantidade->addValidation('quantidade', new TRequiredValidator);
-
         $row = $this->form->addFields(
-            [$labelInfo = new TLabel('<b>Campos com asterisco (<font color="red">*</font>) são considerados campos obrigatórios</b>')],
+            [$labelInfo = new TLabel(
+                '<b>Campos com asterisco (<font color="red">*</font>) são considerados campos obrigatórios</b>'
+            )],
         );
 
         $row = $this->form->addFields(
@@ -123,7 +121,7 @@ class PedidoMaterialForm extends TPage
             [$label =  new TLabel('<b>Quantidade disponivel</b>')],
             [$quantidadeDisponivel],
         );
-        $addMaterial = TButton::create('addMaterial', [$this, 'onProductAdd'], 'Adicionar material', 'fa:plus-circle green');
+        $addMaterial = TButton::create('addMaterial', [$this, 'onMateriaAdd'], 'Adicionar material', 'fa:plus-circle green');
         $addMaterial->getAction()->setParameter('static', '1');
         $this->subFormFirst->addFields([], [$addMaterial]);
         $this->form->addContent([$this->subFormFirst]);
@@ -177,7 +175,6 @@ class PedidoMaterialForm extends TPage
                 TTransaction::open('bancodados');
 
                 $pedidoMaterial = PedidoMaterial::find($param['key']);
-                $this->form->setData($pedidoMaterial); //inserindo dados no formulario. 
 
                 $pivot = PivotPedidoMaterial::where('id_pedido_material', '=', $pedidoMaterial->id)
                     ->load();
@@ -190,8 +187,8 @@ class PedidoMaterialForm extends TPage
                         $obj->quantidade = $value->quantidade;
                     }
                 }
+                $this->form->setData($obj); //inserindo dados no formulario. 
                 // add field list to the form
-                $this->form->addContent([$this->fieldlist]);
                 TTransaction::close();
             } else {
             }
@@ -203,73 +200,60 @@ class PedidoMaterialForm extends TPage
     public function onSave($param)
     {
         try {
+            $data = $this->form->getData();
             $this->form->validate();
-            // open a transaction with database 'samples'
+
             TTransaction::open('bancodados');
             $usuarioLogado = TSession::getValue('userid');
 
-            $duplicates = $this->getDuplicates($param['descricao']);
-            if ($param['descricao'] == [""]) {
-                throw new Exception('Campo "Descrição" é obrigatorio não pode ser vazio');
-            }
-            if ($param['quantidade'] <= ['0']) {
-                throw new Exception('Campo "Quantidade" não pode ser vazio ou negativo');
+            if (isset($param["id"]) && !empty($param["id"])) {
+                $object = new PedidoMaterial($param["id"]);
+                $object->id_usuario = $usuarioLogado;
+                $object->status = 'PENDENTE';
             } else {
-                if (isset($param["id"]) && !empty($param["id"])) {
-                    $object = new PedidoMaterial($param["id"]);
-                    $object->id_usuario = $usuarioLogado;
-                    $object->status = 'PENDENTE';
-                } else {
-                    $object = new PedidoMaterial();
-                    $object->id_usuario = $usuarioLogado;
-                    $object->status = 'PENDENTE';
-                }
-                $object->store();
+                $object = new PedidoMaterial();
+                $object->id_usuario = $usuarioLogado;
+                $object->status = 'PENDENTE';
+            }
+            $object->store();
 
-                PivotPedidoMaterial::where('id_pedido_material', '=', $object->id)->delete();
+            PivotPedidoMaterial::where('id_pedido_material', '=', $object->id)->delete();
 
-                $descricao = array_map(function ($value) {
-                    return (int)$value;
-                }, $param['descricao']);
+            $descricao = array_map(function ($value) {
+                return (int)$value;
+            }, $param['listaMaterial_descricao']);
 
-                if (isset($descricao)) {
-                    for ($i = 0; $i < count($descricao); $i++) {
-                        if (empty($param['quantidade'][$i])) {
-                            throw new Exception('A quantidade está vazia na linha ' . ($i + 1));
-                        }
-                        if (!empty($duplicates[$i])) {
-                            throw new Exception(
-                                'Item e repetido na linha ' . ($i + 1) .
-                                    '. Um material nao poder ser solicitada mais de uma vez'
-                            );
-                        }
-                        $pivot = new PivotPedidoMaterial();
-                        $pivot->id_pedido_material = $object->id;
-                        $pivot->id_item = $param['descricao'][$i];
-                        $pivot->quantidade  = $param['quantidade'][$i];
+            if (isset($descricao)) {
+                for ($i = 0; $i < count($descricao); $i++) {
+                    $pivot = new PivotPedidoMaterial();
+                    $pivot->id_pedido_material = $object->id;
+                    $pivot->id_item = $param['listaMaterial_id_item'][$i];
+                    $pivot->quantidade  = $param['listaMaterial_quantidade'][$i];
 
-                        $tools = Material::where('id_item', 'in', $param['descricao'])->load();
-                        $qtdTools = [];
-                        foreach ($tools as $key) {
-                            $qtdTools[] = $key->quantidade_estoque;
-                        }
-
-                        //Verifica se a quantidade solicitada for maior que a do estoque 
-                        if ($param['quantidade'][$i] >= $qtdTools[$i] or $param['quantidade'][$i] < 0) {
-                            throw new Exception(
-                                'A quantidade na ' . ($i + 1) .
-                                    '° linha não pode ser maior que a disponível no estoque que é: '
-                                    . $qtdTools[$i]
-                            );
-                        } else {
-                            $pivot->quantidade = $param['quantidade'][$i];
-                            $result = $qtdTools[$i] - $param['quantidade'][$i]; //valor subtraido.
-                            $this->updateQuantidade($param['descricao'][$i], $result);
-                        }
-                        $pivot->store();
+                    $tools = Material::where('id_item', 'in', $param['listaMaterial_id_item'])->load();
+                    $qtdTools = [];
+                    foreach ($tools as $key) {
+                        $qtdTools[] = $key->quantidade_estoque;
                     }
+
+                    //Verifica se a quantidade solicitada for maior que a do estoque 
+                    if ($param['listaMaterial_quantidade'][$i] > $qtdTools[$i] or $param['listaMaterial_quantidade'][$i] < 0) {
+                        throw new Exception(
+                            'A quantidade na ' . ($i + 1) .
+                                '° linha não pode ser maior que a disponível no estoque que é: '
+                                . $qtdTools[$i]
+                        );
+                    } else {
+                        $pivot->quantidade = $param['listaMaterial_quantidade'][$i];
+                        $result = $qtdTools[$i] - $param['listaMaterial_quantidade'][$i]; //valor subtraido.
+                        $this->updateQuantidade($param['listaMaterial_descricao'][$i], $result);
+                    }
+                    $pivot->store();
+                    var_dump($pivot);
                 }
             }
+            TForm::sendData('pedido_Material', (object) ['id_item' => $object->id_item]);
+
             TTransaction::close(); // close the transaction
             $action = new TAction(array('PedidoList', 'onReload'));
             new TMessage('info', TAdiantiCoreTranslator::translate('Record saved'));
@@ -278,7 +262,7 @@ class PedidoMaterialForm extends TPage
             new TMessage('error', $e->getMessage());
             TTransaction::rollbackAll();
 
-            $action = new TAction(array('PedidoMaterialForm', 'fireEvents'));
+            $action = new TAction(array('PedidoMaterialForm', 'onEdit'));
 
             new TMessage('info', TAdiantiCoreTranslator::translate('Record saved'), $action);
         }
@@ -310,99 +294,47 @@ class PedidoMaterialForm extends TPage
     public function onClear($param)
     {
     }
-    public function fireEvents($param)
+
+    public function onDecricaoChange($param)
     {
-        if (!empty($param['id_item'])) {
-            TTransaction::open('bancodados');
-            $pedidoMaterial = Material::where('id', '=', $param['id']);
-            $this->form->setData($pedidoMaterial); //inserindo dados no formulario. 
-
-            $pivot = pivot::where('id_pedido_material', '=', $pedidoMaterial->id)->load();
-
-            if ($pivot) {
-                $this->fieldlist->addHeader();
-                foreach ($pivot as $itens => $value) {
-                    $obj = new stdClass;
-                    $obj->id_item = $value->id_item;
-                    $obj->quantidade = $value->quantidade;
-
-                    $this->fieldlist->addDetail($obj);
-                }
-                $this->fieldlist->addCloneAction();
-            }
-            // add field list to the form
-            $this->form->addContent([$this->fieldlist]);
-            TTransaction::close();
-        } else {
-            $this->fieldlist->addHeader();
-            $this->fieldlist->addDetail(new stdClass);
-            $this->fieldlist->addCloneAction();
-            $this->form->addContent([$this->fieldlist]);
-        }
-    }
-    function getDuplicates($param)
-    {
-        return array_unique(array_diff_assoc($param, array_unique($param)));
-    }
-    public function onChangeDescricao($param)
-    {
-        $input_id = $param['_field_id']; //Pega o campo e o id (campo_id)
-        $id_item = $param['_field_value']; //pegar o valor do campo
-        $nomeField = explode('_', $input_id); //Nome do campo 
-        $uniqueIdField = end($nomeField); //Pega apenas o valor id do campo
-
-        if ($id_item) {
-            $obj = new stdClass;
-
-            try {
-                TTransaction::open('bancodados');
-                $material = Material::find($id_item);
-                $obj->{'descricao_' . $uniqueIdField} = $material->id_item;
-                //$obj->{'quantidadeDisponivel_' .$uniqueIdField} = $material->quantidade_estoque;
-                TForm::sendData('pedidoMaterial', $obj);
-
-                TTransaction::close();
-            } catch (Exception $e) {
-                TTransaction::rollback();
-            }
-        }
-    }
-    public static function onChangeQuantidade($param)
-    {
-        /* $input_id = $param['_field_id']; //Pega o campo e o id (campo_id)
-        $id_item = $param['_field_value']; //pegar o valor do campo
-        $nomeField = explode('_', $input_id); //Nome do campo 
-        $uniqueIdField = end($nomeField); //Pega apenas o valor id do campo
-
-        if ($id_item) {
-            $obj = new stdClass;
-
-            try {
-                TTransaction::open('bancodados');
-                $material = Material::find($id_item);
-                $obj->{'quantidadeDisponivel_' . $uniqueIdField} = number_format($material->quantidade_estoque);
-                TForm::sendData('pedidoMaterial', $obj);
-                TTransaction::close();
-            } catch (Exception $e) {
-                TTransaction::rollback();
-            }
-        } */
-        var_dump($param);
-        TTransaction::open('bancodados');
         if (!empty($param['key'])) {
-            $criteria = TCriteria::create(['id_item' => $param['key']]);
-            TCombo::reload('pedidoMaterial', 'quantidadeDisponivel', $criteria);
-        } else {
-            TCombo::clearField('pedidoMaterial', 'quantidadeDisponivel');
-        }
-        TTransaction::close();
+            $obj = new stdClass;
 
+            try {
+                TTransaction::open('bancodados');
+                $material = Material::find($param['key']);
+                $obj->descricao = $material->id_item;
+                $obj->quantidade = 1;
+                $obj->quantidadeDisponivel = $material->quantidade_estoque;
+                TForm::sendData('pedido_Material', $obj, false, false);
+                TTransaction::close();
+            } catch (Exception $e) {
+                TTransaction::rollback();
+            }
+        }
+    }
+    public static function onQuantidadeChange($param)
+    {
+        if (!empty($param['key'])) {
+            $obj = new stdClass;
+
+            try {
+                TTransaction::open('bancodados');
+                $material = Material::find($param['key']);
+                $obj->quantidade = 1;
+                $obj->quantidadeDisponivel = $material->quantidade_estoque;
+                TForm::sendData('pedido_Material', $obj, false, false);
+                TTransaction::close();
+            } catch (Exception $e) {
+                TTransaction::rollback();
+            }
+        }
     }
     /**
      * Add a product into item list
      * @param $param URL parameters
      */
-    public function onProductAdd($param)
+    public function onMateriaAdd($param)
     {
         try {
             $this->form->validate();
@@ -436,10 +368,10 @@ class PedidoMaterialForm extends TPage
             $data->id_item     = '';
             $data->descricao     = '';
             $data->quantidade         = '';
-
+            $data->quantidadeDisponivel         = '';
 
             // send data, do not fire change/exit events
-            TForm::sendData('pedidoMaterial', $data, false, false);
+            TForm::sendData('pedido_Material', $data, false, false);
         } catch (Exception $e) {
             $this->form->setData($this->form->getData());
             new TMessage('error', $e->getMessage());
@@ -458,7 +390,7 @@ class PedidoMaterialForm extends TPage
         $data->quantidade  = '';
 
         // send data, do not fire change/exit events
-        TForm::sendData('pedidoMaterial', $data, false, false);
+        //TForm::sendData('pedido_Material', $data, false, false);
 
         // remove row
         TDataGrid::removeRowById('listaMaterial', $param['descricao']);
