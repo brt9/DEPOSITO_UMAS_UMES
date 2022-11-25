@@ -78,22 +78,23 @@ class PedidoHidrometro extends TPage
             $row = $this->form->addFields(
                 [$labelInfo = new TLabel('<b>Campos com asterisco (<font color="red">*</font>) são considerados campos obrigatórios</b>')],
             );
-    
+
             $row =  $this->fieldlist->addDetail(new stdClass);
             $this->fieldlist->addHeader();
-    
-    
+
+
             $this->form->addField($hidrometro);
             $this->fieldlist->addCloneAction();
-        } else { $this->fieldlist->addField('<b>HIDROMETRO</b><font color="red"> *</font>',  $hidrometro,  ['width' => '100%']);
-             $this->fieldlist->addHeader();
-    
+        } else {
+            $this->fieldlist->addField('<b>HIDROMETRO</b><font color="red"> *</font>',  $hidrometro,  ['width' => '100%']);
+            $this->fieldlist->addHeader();
+
             $hidrometro->setEditable(FALSE);
             $this->fieldlist->disableRemoveButton();
         }
 
 
-   
+
 
 
         $this->form->addContent([$this->fieldlist]);

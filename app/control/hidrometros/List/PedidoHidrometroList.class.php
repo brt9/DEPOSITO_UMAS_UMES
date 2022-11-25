@@ -130,8 +130,8 @@ class PedidoHidrometroList extends TStandardList
     $column_data_aprovacao = new TDataGridColumn('updated_at', 'DATA DA APROVACAO', 'center');
 
 
-    $column_data_pedido->setTransformer(array($this, 'formatDate'));
-    $column_data_aprovacao->setTransformer(array($this, 'formatDate1'));
+    $column_data_pedido->setTransformer(array('helpers', 'formatDate'));
+    $column_data_aprovacao->setTransformer(array('helpers', 'formatDate'));
 
 
     // ADICIONE AS COLUNAS À GRADE DE DADOS
@@ -166,7 +166,6 @@ class PedidoHidrometroList extends TStandardList
 
 
 
-
     $action1 = new TDataGridAction(['PedidoHidrometro', 'onEdit']);
     $action1->setField('id');
     if ($userSession == $isAdmin[0]->system_user_id)
@@ -188,8 +187,9 @@ class PedidoHidrometroList extends TStandardList
     $panel->add($this->datagrid);
     $panel->addFooter($this->pageNavigation);
 
+    TScript::create('$(\'#' . self::$formName . '\').collapse(\'toggle\');');
     $this->form->addHeaderActionLink('Filtros de busca', new TAction(array($this, 'toggleSearch')), 'fa:filter green fa-fw');
-    TScript::create('$(\'#' . self::$formName . '\').addClass(\'collapse\');');
+
 
     // recipiente de caixa vertical
     $container = new TVBox;
@@ -254,19 +254,6 @@ class PedidoHidrometroList extends TStandardList
     } catch (Exception $e) {
       new TMessage('error', $e->getMessage());
     }
-  }
-  public function formatDate($date, $object)
-  {
-    $dt = new DateTime($date);
-    return $dt->format('d/m/Y - H:i');
-  }
-  public function formatDate1($date, $object)
-  {
-    if ($date == null) {
-      return '00/00/0000 - 00:00';
-    }
-    $dt = new DateTime($date);
-    return $dt->format('d/m/Y - H:i');
   }
   static function toggleSearch()
   {
