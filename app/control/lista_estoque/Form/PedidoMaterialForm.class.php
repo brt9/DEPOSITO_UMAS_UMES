@@ -323,7 +323,8 @@ class PedidoMaterialForm extends TPage
             try {
                 TTransaction::open('bancodados');
                 $material = Material::find($param['key']);
-                if (!$material->id_item) {
+
+                if (!$material) {
                     throw new Exception('Material não existe');
                 }
                 $obj->descricao = $material->id_item;
