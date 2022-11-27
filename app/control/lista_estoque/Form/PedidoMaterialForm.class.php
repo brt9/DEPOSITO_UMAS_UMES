@@ -323,6 +323,9 @@ class PedidoMaterialForm extends TPage
             try {
                 TTransaction::open('bancodados');
                 $material = Material::find($param['key']);
+                if (!$material->id_item) {
+                    throw new Exception('Material não existe');
+                }
                 $obj->descricao = $material->id_item;
                 $obj->quantidade = 1;
                 $obj->quantidadeDisponivel = $material->quantidade_estoque;
@@ -330,6 +333,7 @@ class PedidoMaterialForm extends TPage
                 TTransaction::close();
             } catch (Exception $e) {
                 TTransaction::rollback();
+                new TMessage('error', $e->getMessage());
             }
         }
     }
@@ -346,6 +350,9 @@ class PedidoMaterialForm extends TPage
             try {
                 TTransaction::open('bancodados');
                 $material = Material::find($param['key']);
+                if (!$material->id_item) {
+                    throw new Exception('Material não existe');
+                }
                 $obj->id_item = $material->id_item;
                 $obj->quantidade = 1;
                 $obj->quantidadeDisponivel = $material->quantidade_estoque;
@@ -374,13 +381,22 @@ class PedidoMaterialForm extends TPage
             $material = Material::find($param['descricao']);
             TTransaction::close();
 
+            //Verificando se a quantidade solicitada é maior que a do estoque
+            if ($material->quantidade_estoque < $param['quantidade']) {
+                throw new Exception(
+                    'quantidade nao pode ser maior que a disponivel no estoque'
+                );
+            }
+
             $uniqid = !empty($data->descricao) ? $data->descricao : uniqid();
+            //Adicionando paramentros no array 
             $grid_data = [
                 'id_item'      => $uniqid,
                 'descricao'      => $material->descricao,
                 'quantidade'          => $param['quantidade'],
             ];
 
+            //Convertendo array para string 
             $grid = array_map(function ($value) {
                 return (string)$value;
             }, $grid_data);
@@ -391,11 +407,11 @@ class PedidoMaterialForm extends TPage
 
             TDataGrid::replaceRowById('listaMaterial', $uniqid, $row);
 
-            // clear product form fields after add
-            $data->id_pedido_material     = '';
+            // Limpando campos do formulario
             $data->id_item     = '';
+            $data->descricao     = '';
             $data->quantidade         = '';
-            //$data->quantidadeDisponivel         = '';
+            $data->quantidadeDisponivel         = '';
 
             // send data, do not fire change/exit events
             TForm::sendData('pedido_Material', $data, false, false);

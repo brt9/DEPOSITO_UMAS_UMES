@@ -344,13 +344,16 @@ class EmprestimoFerramentasForm extends TPage
             try {
                 TTransaction::open('bancodados');
                 $ferramenta = Ferramentas::find($param['key']);
-
+                if (!$ferramenta->id) {
+                    throw new Exception('Material não existe');
+                }
                 $obj->quantidade = 1;
                 $obj->quantidadeDisponivel = $ferramenta->quantidade;
                 TForm::sendData('form_Emprestimo', $obj, false, false);
                 TTransaction::close();
             } catch (Exception $e) {
                 TTransaction::rollback();
+                new TMessage('error', $e->getMessage());
             }
         }
     }
