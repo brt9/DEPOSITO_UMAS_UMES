@@ -242,6 +242,9 @@ class EmprestimoFerramentasForm extends TPage
         try {
             $this->form->validate();
 
+            if (empty($param['listaMaterial_descricao'])) {
+                throw new Exception('O formúlario não pode ser salvo vazio');
+            }
             TTransaction::open('bancodados');
 
             $usuarioLogado = TSession::getValue('userid');
@@ -265,7 +268,7 @@ class EmprestimoFerramentasForm extends TPage
             $ferramentas = array_map(function ($value) {
                 return (int)$value;
             }, $param['listaFerramentas_id']);
-            
+
             //Salvando items na tela pivot. 
             if (isset($ferramentas)) {
                 for ($i = 0; $i < count($ferramentas); $i++) {
