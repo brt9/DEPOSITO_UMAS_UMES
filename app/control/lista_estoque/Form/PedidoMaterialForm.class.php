@@ -222,6 +222,12 @@ class PedidoMaterialForm extends TPage
             $data = $this->form->getData();
             $this->form->validate();
 
+            if (
+                empty($param['listaMaterial_descricao'])
+                or empty($param['listaMaterial_id_item'])
+                ) {
+                throw new Exception('O formúlario não pode ser salvo vazio');
+            }
             TTransaction::open('bancodados');
             $usuarioLogado = TSession::getValue('userid');
 
