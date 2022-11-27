@@ -1,21 +1,13 @@
 <?php
 
-use Adianti\Base\TStandardForm;
 use Adianti\Control\TAction;
 use Adianti\Control\TPage;
-use Adianti\Database\TCriteria;
-use Adianti\Database\TFilter;
 use Adianti\Database\TTransaction;
 use Adianti\Registry\TSession;
-use Adianti\Widget\Form\TDateTime;
 use Adianti\Widget\Form\TEntry;
 use Adianti\Widget\Form\THidden;
 use Adianti\Widget\Form\TSpinner;
 use Adianti\Widget\Wrapper\TDBCombo;
-use Adianti\Widget\Wrapper\TDBUniqueSearch;
-use Sabberworm\CSS\Value\Value;
-use Adianti\Util\AdiantiUIBuilder;
-use Adianti\Validator\TRequiredValidator;
 use Adianti\Widget\Container\TPanelGroup;
 use Adianti\Widget\Container\TVBox;
 use Adianti\Widget\Datagrid\TDataGrid;
@@ -23,7 +15,6 @@ use Adianti\Widget\Datagrid\TDataGridAction;
 use Adianti\Widget\Datagrid\TDataGridColumn;
 use Adianti\Widget\Dialog\TMessage;
 use Adianti\Widget\Form\TButton;
-use Adianti\Widget\Form\TCombo;
 use Adianti\Widget\Form\TForm;
 use Adianti\Widget\Form\TLabel;
 use Adianti\Widget\Form\TQRCodeInputReader;
@@ -47,7 +38,7 @@ class PedidoMaterialForm extends TPage
     protected $subFormSecound;
     protected $dataGrid;
 
-    function __construct()
+    function __construct($param)
     {
         TPage::include_css('app/resources/styles.css');
         parent::__construct();
@@ -65,7 +56,6 @@ class PedidoMaterialForm extends TPage
 
         $id_item = new TQRCodeInputReader('id_item');
         $id_item->setChangeAction(new TAction(array($this, 'onDecricaoChange')));
-        $id_item->setTip('Digite o codigo do item desejado');
         $id_item->placeholder = '00000';
         $id_item->setSize('100%');
         $id_item->setMask('99999');
@@ -79,12 +69,10 @@ class PedidoMaterialForm extends TPage
 
         $descricao = new TDBCombo('descricao', 'bancodados', 'Material', 'id_item', '{id_item} - {descricao}', 'id_item');
         $descricao->setChangeAction(new TAction(array($this, 'onQuantidadeChange')));
-        $descricao->setTip('Digite a descrição do item desejado');
         $descricao->setSize('100%');
         $descricao->enableSearch();
 
         $quantidade = new TSpinner('quantidade');
-        $quantidade->setTip('Digite a quantidade do item desejado');
         $quantidade->setSize('50%');
         $quantidade->setRange(0, 1000, 1);
 
@@ -96,6 +84,22 @@ class PedidoMaterialForm extends TPage
             'border-radius: 0.25rem;
             border-width: 1px;
             border-style: solid;';
+
+        TTransaction::open('bancodados');
+        $userSession = TSession::getValue('userid');
+        $isAdmin = SystemUserGroup::where('system_group_id', '=', 1)->load();
+        TTransaction::close();
+
+        if (
+            (!empty($param['id']))
+        ) {
+            $descricao = new TEntry('descricao');
+            $descricao->setSize('100%');
+            $id_item->setEditable(false);
+            $descricao->setEditable(false);
+            $quantidade->setEditable(false);
+        }
+
 
         $row = $this->form->addFields(
             [$labelInfo = new TLabel(
@@ -121,6 +125,7 @@ class PedidoMaterialForm extends TPage
             [$label =  new TLabel('<b>Quantidade disponivel</b>')],
             [$quantidadeDisponivel],
         );
+
         $addMaterial = TButton::create('addMaterial', [$this, 'onMateriaAdd'], 'Adicionar material', 'fa:plus-circle green');
         $addMaterial->getAction()->setParameter('static', '1');
         $this->subFormFirst->addFields([], [$addMaterial]);
@@ -144,7 +149,6 @@ class PedidoMaterialForm extends TPage
 
         $action2 = new TDataGridAction([$this, 'onDeleteItem']);
         $action2->setField('descricao');
-
         $this->dataGrid->addAction($action2, _t('Delete'), 'far:trash-alt red');
 
         $this->dataGrid->createModel();
@@ -155,12 +159,19 @@ class PedidoMaterialForm extends TPage
         $this->form->addContent([$panel]);
 
         // form actions
-        $btnBack = $this->form->addActionLink(_t('Back'), new TAction(array('PedidoList', 'onReload')), 'far:arrow-alt-circle-left white');
+        $btnBack = $this->form->addActionLink(
+            _t('Back'),
+            new TAction(array('PedidoList', 'onReload')),
+            'far:arrow-alt-circle-left white'
+        );
         $btnBack->style = 'background-color:gray; color:white; border-radius: 0.5rem;';
-        $btnClear = $this->form->addAction('Limpar', new TAction([$this, 'onClear']), 'fa:eraser white');
-        $btnClear->style = 'background-color:#c73927; color:white; border-radius: 0.5rem;';
-        $btnSave = $this->form->addAction('Salvar', new TAction([$this, 'onSave']), 'fa:save white');
-        $btnSave->style = 'background-color:#218231; color:white; border-radius: 0.5rem;';
+
+        if (empty($param['id'])) {
+            $btnClear = $this->form->addAction('Limpar', new TAction([$this, 'onClear']), 'fa:eraser white');
+            $btnClear->style = 'background-color:#c73927; color:white; border-radius: 0.5rem;';
+            $btnSave = $this->form->addAction('Salvar', new TAction([$this, 'onSave']), 'fa:save white');
+            $btnSave->style = 'background-color:#218231; color:white; border-radius: 0.5rem;';
+        }
 
         $vbox = new TVBox;
         $vbox->style = 'width: 100%; margin-top: 2rem';
@@ -173,28 +184,36 @@ class PedidoMaterialForm extends TPage
         try {
             if (isset($param['key'])) {
                 TTransaction::open('bancodados');
-
-                $pedidoMaterial = PedidoMaterial::find($param['key']);
+                $pedidoMaterial = PedidoMaterial::find($param['id']);
+                $this->form->setData($pedidoMaterial); //inserindo dados no formulario. 
 
                 $pivot = PivotPedidoMaterial::where('id_pedido_material', '=', $pedidoMaterial->id)
                     ->load();
 
-                if ($pivot) {
-                    foreach ($pivot as $itens => $value) {
-                        $obj = new stdClass;
-                        $obj->id_item = $value->id_item;
-                        $obj->descricao = $value->id_item;
-                        $obj->quantidade = $value->quantidade;
-                    }
+                foreach ($pivot as $key) {
+                    $material = Material::where('id_item', '=', $key->id_item)
+                        ->load();
+
+                    $id_item = !empty($material[0]->id_item) ? $material[0]->id_item : uniqid();
+                    $grid_data = [
+                        'id_item'      => $id_item,
+                        'descricao'      => $material[0]->descricao,
+                        'quantidade'          => $pivot[0]->quantidade,
+                    ];
+
+                    $grid = array_map(function ($value) {
+                        return (string)$value;
+                    }, $grid_data);
+
+                    // insert row dynamically
+                    $row = $this->dataGrid->addItem((object) $grid);
+                    $row->id = $id_item;
                 }
-                $this->form->setData($obj); //inserindo dados no formulario. 
-                // add field list to the form
-                TTransaction::close();
-            } else {
+
+                TDataGrid::replaceRowById('listaMaterial', $id_item, $row);
             }
         } catch (Exception $e) {
             new TMessage('error', $e->getMessage()); // shows the exception error message
-            $this->fireEvents($param);
         }
     }
     public function onSave($param)
@@ -217,7 +236,8 @@ class PedidoMaterialForm extends TPage
             }
             $object->store();
 
-            PivotPedidoMaterial::where('id_pedido_material', '=', $object->id)->delete();
+            PivotPedidoMaterial::where('id_pedido_material', '=', $object->id)
+                ->delete();
 
             $descricao = array_map(function ($value) {
                 return (int)$value;
@@ -228,16 +248,19 @@ class PedidoMaterialForm extends TPage
                     $pivot = new PivotPedidoMaterial();
                     $pivot->id_pedido_material = $object->id;
                     $pivot->id_item = $param['listaMaterial_id_item'][$i];
-                    $pivot->quantidade  = $param['listaMaterial_quantidade'][$i];
 
-                    $tools = Material::where('id_item', 'in', $param['listaMaterial_id_item'])->load();
+                    $tools = Material::where('id_item', 'in', $param['listaMaterial_id_item'])
+                        ->load();
                     $qtdTools = [];
                     foreach ($tools as $key) {
                         $qtdTools[] = $key->quantidade_estoque;
                     }
 
                     //Verifica se a quantidade solicitada for maior que a do estoque 
-                    if ($param['listaMaterial_quantidade'][$i] > $qtdTools[$i] or $param['listaMaterial_quantidade'][$i] < 0) {
+                    if (
+                        $param['listaMaterial_quantidade'][$i] > $qtdTools[$i]
+                        or $param['listaMaterial_quantidade'][$i] < 0
+                    ) {
                         throw new Exception(
                             'A quantidade na ' . ($i + 1) .
                                 '° linha não pode ser maior que a disponível no estoque que é: '
@@ -246,38 +269,31 @@ class PedidoMaterialForm extends TPage
                     } else {
                         $pivot->quantidade = $param['listaMaterial_quantidade'][$i];
                         $result = $qtdTools[$i] - $param['listaMaterial_quantidade'][$i]; //valor subtraido.
-                        $this->updateQuantidade($param['listaMaterial_descricao'][$i], $result);
+                        $this->updateQuantidade($param['listaMaterial_id_item'][$i], $result);
                     }
                     $pivot->store();
-                    var_dump($pivot);
                 }
             }
             TForm::sendData('pedido_Material', (object) ['id_item' => $object->id_item]);
 
             TTransaction::close(); // close the transaction
             $action = new TAction(array('PedidoList', 'onReload'));
-            new TMessage('info', TAdiantiCoreTranslator::translate('Record saved'));
+            new TMessage('info', 'Salvo com sucesso', $action);
         } catch (Exception $e) // in case of exception
         {
             new TMessage('error', $e->getMessage());
             TTransaction::rollbackAll();
 
             $action = new TAction(array('PedidoMaterialForm', 'onEdit'));
-
-            new TMessage('info', TAdiantiCoreTranslator::translate('Record saved'), $action);
+            new TMessage('error', $e->getMessage(), $action);
         }
     }
-    public function validate()
-    {
-        // assign post data before validation
-        // validation exception would prevent
-        // the user code to execute setData()
-        $this->setData($this->getData());
-
-        foreach ($this->fields as $fieldObject) {
-            $fieldObject->validate();
-        }
-    }
+    /**
+     * Atualiza a quantidade de material no estoque.
+     * @var $id Id do material
+     * @var $value valor da nova quantidade.
+     * @return void
+     */
     public function updateQuantidade($id, $value)
     {
         try {
@@ -294,7 +310,11 @@ class PedidoMaterialForm extends TPage
     public function onClear($param)
     {
     }
-
+    /**
+     * Preenche os campos do primeiro formulario.
+     * @param $param Parametros do request
+     * @return void
+     */
     public function onDecricaoChange($param)
     {
         if (!empty($param['key'])) {
@@ -313,6 +333,11 @@ class PedidoMaterialForm extends TPage
             }
         }
     }
+    /**
+     * Preenche os campos do primeiro formulario.
+     * @param $param Parametros do request
+     * @return void
+     */
     public static function onQuantidadeChange($param)
     {
         if (!empty($param['key'])) {
@@ -321,18 +346,20 @@ class PedidoMaterialForm extends TPage
             try {
                 TTransaction::open('bancodados');
                 $material = Material::find($param['key']);
+                $obj->id_item = $material->id_item;
                 $obj->quantidade = 1;
                 $obj->quantidadeDisponivel = $material->quantidade_estoque;
                 TForm::sendData('pedido_Material', $obj, false, false);
                 TTransaction::close();
             } catch (Exception $e) {
                 TTransaction::rollback();
+                new TMessage('error', $e->getMessage());
             }
         }
     }
     /**
-     * Add a product into item list
-     * @param $param URL parameters
+     * Adiciona material na lista
+     * @param $param Parametros do request
      */
     public function onMateriaAdd($param)
     {
@@ -365,10 +392,10 @@ class PedidoMaterialForm extends TPage
             TDataGrid::replaceRowById('listaMaterial', $uniqid, $row);
 
             // clear product form fields after add
+            $data->id_pedido_material     = '';
             $data->id_item     = '';
-            $data->descricao     = '';
             $data->quantidade         = '';
-            $data->quantidadeDisponivel         = '';
+            //$data->quantidadeDisponivel         = '';
 
             // send data, do not fire change/exit events
             TForm::sendData('pedido_Material', $data, false, false);
@@ -379,20 +406,19 @@ class PedidoMaterialForm extends TPage
     }
 
     /**
-     * Delete a product from item list
-     * @param $param URL parameters
+     * Deleta item da lista. 
+     * @param $param Parametros do request
      */
     public static function onDeleteItem($param)
     {
         $data = new stdClass;
         $data->id_item     = '';
-        $data->descricao   = '';
-        $data->quantidade  = '';
+        $data->descricao     = '';
+        $data->quantidade         = '';
 
         // send data, do not fire change/exit events
-        //TForm::sendData('pedido_Material', $data, false, false);
-
+        TForm::sendData('pedido_Material', $data, false, false);
         // remove row
-        TDataGrid::removeRowById('listaMaterial', $param['descricao']);
+        TDataGrid::removeRowById('listaMaterial', $param['key']);
     }
 }

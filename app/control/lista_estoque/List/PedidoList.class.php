@@ -1,9 +1,27 @@
 <?php
 
 use Adianti\Base\TStandardList;
+use Adianti\Control\TAction;
+use Adianti\Database\TCriteria;
+use Adianti\Database\TFilter;
+use Adianti\Database\TTransaction;
+use Adianti\Registry\TSession;
+use Adianti\Widget\Base\TScript;
+use Adianti\Widget\Container\TPanelGroup;
+use Adianti\Widget\Container\TVBox;
+use Adianti\Widget\Datagrid\TDataGrid;
+use Adianti\Widget\Datagrid\TDataGridAction;
+use Adianti\Widget\Datagrid\TDataGridColumn;
+use Adianti\Widget\Datagrid\TPageNavigation;
+use Adianti\Widget\Form\TCombo;
 use Adianti\Widget\Form\TDate;
-use Adianti\Widget\Form\TDateTime;
+use Adianti\Widget\Form\TEntry;
 use Adianti\Widget\Form\THidden;
+use Adianti\Widget\Form\TLabel;
+use Adianti\Widget\Util\TXMLBreadCrumb;
+use Adianti\Widget\Wrapper\TDBCombo;
+use Adianti\Wrapper\BootstrapDatagridWrapper;
+use Adianti\Wrapper\BootstrapFormBuilder;
 
 /**
  * LISTA DE MATERIAS EM ESTOQUE
@@ -177,8 +195,8 @@ class PedidoList extends TStandardList
     // CRIAR AÇÃO EDITAR
     $action_edit = new TDataGridAction(array('PedidoMaterialForm', 'onEdit'));
     $action_edit->setButtonClass('btn btn-default');
-    $action_edit->setLabel('Editar Pedido');
-    $action_edit->setImage('far:edit blue');
+    $action_edit->setLabel('Visusalizar Pedido');
+    $action_edit->setImage('fas:eye blue');
     $action_edit->setField('id');
     $this->datagrid->addAction($action_edit);
 
@@ -187,10 +205,6 @@ class PedidoList extends TStandardList
     $action1->setField('id');
     if ($userSession == $isAdmin[0]->system_user_id)
       $this->datagrid->addAction($action1, 'Aprovar solicitação', 'fa:check-circle background-color:#218231');
-
-    $delete = new TDataGridAction([$this, 'onDeleteSessionVar'],   ['id' => '{id}']);
-    if ($userSession == $isAdmin[0]->system_user_id)
-      $this->datagrid->addAction($delete, 'Apagar solicitação', 'fas:trash-alt red');
 
     // CRIAR O MODELO DE GRADE DE DADOS
     $this->datagrid->createModel();
@@ -201,7 +215,7 @@ class PedidoList extends TStandardList
     $this->pageNavigation->setAction(new TAction(array($this, 'onReload')));
     $this->pageNavigation->setWidth($this->datagrid->getWidth());
 
-    $panel = new TPanelGroup;
+    $panel = new TPanelGroup();
     $panel->add($this->datagrid);
     $panel->addFooter($this->pageNavigation);
 
@@ -216,30 +230,6 @@ class PedidoList extends TStandardList
     $container->add($panel);
     $this->datagrid->disableDefaultClick();
     parent::add($container);
-  }
-  public static function onDeleteSessionVar($param)
-  {
-    $action1 = new TAction(array(__CLASS__, 'deleteSessionVar'));
-    $action1->setParameters($param);
-    new TQuestion('Tem certeza que quer apagar ?', $action1);
-  }
-
-  /**
-   * Delete session var
-   */
-  public static function deleteSessionVar($param)
-  {
-    try {
-      TTransaction::open('bancodados');
-      $pedido = pedido::find($param['id']);
-      $pedido->Delete();
-      AdiantiCoreApplication::gotoPage('PedidoList');
-      TTransaction::close();
-      new TMessage('info', TAdiantiCoreTranslator::translate('Record deleted')); // success message
-
-    } catch (Exception $e) {
-      new TMessage('error', $e->getMessage()); // shows the exception error message
-    }
   }
   /**
    * Funçao para ocultar o campo de busca
