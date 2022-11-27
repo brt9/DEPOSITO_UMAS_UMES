@@ -148,7 +148,7 @@ class PedidoAprovacaoForm extends TPage
                             or ($value->quantidade_fornecida == 0)
                         ) {
                             $obj->quantidade_fornecida = $value->quantidade;
-                        }else{
+                        } else {
                             $obj->quantidade_fornecida = $value->quantidade_fornecida;
                         }
 
@@ -220,14 +220,14 @@ class PedidoAprovacaoForm extends TPage
                         } else {
                             $pivot->quantidade_fornecida = $param['quantidade_fornecida'][$i];
 
+                            if ($param['status'] == "REPROVADO") {
+                                $result = $item[$i] + $param['quantidade_fornecida'][$i]; //Devolvendo valor para banco.
+                                $this->updateQuantidade($pivot->id_item, $result);
+                            }
                             if ($param['quantidade'][$i] != $param['quantidade_fornecida'][$i]) {
                                 $result = ($item[$i] +
                                     ($param['quantidade'][$i] - $param['quantidade_fornecida'][$i])
                                 ); //valor subtraido.
-                                $this->updateQuantidade($pivot->id_item, $result);
-                            }
-                            if ($param['status'] == "DEVOLVIDO") {
-                                $result = $item[$i] + $param['quantidade_fornecida'][$i]; //Devolvendo valor para banco.
                                 $this->updateQuantidade($pivot->id_item, $result);
                             }
                         }

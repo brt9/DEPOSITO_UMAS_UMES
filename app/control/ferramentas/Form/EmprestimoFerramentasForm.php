@@ -1,23 +1,26 @@
 <?php
 
-use Adianti\Base\TStandardForm;
 use Adianti\Control\TAction;
 use Adianti\Control\TPage;
 use Adianti\Database\TTransaction;
 use Adianti\Registry\TSession;
+use Adianti\Widget\Container\TPanelGroup;
+use Adianti\Widget\Container\TVBox;
+use Adianti\Widget\Datagrid\TDataGrid;
+use Adianti\Widget\Datagrid\TDataGridAction;
+use Adianti\Widget\Datagrid\TDataGridColumn;
 use Adianti\Widget\Dialog\TMessage;
+use Adianti\Widget\Form\TButton;
 use Adianti\Widget\Form\TCombo;
 use Adianti\Widget\Form\TDate;
 use Adianti\Widget\Form\TDateTime;
 use Adianti\Widget\Form\TEntry;
 use Adianti\Widget\Form\TForm;
-use Adianti\Widget\Form\TFormSeparator;
-use Adianti\Widget\Form\THidden;
-use Adianti\Widget\Form\TSpinner;
 use Adianti\Widget\Wrapper\TDBCombo;
-use Adianti\Widget\Wrapper\TDBUniqueSearch;
-use Adianti\Wrapper\BootstrapFormBuilder;
 use Sabberworm\CSS\Value\Value;
+use Adianti\Widget\Form\TLabel;
+use Adianti\Wrapper\BootstrapDatagridWrapper;
+use Adianti\Wrapper\BootstrapFormBuilder;
 
 /**
  * FormNestedBuilderView
@@ -70,28 +73,27 @@ class EmprestimoFerramentasForm extends TPage
         $user->setEditable(false);
         $user->class = 'emprestimo';
 
-        $ferramenta = new TDBCombo('ferramenta[]', 'bancodados', 'Ferramentas', 'id', '{id} - {nome}', 'id');
-        $ferramenta->placeholder = 'Pesquise pela ferramenta desejada';
+        $ferramenta = new TDBCombo('ferramenta', 'bancodados', 'Ferramentas', 'id', '{id} - {nome}', 'id');
         $ferramenta->setChangeAction(new TAction(array($this, 'onChange')));
         $ferramenta->setSize('100%');
         $ferramenta->enableSearch();
         $ferramenta->class = 'emprestimo';
 
-        $quantidade = new TEntry('quantidade[]');
-        $quantidade->setSize('100%');
+        $quantidade = new TEntry('quantidade');
+        $quantidade->setSize('50%');
         $quantidade->style =
             'border-radius: 0.25rem;
-        border-width: 1px;
+            border-width: 1px;
             border-style: solid;';
 
-        $quantidadeDisponivel = new TCombo('quantidadeDisponivel');
-        $quantidadeDisponivel->setSize('100%');
+        $quantidadeDisponivel = new TEntry('quantidadeDisponivel');
+        $quantidadeDisponivel->setSize('50%');
         $quantidadeDisponivel->setEditable(FALSE);
         $quantidadeDisponivel->class = 'emprestimo';
         $quantidadeDisponivel->style =
             'border-radius: 0.25rem;
-        border-width: 1px;
-        border-style: solid;';
+            border-width: 1px;
+            border-style: solid;';
 
         TTransaction::open('bancodados');
         $userSession = TSession::getValue('userid');
@@ -99,31 +101,15 @@ class EmprestimoFerramentasForm extends TPage
 
         $crit = new TCriteria();
         $crit->add(new TFilter('id_usuario', '=', $userSession));
+        TTransaction::close();
 
-        if ($userSession != $isAdmin[0]->system_user_id) {
+        if (!empty($param['id'])) {
+            $ferramenta = new TEntry('ferramenta');
+            $ferramenta->setSize('100%');
+            $ferramenta->class = 'emprestimo';
+            $ferramenta->setEditable(FALSE);
+            $quantidade->setEditable(FALSE);
         }
-
-        if (isset($param['id'])) {
-            $emprestimo = new Emprestimo($param['id']);
-            TTransaction::close();
-            if (($emprestimo->status != "PENDENTE") or ($userSession != $isAdmin[0]->system_user_id)) {
-                $ferramenta = new TEntry('ferramenta[]');
-                $ferramenta->setSize('100%');
-                $ferramenta->class = 'emprestimo';
-                $ferramenta->setEditable(FALSE);
-                $quantidade->setEditable(FALSE);
-            }
-        }
-        //add field 
-        $this->fieldlist = new TFieldList;
-        $this->fieldlist->generateAria();
-        $this->fieldlist->width = '100%';
-        $this->fieldlist->name  = 'my_field_list';
-        $this->fieldlist->addField('<b>Ferramenta</b><font color="red">*</font>',  $ferramenta,  ['width' => '80%']);
-        $this->fieldlist->addField('<b>Quantidade</b><font color="red">*</font>',   $quantidade,   ['width' => '5%']);
-        $this->fieldlist->addField('<b>Quantidade disponível</b><font color="red">*</font>',   $quantidadeDisponivel,   ['width' => '5%']);
-        $this->subFormSecound->addField($ferramenta);
-        $this->subFormSecound->addField($quantidade);
 
         $row = $this->form->addFields(
             [$labelInfo = new TLabel('Campos com asterisco (<font color="red">*</font>) são considerados campos obrigatórios')],
@@ -143,14 +129,63 @@ class EmprestimoFerramentasForm extends TPage
         );
         $this->form->id = 'Emprestimo';
 
-        // form actions
-        $btnBack = $this->form->addActionLink(_t('Back'), new TAction(array('EmprestimoList', 'onReload')), 'far:arrow-alt-circle-left white');
-        $btnBack->style = 'background-color:gray; color:white; border-radius: 0.5rem;';
-        $btnClear = $this->form->addAction(_t('Clear'), new TAction([$this, 'onClear']), 'fa:eraser White');
-        $btnClear->style = 'background-color:#c73927; color:white; border-radius: 0.5rem;';
-        $btnSave = $this->form->addAction(_t('Save'), new TAction([$this, 'onSave']), 'fa:save white');
-        $btnSave->style = 'background-color:#218231; color:white; border-radius: 0.5rem;';
+        $row = $this->subFormFirst->addFields(
+            [new TLabel('<b>Ferramenta</b>')],
+            [$ferramenta],
+        );
+        $row = $this->subFormFirst->addFields(
+            [new TLabel('<b>Quantidade</b>')],
+            [$quantidade],
+            [new TLabel('<b>Quantidade disponivel</b>')],
+            [$quantidadeDisponivel],
+        );
 
+        $addMaterial = TButton::create('addMaterial', [$this, 'onMateriaAdd'], 'Adicionar material', 'fa:plus-circle green');
+        $addMaterial->getAction()->setParameter('static', '1');
+        $this->subFormFirst->addFields([], [$addMaterial]);
+        $this->form->addContent([$this->subFormFirst]);
+
+        //Grade de materiais
+        $this->dataGrid = new BootstrapDatagridWrapper(new TDataGrid);
+        $this->dataGrid->setHeight(150);
+        $this->dataGrid->makeScrollable();
+        $this->dataGrid->setId('listaFerramentas');
+        $this->dataGrid->generateHiddenFields();
+        $this->dataGrid->style = "min-width: 700px; width:100%;margin-bottom: 10px";
+
+        $colunaId   = new TDataGridColumn('id', 'Codigo da ferramenta', 'center', '30%');
+        $colunaFerramenta   = new TDataGridColumn('ferramenta', 'Ferramenta', 'center', '30%');
+        $colunaQuantidade     = new TDataGridColumn('quantidade', 'Quantidade', 'center', '30%');
+
+        $this->dataGrid->addColumn($colunaId);
+        $this->dataGrid->addColumn($colunaFerramenta);
+        $this->dataGrid->addColumn($colunaQuantidade);
+
+        $action2 = new TDataGridAction([$this, 'onDeleteItem']);
+        $action2->setField('ferramenta');
+        $this->dataGrid->addAction($action2, _t('Delete'), 'far:trash-alt red');
+
+        $this->dataGrid->createModel();
+
+        $panel = new TPanelGroup();
+        $panel->add($this->dataGrid);
+        $panel->getBody()->style = 'overflow-x:auto';
+        $this->form->addContent([$panel]);
+
+        // form actions
+        $btnBack = $this->form->addActionLink(
+            _t('Back'),
+            new TAction(array('EmprestimoList', 'onReload')),
+            'far:arrow-alt-circle-left white'
+        );
+        $btnBack->style = 'background-color:gray; color:white; border-radius: 0.5rem;';
+
+        if (empty($param['id'])) {
+            $btnClear = $this->form->addAction(_t('Clear'), new TAction([$this, 'onClear']), 'fa:eraser White');
+            $btnClear->style = 'background-color:#c73927; color:white; border-radius: 0.5rem;';
+            $btnSave = $this->form->addAction(_t('Save'), new TAction([$this, 'onSave']), 'fa:save white');
+            $btnSave->style = 'background-color:#218231; color:white; border-radius: 0.5rem;';
+        }
         // wrap the page content using vertical box
         $vbox = new TVBox;
         $vbox->style = 'width: 100%; margin-top: 2rem';
@@ -167,37 +202,34 @@ class EmprestimoFerramentasForm extends TPage
         try {
             if (isset($param['key'])) {
                 TTransaction::open('bancodados');
-                $emprestimo = Emprestimo::find($param['key']);
+                $emprestimo = Emprestimo::find($param['id']);
                 $this->form->setData($emprestimo); //inserindo dados no formulario. 
 
-                $pivot = PivotEmprestimoFerramentas::where('id_emprestimo', '=', $emprestimo->id)->load();
+                $pivot = PivotEmprestimoFerramentas::where('id_emprestimo', '=', $emprestimo->id)
+                    ->load();
 
-                if ($pivot) {
-                    $this->fieldlist->addHeader();
-                    foreach ($pivot as $itens => $value) {
-                        $obj = new stdClass;
-                        $obj->ferramenta = $value->id_ferramenta;
-                        $obj->quantidade = $value->quantidade;
+                foreach ($pivot as $key) {
+                    $ferramenta = Ferramentas::where('id', '=', $key->id_ferramenta)
+                        ->load();
 
-                        $this->fieldlist->addDetail($obj);
-                    }
-                    if ($emprestimo->status == "PENDENTE") {
-                        $this->fieldlist->addCloneAction();
-                    }
+                    $id_ferramenta = !empty($ferramenta[0]->id) ? $ferramenta[0]->id : uniqid();
+                    $grid_data = [
+                        'id'      => $id_ferramenta,
+                        'ferramenta'      => $ferramenta[0]->nome,
+                        'quantidade'          => $key->quantidade,
+                    ];
+
+                    $grid = array_map(function ($value) {
+                        return (string)$value;
+                    }, $grid_data);
+
+                    // insert row dynamically
+                    $row = $this->dataGrid->addItem((object) $grid);
+                    $row->id = $id_ferramenta;
                 }
-                $this->onChange(array($pivot[0]->id_ferramenta));
-                // add field list to the form
-                $this->form->addContent([$this->fieldlist]);
-                TTransaction::close();
-            } else {
-                $this->fieldlist->addHeader();
-                $this->fieldlist->addDetail(new stdClass);
-                $this->fieldlist->addCloneAction();
-                $this->form->addContent([$this->fieldlist]);
             }
         } catch (Exception $e) {
             new TMessage('error', $e->getMessage()); // shows the exception error message
-            $this->fireEvents($param);
         }
     }
     /**
@@ -209,74 +241,66 @@ class EmprestimoFerramentasForm extends TPage
     {
         try {
             $this->form->validate();
-            // open a transaction with database 'samples'
+
+            if (empty($param['listaMaterial_descricao'])) {
+                throw new Exception('O formúlario não pode ser salvo vazio');
+            }
             TTransaction::open('bancodados');
 
             $usuarioLogado = TSession::getValue('userid');
-            $duplicates = $this->getDuplicates($param['ferramenta']);
-            if (($param['ferramenta'] == [""]) || ($param['quantidade'] == ['0'])) {
-                throw new Exception('Campo obrigatorio não pode ser vazio');
+
+            //Verificando se é uma edição ou criação
+            if (isset($param["id"]) && !empty($param["id"])) {
+                $emprestimo = new Emprestimo($param["id"]);
+                $emprestimo->id_usuario = $usuarioLogado;
+                $emprestimo->status = 'PENDENTE';
             } else {
-                //Verificando se é uma edição ou criação
-                if (isset($param["id"]) && !empty($param["id"])) {
-                    $emprestimo = new Emprestimo($param["id"]);
-                    $emprestimo->id_usuario = $usuarioLogado;
-                    $emprestimo->status = 'PENDENTE';
-                } else {
-                    $emprestimo = new Emprestimo();
-                    $emprestimo->id_usuario = $usuarioLogado;
-                    $emprestimo->status = 'PENDENTE';
-                }
-                $emprestimo->store();
+                $emprestimo = new Emprestimo();
+                $emprestimo->id_usuario = $usuarioLogado;
+                $emprestimo->status = 'PENDENTE';
+            }
+            $emprestimo->store();
 
-                //Delete emprestimo se existe.
-                PivotEmprestimoFerramentas::where('id_emprestimo', '=', $emprestimo->id)->delete();
+            //Delete emprestimo se existe.
+            PivotEmprestimoFerramentas::where('id_emprestimo', '=', $emprestimo->id)
+                ->delete();
 
-                $ferramentas = array_map(function ($value) {
-                    return (int)$value;
-                }, $param['ferramenta']);
+            $ferramentas = array_map(function ($value) {
+                return (int)$value;
+            }, $param['listaFerramentas_id']);
 
-                //Salvando items na tela pivot. 
-                if (isset($ferramentas)) {
-                    for ($i = 0; $i < count($ferramentas); $i++) {
+            //Salvando items na tela pivot. 
+            if (isset($ferramentas)) {
+                for ($i = 0; $i < count($ferramentas); $i++) {
+                    $pivot =  new PivotEmprestimoFerramentas();
+                    $pivot->id_emprestimo = $emprestimo->id;
+                    $pivot->id_ferramenta = $param['listaFerramentas_id'][$i];
+                    $tools = Ferramentas::where('id', 'in', $ferramentas)
+                        ->load();
 
-                        if (empty($param['quantidade'][$i])) {
-                            throw new Exception('A quantidade está vazia na linha ' . ($i + 1));
-                        }
-                        if (empty($ferramentas[$i])) {
-                            throw new Exception('A ferramenta está vazia na linha ' . ($i + 1));
-                        }
-                        if (!empty($duplicates[$i])) {
-                            throw new Exception('Ferramenta repetida na linha ' . ($i + 1) .
-                                '. Uma ferramentas nao poder ser solicitada mais de uma vez');
-                        }
-
-                        $pivot =  new PivotEmprestimoFerramentas();
-                        $pivot->id_emprestimo = $emprestimo->id;
-                        $pivot->id_ferramenta = $param['ferramenta'][$i];
-                        $tools = Ferramentas::where('id', 'in', $ferramentas)->load();
-                        $qtdTools = [];
-                        foreach ($tools as $key) {
-                            $qtdTools[] = $key->quantidade;
-                        }
-                        //Verifica se a quantidade solicitada for maior que a do estoque 
-                        if (($param['quantidade'][$i] >= $qtdTools[$i])
-                            or ($param['quantidade'][$i] < 0)
-                        ) {
-                            throw new Exception(
-                                'A quantidade na ' . ($i + 1) .
-                                    '° linha não pode ser maior que a disponível no estoque que é: '
-                                    . $qtdTools[$i]
-                            );
-                        } else {
-                            $pivot->quantidade = $param['quantidade'][$i];
-                            $result = $qtdTools[$i] - $param['quantidade'][$i]; //valor subtraido.
-                            $this->updateQuantidade($pivot->id_ferramenta, $result);
-                        }
-                        $pivot->store();
+                    $qtdTools = [];
+                    foreach ($tools as $key) {
+                        $qtdTools[] = $key->quantidade;
                     }
+                    //Verifica se a quantidade solicitada for maior que a do estoque 
+                    if (
+                        ($param['listaFerramentas_quantidade'][$i] > $qtdTools[$i])
+                        or ($param['listaFerramentas_quantidade'][$i] < 0)
+                    ) {
+                        throw new Exception(
+                            'A quantidade na ' . ($i + 1) .
+                                '° linha não pode ser maior que a disponível no estoque que é: '
+                                . $qtdTools[$i]
+                        );
+                    } else {
+                        $pivot->quantidade = $param['listaFerramentas_quantidade'][$i];
+                        $result = $qtdTools[$i] - $param['listaFerramentas_quantidade'][$i]; //valor subtraido.
+                        $this->updateQuantidade($param['listaFerramentas_id'][$i], $result);
+                    }
+                    $pivot->store();
                 }
             }
+
             TTransaction::close();
             $action = new TAction(array('EmprestimoList', 'onReload'));
             new TMessage('info', 'Salvo com sucesso', $action);
@@ -284,7 +308,6 @@ class EmprestimoFerramentasForm extends TPage
         {
             new TMessage('error', $e->getMessage());
             TTransaction::rollback();
-            $this->fireEvents($param);
         }
     }
     /**
@@ -317,134 +340,94 @@ class EmprestimoFerramentasForm extends TPage
         $this->fieldlist->addCloneAction();
         $this->form->addContent([$this->fieldlist]);
     }
-    /**
-     * Fire form events
-     * @param $param Request
-     */
-    public function fireEvents($param)
-    {
-        if (!empty($param['id'])) {
-            TTransaction::open('bancodados');
-            $emprestimo = Emprestimo::find($param['id']);
-            $this->form->setData($emprestimo); //inserindo dados no formulario. 
-
-            $pivot = PivotEmprestimoFerramentas::where('id_emprestimo', '=', $emprestimo->id)->load();
-
-            if ($pivot) {
-                $this->fieldlist->addHeader();
-                foreach ($pivot as $itens => $value) {
-                    $obj = new stdClass;
-                    $obj->ferramenta = $value->id_ferramenta;
-                    $obj->quantidade = $value->quantidade;
-
-                    $this->fieldlist->addDetail($obj);
-                }
-                $this->fieldlist->addCloneAction();
-            }
-            // add field list to the form
-            $this->form->addContent([$this->fieldlist]);
-            TTransaction::close();
-        } else {
-            $this->fieldlist->addHeader();
-            $this->fieldlist->addDetail(new stdClass);
-            $this->fieldlist->addCloneAction();
-            $this->form->addContent([$this->fieldlist]);
-        }
-    }
-    /**
-     * Verificar se existe ferramentas(ou qualquer outro parametro) duplicados no formulário
-     * @var param 
-     * @return Array
-     */
-    function getDuplicates($param)
-    {
-        return array_unique(array_diff_assoc($param, array_unique($param)));
-    }
-    /**
-     * Gerar pdf das ferramentas solicitadas. 
-     */
-    public function onGenerate($param = null)
-    {
-        try {
-            TTransaction::open('bancodados');
-
-            /*             $model = model::find($param['id'])
-
-                $replaces = $model->toArray();
-
-                // verificar de tem campo vazio 
-                foreach ($replaces as $k => $v){
-                verificação 		
-                }
-
-                $replace['date'] = TData::date2br($model->data);
-                $replace['campoTextArea'] = strip_tags($model->textArea); */
-            // load all customers
-            $this->html = new THtmlRenderer('app/resources/pdf.html');
-
-            $emprestimo = new Emprestimo($param['id']);
-            $pivot = new PivotEmprestimoFerramentas($emprestimo->id);
-
-            $replace = $emprestimo->toArray();
-            $replace['created_at'] = TDate::date2br($emprestimo->created_at);
-
-            $this->html->enableSection('main', $replace);
-
-            // wrap the page content using vertical box
-            $vbox = new TVBox;
-            $vbox->style = 'width: 100%';
-            $vbox->add(new TXMLBreadCrumb('menu.xml', __CLASS__));
-            $vbox->add($this->html);
-            parent::add($vbox);
-
-            $contents = $this->html->getContents();
-
-            $options = new \Dompdf\Options();
-            $options->setChroot(getcwd());
-
-            // converts the HTML template into PDF
-            $dompdf = new \Dompdf\Dompdf($options);
-            $dompdf->loadHtml($contents);
-            $dompdf->setPaper('A4', 'portrait');
-            $dompdf->render();
-
-            // write and open file
-            file_put_contents('app/output/document.pdf', $dompdf->output());
-
-            // open window to show pdf
-            $window = TWindow::create(_t('Document HTML->PDF'), 0.8, 0.8);
-            $object = new TElement('object');
-            $object->data  = 'app/output/document.pdf';
-            $object->type  = 'application/pdf';
-            $object->style = "width: 100%; height:calc(100% - 10px)";
-            $object->add('O navegador não suporta a exibição deste conteúdo, <a style="color:#007bff;" target=_newwindow href="' . $object->data . '"> clique aqui para baixar</a>...');
-
-            $window->add($object);
-            $window->show();
-        } catch (Exception $e) {
-            new TMessage('error', $e->getMessage());
-        }
-    }
     public static function onChange($param)
     {
-        $input_id = $param['_field_id']; //Pega o campo e o id (campo_id)
-        $id_item = $param['_field_value']; //pegar o valor do campo
-        $nomeField = explode('_', $input_id); //Nome do campo 
-        $uniqueIdField = end($nomeField); //Pega apenas o valor id do campo
-
-        if ($id_item) {
+        if (!empty($param['key'])) {
             $obj = new stdClass;
-
             try {
                 TTransaction::open('bancodados');
-                $ferramenta = Ferramentas::find($id_item);
-                $obj->{'quantidade_' . $uniqueIdField} = number_format($ferramenta->quantidade);
-
-                TForm::sendData('subFormSecound2', $obj);
+                $ferramenta = Ferramentas::find($param['key']);
+                if (!$ferramenta) {
+                    throw new Exception('Material não existe');
+                }
+                $obj->quantidade = 1;
+                $obj->quantidadeDisponivel = $ferramenta->quantidade;
+                TForm::sendData('form_Emprestimo', $obj, false, false);
                 TTransaction::close();
             } catch (Exception $e) {
                 TTransaction::rollback();
+                new TMessage('error', $e->getMessage());
             }
         }
+    }
+    /**
+     * Adiciona material na lista
+     * @param $param Parametros do request
+     */
+    public function onMateriaAdd($param)
+    {
+        try {
+            $this->form->validate();
+            $data = $this->form->getData();
+
+            if ((!$data->ferramenta)) {
+                throw new Exception('Erro ao adicionar material ao campo');
+            }
+
+            TTransaction::open('bancodados');
+            $ferramenta = Ferramentas::find($param['ferramenta']);
+            TTransaction::close();
+
+            if ($ferramenta->quantidade < $param['quantidade']) {
+                throw new Exception(
+                    'quantidade nao pode ser maior que a disponivel no estoque'
+                );
+            }
+
+            $id = !empty($data->ferramenta) ? $data->ferramenta : uniqid();
+            $grid_data = [
+                'id'      => $id,
+                'ferramenta'      => $ferramenta->nome,
+                'quantidade'          => $param['quantidade'],
+            ];
+
+            $grid = array_map(function ($value) {
+                return (string)$value;
+            }, $grid_data);
+
+            // insert row dynamically
+            $row = $this->dataGrid->addItem((object) $grid);
+            $row->id = $id;
+
+            TDataGrid::replaceRowById('listaFerramentas', $id, $row);
+
+            // clear product form fields after add
+            $data->id_pedido_material     = '';
+            $data->id_item     = '';
+            $data->quantidade         = '';
+
+            TForm::sendData('form_Emprestimo', $data, false, false);
+        } catch (Exception $e) {
+            $action = new TAction(array('EmprestimoFerramentasForm', 'onEdit'));
+            $this->form->setData($this->form->getData());
+            new TMessage('error', $e->getMessage(), $action);
+        }
+    }
+
+    /**
+     * Deleta item da lista. 
+     * @param $param Parametros do request
+     */
+    public static function onDeleteItem($param)
+    {
+        $data = new stdClass;
+        $data->id_item     = '';
+        $data->descricao     = '';
+        $data->quantidade         = '';
+
+        // send data, do not fire change/exit events
+        TForm::sendData('form_Emprestimo', $data, false, false);
+        // remove row
+        TDataGrid::removeRowById('listaFerramentas', $param['key']);
     }
 }

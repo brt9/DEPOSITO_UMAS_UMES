@@ -1,13 +1,28 @@
 <?php
 
 use Adianti\Base\TStandardList;
+use Adianti\Control\TAction;
+use Adianti\Database\TCriteria;
+use Adianti\Database\TFilter;
 use Adianti\Database\TTransaction;
 use Adianti\Registry\TSession;
+use Adianti\Widget\Base\TScript;
+use Adianti\Widget\Container\TPanelGroup;
+use Adianti\Widget\Container\TVBox;
+use Adianti\Widget\Datagrid\TDataGrid;
+use Adianti\Widget\Datagrid\TDataGridAction;
 use Adianti\Widget\Datagrid\TDataGridColumn;
+use Adianti\Widget\Datagrid\TPageNavigation;
+use Adianti\Widget\Form\TCombo;
 use Adianti\Widget\Form\TDate;
 use Adianti\Widget\Form\TDateTime;
 use Adianti\Widget\Form\TEntry;
+use Adianti\Widget\Form\TLabel;
 use Adianti\Widget\Form\TSpinner;
+use Adianti\Widget\Util\TXMLBreadCrumb;
+use Adianti\Widget\Wrapper\TDBUniqueSearch;
+use Adianti\Wrapper\BootstrapDatagridWrapper;
+use Adianti\Wrapper\BootstrapFormBuilder;
 
 /**
  * LISTA DE EMPRESTIMO
@@ -126,23 +141,13 @@ class EmprestimoList extends TStandardList
     // Action edit
     $action_edit = new TDataGridAction(array('EmprestimoFerramentasForm', 'onEdit'));
     $action_edit->setField('id');
-    $this->datagrid->addAction($action_edit, 'Visualizar solicitação', 'far:edit blue');
+    $this->datagrid->addAction($action_edit, 'Visualizar solicitação', 'fas:eye blue');
 
     // Visualização da solicitação para o admin. 
     $action1 = new TDataGridAction(['AprovacaoSolicitacaoForm', 'onEdit']);
     $action1->setField('id');
     if ($userSession == $isAdmin[0]->system_user_id)
       $this->datagrid->addAction($action1, 'Visualizar solicitação', 'fa:check-circle background-color:#218231');
-
-
-    $delete = new TDataGridAction([$this, 'onDeleteSessionVar'],   ['id' => '{id}']);
-    if ($userSession == $isAdmin[0]->system_user_id)
-      $this->datagrid->addAction($delete, 'Apagar solicitação', 'fas:trash-alt red');
-
-    /*     $pdf = new TDataGridAction(array('EmprestimoFerramentasForm', 'onGenerate'));
-    $pdf->setField('id');
-    $this->datagrid->addAction($pdf, 'Gerar PDF','fas:file-pdf red'); */
-
 
     // CRIAR O MODELO DE GRADE DE DADOS
     $this->datagrid->createModel();
@@ -153,7 +158,7 @@ class EmprestimoList extends TStandardList
     $this->pageNavigation->setAction(new TAction(array($this, 'onReload')));
     $this->pageNavigation->setWidth($this->datagrid->getWidth());
 
-    $panel = new TPanelGroup;
+    $panel = new TPanelGroup();
     $panel->add($this->datagrid);
     $panel->addFooter($this->pageNavigation);
 
@@ -171,33 +176,6 @@ class EmprestimoList extends TStandardList
     TTransaction::close(); // fecha a transação.
   }
 
-  /**
-   * Ask before deletion
-   */
-  public static function onDeleteSessionVar($param)
-  {
-    $action1 = new TAction(array(__CLASS__, 'deleteSessionVar'));
-    $action1->setParameters($param);
-    new TQuestion('Tem certeza que quer apagar ?', $action1);
-  }
-
-  /**
-   * Delete session var
-   */
-  public static function deleteSessionVar($param)
-  {
-    try {
-      TTransaction::open('bancodados');
-      $emprestimo = Emprestimo::find($param['id']);
-      $emprestimo->Delete();
-      $action = new TAction(array('EmprestimoList', 'onReload'));
-      TTransaction::close();
-      new TMessage('info', TAdiantiCoreTranslator::translate('Record deleted'), $action); // success message
-
-    } catch (Exception $e) {
-      new TMessage('error', $e->getMessage()); // shows the exception error message
-    }
-  }
   static function toggleSearch()
   {
     // também pode apagar esses blocos if/else se não quiser usar a "memória" de estado do form
