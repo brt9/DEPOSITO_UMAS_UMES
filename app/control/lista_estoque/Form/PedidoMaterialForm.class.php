@@ -167,8 +167,6 @@ class PedidoMaterialForm extends TPage
         $btnBack->style = 'background-color:gray; color:white; border-radius: 0.5rem;';
 
         if (empty($param['id'])) {
-            $btnClear = $this->form->addAction('Limpar', new TAction([$this, 'onClear']), 'fa:eraser white');
-            $btnClear->style = 'background-color:#c73927; color:white; border-radius: 0.5rem;';
             $btnSave = $this->form->addAction('Salvar', new TAction([$this, 'onSave']), 'fa:save white');
             $btnSave->style = 'background-color:#218231; color:white; border-radius: 0.5rem;';
         }
@@ -312,9 +310,6 @@ class PedidoMaterialForm extends TPage
             new TMessage('error', $e->getMessage());
             TTransaction::rollback();
         }
-    }
-    public function onClear($param)
-    {
     }
     /**
      * Preenche os campos do primeiro formulario.

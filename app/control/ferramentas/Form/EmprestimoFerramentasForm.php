@@ -181,8 +181,6 @@ class EmprestimoFerramentasForm extends TPage
         $btnBack->style = 'background-color:gray; color:white; border-radius: 0.5rem;';
 
         if (empty($param['id'])) {
-            $btnClear = $this->form->addAction(_t('Clear'), new TAction([$this, 'onClear']), 'fa:eraser White');
-            $btnClear->style = 'background-color:#c73927; color:white; border-radius: 0.5rem;';
             $btnSave = $this->form->addAction(_t('Save'), new TAction([$this, 'onSave']), 'fa:save white');
             $btnSave->style = 'background-color:#218231; color:white; border-radius: 0.5rem;';
         }
@@ -242,7 +240,7 @@ class EmprestimoFerramentasForm extends TPage
         try {
             $this->form->validate();
 
-            if (empty($param['listaMaterial_descricao'])) {
+            if (empty($param['listaFerramentas_id'])) {
                 throw new Exception('O formúlario não pode ser salvo vazio');
             }
             TTransaction::open('bancodados');
@@ -327,18 +325,6 @@ class EmprestimoFerramentasForm extends TPage
             new TMessage('error', $e->getMessage());
             TTransaction::rollback();
         }
-    }
-    /**
-     * Limpar todos o formulário
-     * @var param request 
-     * @return View forms
-     */
-    public function onClear($param)
-    {
-        $this->fieldlist->addHeader();
-        $this->fieldlist->addDetail(new stdClass);
-        $this->fieldlist->addCloneAction();
-        $this->form->addContent([$this->fieldlist]);
     }
     public static function onChange($param)
     {
