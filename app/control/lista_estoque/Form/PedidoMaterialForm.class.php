@@ -37,7 +37,7 @@ class PedidoMaterialForm extends TPage
     protected $subFormFirst;
     protected $subFormSecound;
     protected $dataGrid;
-
+    private static $formName = 'subFormFirst';
     function __construct($param)
     {
         TPage::include_css('app/resources/styles.css');
@@ -71,6 +71,14 @@ class PedidoMaterialForm extends TPage
         $descricao->setChangeAction(new TAction(array($this, 'onQuantidadeChange')));
         $descricao->setSize('100%');
         $descricao->enableSearch();
+
+        $created             = new TDateTime('created_at');
+        $created->setSize('50%');
+        $created->setEditable(FALSE);
+
+        $updated             = new TDateTime('updated_at');
+        $updated->setSize('50%');
+        $updated->setEditable(FALSE);
 
         $quantidade = new TSpinner('quantidade');
         $quantidade->setSize('50%');
@@ -113,6 +121,14 @@ class PedidoMaterialForm extends TPage
             [$label =  new TLabel('<b>Status</b>')],
             [$status],
         );
+        if (!empty($param['id'])) {
+            $row1 = $this->form->addFields(
+                [new TLabel('<b>Data da solicitação</b>')],
+                [$created],
+                [new TLabel('<b>Data da Aprovação</b>')],
+                [$updated],
+            );
+        }
         $row = $this->subFormFirst->addFields(
             [$label = new TLabel('<b>Codigo item</b>')],
             [$id_item],
@@ -146,11 +162,19 @@ class PedidoMaterialForm extends TPage
         $this->dataGrid->addColumn($colunaIditem);
         $this->dataGrid->addColumn($colunaDescicao);
         $this->dataGrid->addColumn($colunaQuantidade);
+        var_dump(empty($param['id']));
+        if (empty($param['id'])) {
 
-        $action2 = new TDataGridAction([$this, 'onDeleteItem']);
-        $action2->setField('descricao');
-        $this->dataGrid->addAction($action2, _t('Delete'), 'far:trash-alt red');
-
+            $action2 = new TDataGridAction([$this, 'onDeleteItem']);
+            $action2->setField('descricao');
+            $this->dataGrid->addAction($action2, _t('Delete'), 'far:trash-alt red');
+            $btnClear = $this->form->addAction('Limpar', new TAction([$this, 'onClear']), 'fa:eraser white');
+            $btnClear->style = 'background-color:#c73927; color:white; border-radius: 0.5rem;';
+            $btnSave = $this->form->addAction('Salvar', new TAction([$this, 'onSave']), 'fa:save white');
+            $btnSave->style = 'background-color:#218231; color:white; border-radius: 0.5rem;';
+        } else {
+            TScript::create('$(\'#' . self::$formName . '\').addClass(\'collapse\');');
+        }
         $this->dataGrid->createModel();
 
         $panel = new TPanelGroup();
@@ -166,12 +190,6 @@ class PedidoMaterialForm extends TPage
         );
         $btnBack->style = 'background-color:gray; color:white; border-radius: 0.5rem;';
 
-        if (empty($param['id'])) {
-            $btnClear = $this->form->addAction('Limpar', new TAction([$this, 'onClear']), 'fa:eraser white');
-            $btnClear->style = 'background-color:#c73927; color:white; border-radius: 0.5rem;';
-            $btnSave = $this->form->addAction('Salvar', new TAction([$this, 'onSave']), 'fa:save white');
-            $btnSave->style = 'background-color:#218231; color:white; border-radius: 0.5rem;';
-        }
 
         $vbox = new TVBox;
         $vbox->style = 'width: 100%; margin-top: 2rem';
@@ -225,7 +243,7 @@ class PedidoMaterialForm extends TPage
             if (
                 empty($param['listaMaterial_descricao'])
                 or empty($param['listaMaterial_id_item'])
-                ) {
+            ) {
                 throw new Exception('O formúlario não pode ser salvo vazio');
             }
             TTransaction::open('bancodados');
@@ -443,5 +461,19 @@ class PedidoMaterialForm extends TPage
         TForm::sendData('pedido_Material', $data, false, false);
         // remove row
         TDataGrid::removeRowById('listaMaterial', $param['key']);
+    }
+    static function toggleSearch()
+    {
+        // também pode apagar esses blocos if/else se não quiser usar a "memória" de estado do form
+        if (TSession::getValue('toggleSearch_' . self::$formName) == 1) {
+            TSession::setValue('toggleSearch_' . self::$formName, 0);
+        } else {
+            TSession::setValue('toggleSearch_' . self::$formName, 1);
+        }
+
+        // esta linha é a responsável por abrir/fechar o form
+        TScript::create('$(\'#' . self::$formName . '\').collapse(\'toggle\');');
+        // caso retire a função de "memória", copie a linha acima para dentro do onSearch,
+        // para que o form "permaneça aberto" (reabra automaticamente) ao realizar buscas
     }
 }
