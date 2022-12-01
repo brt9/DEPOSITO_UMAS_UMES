@@ -125,12 +125,12 @@ class PedidoMaterialForm extends TPage
             [$label =  new TLabel('<b>Quantidade disponivel</b>')],
             [$quantidadeDisponivel],
         );
-
+        if (empty($param['id'])) {
         $addMaterial = TButton::create('addMaterial', [$this, 'onMateriaAdd'], 'Adicionar material', 'fa:plus-circle green');
         $addMaterial->getAction()->setParameter('static', '1');
         $this->subFormFirst->addFields([], [$addMaterial]);
         $this->form->addContent([$this->subFormFirst]);
-
+        }
         //Grade de materiais
         $this->dataGrid = new BootstrapDatagridWrapper(new TDataGrid);
         $this->dataGrid->setHeight(150);
