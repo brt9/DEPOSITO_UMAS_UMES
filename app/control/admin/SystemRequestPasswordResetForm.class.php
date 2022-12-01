@@ -42,9 +42,12 @@ class SystemRequestPasswordResetForm extends TPage
         $user = '<span style="float:left;margin-left:44px;height:35px;" class="login-avatar"><span class="fa fa-user"></span></span>';
         $this->form->addFields( [$user, $login] );
         
-        $btn = $this->form->addAction(_t('Send'), new TAction(array($this, 'onRequest')), '');
-        $btn->class = 'btn btn-primary';
-        $btn->style = 'height: 40px;width: 90%;display: block;margin: auto;font-size:17px;';
+        $btnBack = $this->form->addActionLink(_t('Back'),  new TAction(['LoginForm', 'onLoad']), 'far:arrow-alt-circle-left white');
+        $btnBack->style = 'background-color:gray; color:white; border-radius: 0.5rem;';
+        $btn = $this->form->addAction(_t('Send'), new TAction(array($this, 'onRequest')), 'fa:eraser white');
+        $btn->style = 'background-color:#218231; color:white; border-radius: 0.5rem;';
+        
+        //$btn->style = 'height: 40px;width: 90%;display: block;margin: auto;font-size:17px;';
         
         $wrapper = new TElement('div');
         $wrapper->style = 'margin:auto; margin-top:100px;max-width:460px;';

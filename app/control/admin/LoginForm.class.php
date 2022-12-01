@@ -35,8 +35,8 @@ class LoginForm extends TPage
 
         // create the form fields
         //ADICIONAR
-        $icon = new TImage('app/images/system/logo.png');
-        $icon->style = "padding-bottom: 30px";
+        //$icon = new TImage('app/images/system/bardo.png');
+        //$icon->style = "padding-bottom: 30px";
         //FIM
         $login = new TEntry('login');
         $password = new TPassword('password');
@@ -58,7 +58,7 @@ class LoginForm extends TPage
         $unit   = '<span class="login-avatar"><span class="fa fa-university"></span></span>';
         $lang   = '<span class="login-avatar"><span class="fa fa-globe"></span></span>';
 
-        $this->form->addFields([$icon]);
+        //$this->form->addFields([$icon]);
         $this->form->addFields([$user, $login]);
         $this->form->addFields([$locker, $password]);
 
