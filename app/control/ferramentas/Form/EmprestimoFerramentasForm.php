@@ -140,10 +140,12 @@ class EmprestimoFerramentasForm extends TPage
             [$quantidadeDisponivel],
         );
 
-        $addMaterial = TButton::create('addMaterial', [$this, 'onMateriaAdd'], 'Adicionar material', 'fa:plus-circle green');
+        if (empty($param['id'])) {
+        $addMaterial = TButton::create('addMaterial', [$this, 'onMateriaAdd'], 'Adicionar ferramenta', 'fa:plus-circle green');
         $addMaterial->getAction()->setParameter('static', '1');
         $this->subFormFirst->addFields([], [$addMaterial]);
         $this->form->addContent([$this->subFormFirst]);
+        }
 
         //Grade de materiais
         $this->dataGrid = new BootstrapDatagridWrapper(new TDataGrid);
