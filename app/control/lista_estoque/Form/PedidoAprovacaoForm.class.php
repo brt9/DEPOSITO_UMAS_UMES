@@ -115,8 +115,10 @@ class PedidoAprovacaoForm extends TPage
         // form actions
         $btnBack = $this->form->addActionLink(_t('Back'), new TAction(array('PedidoList', 'onReload')), 'far:arrow-alt-circle-left white');
         $btnBack->style = 'background-color:gray; color:white; border-radius: 0.5rem;';
-        $btnSave = $this->form->addAction(_t('Save'), new TAction([$this, 'onSave']), 'fa:save white');
-        $btnSave->style = 'background-color:#218231; color:white; border-radius: 0.5rem;';
+        if ($pedido->status == "PENDENTE") {
+            $btnSave = $this->form->addAction(_t('Save'), new TAction([$this, 'onSave']), 'fa:save white');
+            $btnSave->style = 'background-color:#218231; color:white; border-radius: 0.5rem;';
+        }
 
         // vertical box container
         $container = new TVBox;
