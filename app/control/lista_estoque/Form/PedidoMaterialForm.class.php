@@ -149,7 +149,7 @@ class PedidoMaterialForm extends TPage
 
         $action2 = new TDataGridAction([$this, 'onDeleteItem']);
         $action2->setField('descricao');
-        $this->dataGrid->addAction($action2, _t('Delete'), 'far:trash-alt red');
+        //$this->dataGrid->addAction($action2, _t('Delete'), 'far:trash-alt red');
 
         $this->dataGrid->createModel();
 

@@ -165,7 +165,7 @@ class EmprestimoFerramentasForm extends TPage
 
         $action2 = new TDataGridAction([$this, 'onDeleteItem']);
         $action2->setField('ferramenta');
-        $this->dataGrid->addAction($action2, _t('Delete'), 'far:trash-alt red');
+        //$this->dataGrid->addAction($action2, _t('Delete'), 'far:trash-alt red');
 
         $this->dataGrid->createModel();
 
