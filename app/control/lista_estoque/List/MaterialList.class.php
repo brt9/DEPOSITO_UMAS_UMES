@@ -40,7 +40,7 @@ class MaterialList extends TStandardList
     $this->form = new BootstrapFormBuilder('form_search');
     $this->form->setFormTitle('ESTOQUE UMAS UMES');
     
-    $this->subform = new BootstrapFormBuilder('form_search');
+    $this->subform = new BootstrapFormBuilder('form_search1');
     TTransaction::open('bancodados');
     $userSession = TSession::getValue('userid');
     $isAdmin = SystemUserGroup::where('system_group_id', '=', 1)->load();
@@ -49,6 +49,7 @@ class MaterialList extends TStandardList
     // CRIE OS CAMPOS DO FORMULÁRIO
 
     $id = new TQRCodeInputReader('id_item');
+    $id->setChangeAction(new TAction(array($this, 'onDecricaoChange')));
     $id->setSize('50%');
     $id->placeholder = '00000';
     $id->setMask('99999');
@@ -165,4 +166,26 @@ class MaterialList extends TStandardList
     // caso retire a função de "memória", copie a linha acima para dentro do onSearch,
     // para que o form "permaneça aberto" (reabra automaticamente) ao realizar buscas
   }
+  public function onDecricaoChange($param)
+    {
+      var_dump($param['id_item']);
+        if (!empty($param['id_item'])) {
+            $obj = new stdClass;
+
+            try {
+                TTransaction::open('bancodados');
+                $material = Material::find($param['id_item']);
+
+                if (!$material) {
+                    throw new Exception('Material não existe');
+                }
+                $obj->descricao = $material->descricdesdao;
+                TForm::sendData('form_search', $obj, false, false);
+                TTransaction::close();
+            } catch (Exception $e) {
+                TTransaction::rollback();
+                new TMessage('error', $e->getMessage());
+            }
+        }
+    }
 }
