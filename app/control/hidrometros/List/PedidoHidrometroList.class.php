@@ -100,7 +100,7 @@ class PedidoHidrometroList extends TStandardList
 
     // ADICIONE AS AÇÕES DO FORMULÁRIO DE PESQUISA
     $btn = $this->form->addAction(_t('Find'), new TAction(array($this, 'onSearch')), 'fa:search');
-    $this->form->addAction("Novo Item", new TAction(["PedidoHidrometro", "onEdit"]), "fa:plus-circle green");
+    $this->form->addAction("Solicitar Hidrometro", new TAction(["PedidoHidrometro", "onEdit"]), "fa:plus-circle green");
     $this->form->addAction('Save as PDF', new TAction([$this, 'exportAsPDF'], ['register_state' => 'false']), 'far:file-pdf red');
 
 
